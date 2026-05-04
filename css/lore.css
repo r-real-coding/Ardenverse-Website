@@ -5,7 +5,10 @@
 }
 @media (max-width: 780px) { .lore-layout { grid-template-columns: 1fr; } }
 
-.lore-nav { background: var(--bg-surface); border-right: 1px solid var(--border); padding: 1.5rem 0; }
+.lore-nav {
+  background: var(--bg-surface); border-right: 1px solid var(--border); padding: 1.5rem 0;
+  position: sticky; top: 64px; max-height: calc(100vh - 64px); overflow-y: auto; align-self: start;
+}
 .lore-nav-search { padding: 0 1.5rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
 .lore-nav-search input {
   width: 100%; background: var(--bg-elevated); border: 1px solid var(--border);
@@ -66,7 +69,7 @@
 .lore-add-cat:hover { background: rgba(201,168,76,0.05); }
 
 /* Lore content panel */
-.lore-content { padding: 3rem; max-width: 880px; }
+.lore-content { padding: 3rem; max-width: 880px; min-width: 0; overflow-wrap: break-word; }
 .lore-entry-view h1 { font-family: 'Cinzel', serif; font-size: 2rem; margin-bottom: 0.3rem; }
 .lore-entry-view .lore-cat-label {
   font-family: 'Orbitron', sans-serif; font-size: 0.6rem;
@@ -105,4 +108,9 @@
 }
 .lore-entry-body a { color: var(--cyan); text-decoration: underline; text-decoration-color: rgba(0,229,255,0.3); }
 .lore-entry-body a:hover { text-decoration-color: var(--cyan); }
+.lore-entry-body pre {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  padding: 1rem 1.2rem; margin: 1.2rem 0; overflow-x: auto;
+}
+.lore-entry-body pre code { background: none; padding: 0; font-size: 0.82rem; color: var(--teal-200); }
 .lore-empty-content { text-align: center; padding: 5rem 2rem; color: var(--text-muted); }
