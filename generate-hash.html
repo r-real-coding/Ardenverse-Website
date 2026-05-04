@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demimond — Generate Admin Hash</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500;600&family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal-900: #041a17;
+    --teal-700: #0d4a40;
+    --teal-600: #116655;
+    --teal-500: #148f72;
+    --teal-400: #1abf97;
+    --teal-300: #3dd9b3;
+    --teal-800: #072e28;
+    --cyan: #00e5ff;
+    --gold: #c9a84c;
+    --text-primary: #e8f5f2;
+    --text-secondary: #8ecfbf;
+    --text-muted: #4a8a7a;
+    --bg-base: #020f0d;
+    --bg-card: #061e1a;
+    --bg-elevated: #0a2e28;
+    --border: rgba(26, 191, 151, 0.15);
+    --glow: 0 0 20px rgba(26, 191, 151, 0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Raleway', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    max-width: 540px;
+    width: 100%;
+  }
+
+  .card-header {
+    padding: 1.4rem 1.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .eyebrow {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.52rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+
+  .card-body { padding: 1.8rem; }
+
+  .field { margin-bottom: 1.4rem; }
+
+  label {
+    display: block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.52rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+  }
+
+  input[type="password"], input[type="text"] {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.9rem;
+    padding: 0.7rem 2.8rem 0.7rem 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus { border-color: var(--teal-500); }
+  input::placeholder { color: var(--text-muted); }
+
+  .toggle-vis {
+    position: absolute;
+    right: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+  .toggle-vis:hover { color: var(--teal-300); }
+
+  .strength-bar {
+    height: 2px;
+    background: var(--bg-elevated);
+    margin-top: 0.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s, background 0.3s;
+    background: var(--teal-700);
+  }
+
+  .strength-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    min-height: 1em;
+    transition: color 0.2s;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 1.4rem;
+    padding: 0.8rem 1rem;
+    background: var(--bg-elevated);
+    border-left: 2px solid var(--teal-700);
+  }
+
+  .generate-btn {
+    width: 100%;
+    background: var(--teal-700);
+    border: 1px solid var(--teal-500);
+    color: var(--text-primary);
+    font-family: 'Raleway', sans-serif;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.95rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  .generate-btn:hover:not(:disabled) { background: var(--teal-600); box-shadow: var(--glow); }
+  .generate-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--teal-300);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .generating .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Output */
+  .output {
+    display: none;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+  }
+
+  .output.visible { display: block; }
+
+  .output-header {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.52rem;
+    letter-spacing: 0.25em;
+    color: var(--teal-400);
+    text-transform: uppercase;
+  }
+
+  .output-body { padding: 1rem; }
+
+  .output-row {
+    margin-bottom: 1rem;
+  }
+
+  .output-row:last-child { margin-bottom: 0; }
+
+  .output-key {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .output-val {
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    padding: 0.6rem 2.5rem 0.6rem 0.8rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: var(--teal-200);
+    word-break: break-all;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.45rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--teal-500); color: var(--teal-300); }
+  .copy-btn.copied { color: var(--teal-400); border-color: var(--teal-500); }
+
+  .instructions {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--teal-600);
+  }
+
+  .instructions-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.5rem;
+    letter-spacing: 0.25em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .instructions ol {
+    padding-left: 1.2rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+    line-height: 2;
+  }
+
+  .instructions code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: var(--teal-300);
+    background: rgba(26,191,151,0.08);
+    padding: 0.05rem 0.3rem;
+  }
+
+  .warning {
+    margin-top: 1.5rem;
+    padding: 0.8rem 1rem;
+    background: rgba(180,30,30,0.06);
+    border: 1px solid rgba(180,30,30,0.2);
+    border-left: 2px solid rgba(180,30,30,0.4);
+    font-size: 0.75rem;
+    color: #e87070;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .warning strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="eyebrow">Admin Tools — Ardenverse</div>
+    <div class="title">Generate Password Hash</div>
+  </div>
+  <div class="card-body">
+
+    <div class="hint">
+      Enter your chosen admin password. This tool derives a PBKDF2 hash using a random salt — the output is what gets pasted into your site. Your actual password is never stored or transmitted anywhere.
+    </div>
+
+    <div class="field">
+      <label>Admin Password</label>
+      <div class="input-wrap">
+        <input type="password" id="passwordInput" placeholder="Enter a strong password…" oninput="checkStrength()">
+        <button class="toggle-vis" onclick="toggleVis()" title="Show/hide">👁</button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      <div class="strength-label" id="strengthLabel"></div>
+    </div>
+
+    <div class="field">
+      <label>Confirm Password</label>
+      <div class="input-wrap">
+        <input type="password" id="confirmInput" placeholder="Repeat password…" oninput="checkMatch()">
+      </div>
+      <div class="strength-label" id="matchLabel"></div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generateHash()" disabled>
+      <div class="spinner" id="spinner"></div>
+      <span id="btnLabel">Generate Hash</span>
+    </button>
+
+    <div class="output" id="output">
+      <div class="output-header">Output — paste both values into your site</div>
+      <div class="output-body">
+        <div class="output-row">
+          <div class="output-key">ADMIN_HASH</div>
+          <div class="output-val" id="hashVal">
+            <button class="copy-btn" onclick="copyVal('hashVal', this)">Copy</button>
+            <span id="hashText"></span>
+          </div>
+        </div>
+        <div class="output-row">
+          <div class="output-key">ADMIN_SALT</div>
+          <div class="output-val" id="saltVal">
+            <button class="copy-btn" onclick="copyVal('saltVal', this)">Copy</button>
+            <span id="saltText"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="instructions" id="instructions" style="display:none;">
+      <div class="instructions-title">Next Steps</div>
+      <ol>
+        <li>Open <code>demimond_ardenverse_site.html</code> in a text editor.</li>
+        <li>Find the lines near the top of the <code>&lt;script&gt;</code> block:<br>
+          <code>const ADMIN_HASH = 'PASTE_HASH_HERE';</code><br>
+          <code>const ADMIN_SALT = 'PASTE_SALT_HERE';</code>
+        </li>
+        <li>Replace <code>PASTE_HASH_HERE</code> with the <strong>ADMIN_HASH</strong> value above.</li>
+        <li>Replace <code>PASTE_SALT_HERE</code> with the <strong>ADMIN_SALT</strong> value above.</li>
+        <li>Save the file. To log in, open the browser console on your site and run <code>adminLogin()</code>.</li>
+        <li>To change your password later, just run this tool again and replace both values.</li>
+      </ol>
+    </div>
+
+    <div class="warning">
+      <strong>Keep this file private.</strong> Don't share it or host it publicly — it's a local tool only. Close this tab when you're done. The hash is one-way, but there's no need to leave the generator accessible.
+    </div>
+
+  </div>
+</div>
+
+<script>
+let visible = false;
+
+function toggleVis() {
+  visible = !visible;
+  document.getElementById('passwordInput').type = visible ? 'text' : 'password';
+  document.getElementById('confirmInput').type = visible ? 'text' : 'password';
+}
+
+function checkStrength() {
+  const pw = document.getElementById('passwordInput').value;
+  const fill = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 14) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+  const levels = [
+    { pct: 0,   color: 'var(--teal-800)', text: '' },
+    { pct: 20,  color: '#c0392b',         text: 'Very weak' },
+    { pct: 40,  color: '#e67e22',         text: 'Weak' },
+    { pct: 60,  color: 'var(--gold)',     text: 'Fair' },
+    { pct: 80,  color: 'var(--teal-400)', text: 'Strong' },
+    { pct: 100, color: 'var(--teal-300)', text: 'Very strong' },
+  ];
+
+  const level = levels[Math.min(score, 5)];
+  fill.style.width = level.pct + '%';
+  fill.style.background = level.color;
+  label.textContent = pw.length ? level.text : '';
+  label.style.color = level.color;
+
+  checkMatch();
+  updateBtn();
+}
+
+function checkMatch() {
+  const pw = document.getElementById('passwordInput').value;
+  const cf = document.getElementById('confirmInput').value;
+  const label = document.getElementById('matchLabel');
+  if (!cf.length) { label.textContent = ''; return; }
+  if (pw === cf) {
+    label.textContent = 'Passwords match';
+    label.style.color = 'var(--teal-400)';
+  } else {
+    label.textContent = 'Passwords do not match';
+    label.style.color = '#e87070';
+  }
+  updateBtn();
+}
+
+function updateBtn() {
+  const pw = document.getElementById('passwordInput').value;
+  const cf = document.getElementById('confirmInput').value;
+  document.getElementById('generateBtn').disabled = !(pw.length >= 8 && pw === cf);
+}
+
+async function generateHash() {
+  const password = document.getElementById('passwordInput').value;
+  const btn = document.getElementById('generateBtn');
+  const spinner = document.getElementById('spinner');
+  const btnLabel = document.getElementById('btnLabel');
+
+  btn.disabled = true;
+  btn.classList.add('generating');
+  btnLabel.textContent = 'Deriving…';
+  spinner.style.display = 'block';
+
+  // Generate a cryptographically random 32-byte salt
+  const saltBytes = crypto.getRandomValues(new Uint8Array(32));
+  const saltHex = Array.from(saltBytes).map(b => b.toString(16).padStart(2,'0')).join('');
+
+  // Derive key with PBKDF2, 310,000 iterations, SHA-256
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 310000, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  const hashHex = Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2,'0')).join('');
+
+  document.getElementById('hashText').textContent = hashHex;
+  document.getElementById('saltText').textContent = saltHex;
+  document.getElementById('output').classList.add('visible');
+  document.getElementById('instructions').style.display = 'block';
+
+  btn.classList.remove('generating');
+  spinner.style.display = 'none';
+  btnLabel.textContent = 'Regenerate Hash';
+  btn.disabled = false;
+
+  // Clear the password fields
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('confirmInput').value = '';
+  document.getElementById('strengthFill').style.width = '0%';
+  document.getElementById('strengthLabel').textContent = '';
+  document.getElementById('matchLabel').textContent = '';
+  updateBtn();
+}
+
+function copyVal(containerId, btn) {
+  const text = document.getElementById(containerId).querySelector('span').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>

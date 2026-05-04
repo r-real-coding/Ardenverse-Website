@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demimond — Ardenverse</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal-900:#041a17;--teal-800:#072e28;--teal-700:#0d4a40;--teal-600:#116655;
+  --teal-500:#148f72;--teal-400:#1abf97;--teal-300:#3dd9b3;--teal-200:#7eecd3;
+  --cyan:#00e5ff;--gold:#c9a84c;
+  --text-primary:#e8f5f2;--text-secondary:#8ecfbf;--text-muted:#4a8a7a;
+  --bg-base:#020f0d;--bg-surface:#041a17;--bg-card:#061e1a;--bg-elevated:#0a2e28;
+  --border:rgba(26,191,151,0.15);--glow:0 0 20px rgba(26,191,151,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg-base);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden;}
+
+/* AGE GATE */
+.age-gate{position:fixed;inset:0;z-index:9999;background:var(--bg-base);display:flex;align-items:center;justify-content:center;padding:2rem;}
+.age-gate.hidden{display:none;}
+.age-gate-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(13,74,64,0.4) 0%,transparent 70%),radial-gradient(ellipse 30% 30% at 80% 20%,rgba(0,229,255,0.06) 0%,transparent 60%);}
+.age-gate-stars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,0.3) 0%,transparent 100%),radial-gradient(1px 1px at 55% 10%,rgba(255,255,255,0.4) 0%,transparent 100%),radial-gradient(1px 1px at 70% 60%,rgba(255,255,255,0.3) 0%,transparent 100%),radial-gradient(1px 1px at 85% 30%,rgba(255,255,255,0.4) 0%,transparent 100%),radial-gradient(1px 1px at 20% 75%,rgba(255,255,255,0.3) 0%,transparent 100%);}
+.age-gate-box{position:relative;max-width:520px;width:100%;background:var(--bg-card);border:1px solid var(--border);padding:3rem 2.5rem;text-align:center;}
+.age-gate-eyebrow{font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.4em;color:var(--cyan);text-transform:uppercase;margin-bottom:1rem;}
+.age-gate-title{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--text-primary);margin-bottom:0.3rem;letter-spacing:0.05em;}
+.age-gate-subtitle{font-family:'Cinzel',serif;font-size:0.85rem;color:var(--teal-300);letter-spacing:0.25em;margin-bottom:2rem;}
+.age-gate-divider{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--teal-400),transparent);margin:0 auto 2rem;}
+.age-gate-warning{background:rgba(180,30,30,0.08);border:1px solid rgba(180,30,30,0.25);padding:1rem 1.2rem;margin-bottom:1.5rem;}
+.age-gate-warning-label{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.3em;color:#e87070;text-transform:uppercase;margin-bottom:0.6rem;}
+.age-gate-warning p{font-size:0.82rem;color:var(--text-secondary);font-weight:300;line-height:1.7;}
+.age-gate-statement{font-size:0.85rem;color:var(--text-secondary);font-weight:300;line-height:1.8;margin-bottom:2rem;}
+.age-gate-statement strong{color:var(--text-primary);font-weight:600;}
+.age-gate-buttons{display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;}
+.age-btn{font-family:'Raleway',sans-serif;font-weight:600;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.85rem 1.6rem;border:1px solid;cursor:pointer;transition:all 0.25s;}
+.age-btn-enter{background:var(--teal-700);border-color:var(--teal-500);color:var(--text-primary);}
+.age-btn-enter:hover{background:var(--teal-600);box-shadow:var(--glow);}
+.age-btn-exit{background:transparent;border-color:var(--border);color:var(--text-muted);}
+.age-btn-exit:hover{border-color:rgba(180,30,30,0.4);color:#e87070;}
+.age-gate-footer{margin-top:1.5rem;font-size:0.7rem;color:var(--text-muted);font-weight:300;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(2,15,13,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.nav-logo{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--teal-300);letter-spacing:0.12em;cursor:pointer;}
+.nav-logo span{color:var(--cyan);font-size:0.7rem;letter-spacing:0.3em;display:block;font-family:'Orbitron',sans-serif;margin-top:-4px;}
+.nav-links{display:flex;gap:2rem;list-style:none;align-items:center;}
+.nav-links li button{background:none;border:none;color:var(--text-secondary);font-family:'Raleway',sans-serif;font-size:0.8rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:color 0.2s;padding:0;}
+.nav-links li button:hover,.nav-links li button.active{color:var(--teal-300);}
+.admin-badge{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.25em;color:var(--gold);border:1px solid rgba(201,168,76,0.25);background:rgba(201,168,76,0.06);padding:0.25rem 0.7rem;text-transform:uppercase;display:none;}
+.admin-mode .admin-badge{display:inline-block;}
+
+/* SECTIONS */
+.section{display:none;min-height:calc(100vh - 64px);}
+.section.active{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO */
+.hero{position:relative;min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 60%,rgba(13,74,64,0.4) 0%,transparent 70%),radial-gradient(ellipse 30% 30% at 80% 20%,rgba(0,229,255,0.06) 0%,transparent 60%),var(--bg-base);}
+.stars{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 10% 15%,rgba(255,255,255,0.6) 0%,transparent 100%),radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,0.4) 0%,transparent 100%),radial-gradient(1px 1px at 55% 10%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 70% 60%,rgba(255,255,255,0.3) 0%,transparent 100%),radial-gradient(1px 1px at 85% 30%,rgba(255,255,255,0.5) 0%,transparent 100%),radial-gradient(1px 1px at 20% 75%,rgba(255,255,255,0.4) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 45% 85%,rgba(200,220,255,0.5) 0%,transparent 100%);}
+.hero-content{position:relative;text-align:center;padding:4rem 2rem;max-width:800px;}
+.hero-eyebrow{font-family:'Orbitron',sans-serif;font-size:0.65rem;letter-spacing:0.4em;color:var(--cyan);text-transform:uppercase;margin-bottom:1.5rem;opacity:0.8;}
+.hero-title{font-family:'Cinzel',serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:700;line-height:1.1;margin-bottom:0.5rem;}
+.hero-subtitle{font-family:'Cinzel',serif;font-size:clamp(1rem,2vw,1.4rem);color:var(--teal-300);letter-spacing:0.25em;margin-bottom:2rem;}
+.hero-divider{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--teal-400),transparent);margin:0 auto 2rem;}
+.hero-desc{color:var(--text-secondary);font-size:1rem;font-weight:300;max-width:500px;margin:0 auto 3rem;line-height:1.9;}
+.hero-cta{display:inline-flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
+.btn{font-family:'Raleway',sans-serif;font-weight:600;font-size:0.75rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.9rem 2.2rem;border:1px solid;cursor:pointer;transition:all 0.3s;}
+.btn-primary{background:var(--teal-600);border-color:var(--teal-400);color:var(--text-primary);}
+.btn-primary:hover{background:var(--teal-500);box-shadow:var(--glow);}
+.btn-outline{background:transparent;border-color:var(--teal-600);color:var(--teal-300);}
+.btn-outline:hover{background:rgba(26,191,151,0.08);border-color:var(--teal-400);box-shadow:var(--glow);}
+.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.5rem;color:var(--text-muted);font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;}
+.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--teal-600),transparent);animation:scrollLine 2s ease-in-out infinite;}
+@keyframes scrollLine{0%,100%{opacity:0.3}50%{opacity:1}}
+
+/* PAGE HEADER */
+.page-header{padding:4rem 3rem 2rem;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,var(--bg-surface),transparent);}
+.page-eyebrow{font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.35em;color:var(--cyan);text-transform:uppercase;margin-bottom:0.75rem;}
+.page-title{font-family:'Cinzel',serif;font-size:clamp(1.8rem,3vw,2.8rem);font-weight:700;margin-bottom:0.5rem;}
+.page-desc{color:var(--text-secondary);font-weight:300;max-width:600px;}
+.nsfw-badge{display:inline-block;background:rgba(180,30,30,0.15);border:1px solid rgba(180,30,30,0.3);color:#e87070;font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.2em;padding:0.2rem 0.6rem;text-transform:uppercase;margin-left:0.5rem;vertical-align:middle;}
+
+/* GALLERY */
+.gallery-controls{padding:1.5rem 3rem;background:var(--bg-surface);border-bottom:1px solid var(--border);display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+.search-box{flex:1;min-width:200px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.85rem;padding:0.6rem 1rem;outline:none;transition:border-color 0.2s;}
+.search-box::placeholder{color:var(--text-muted);}
+.search-box:focus{border-color:var(--teal-500);}
+.filter-group{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;}
+.filter-label{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);}
+.filter-btn{background:transparent;border:1px solid var(--border);color:var(--text-secondary);font-family:'Raleway',sans-serif;font-size:0.72rem;letter-spacing:0.1em;padding:0.35rem 0.9rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.filter-btn:hover,.filter-btn.active{background:rgba(26,191,151,0.12);border-color:var(--teal-500);color:var(--teal-300);}
+.gallery-count{font-size:0.7rem;color:var(--text-muted);letter-spacing:0.1em;padding:1rem 3rem 0;}
+.gallery-grid{padding:1.5rem 3rem 3rem;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+@media(max-width:900px){.gallery-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.gallery-grid{grid-template-columns:1fr}}
+.gallery-item{position:relative;overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:border-color 0.3s,transform 0.3s;aspect-ratio:3/4;background:var(--bg-elevated);}
+.gallery-item:hover{border-color:var(--teal-500);transform:translateY(-2px);box-shadow:var(--glow);}
+.gallery-thumb{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;}
+.gallery-item:hover .gallery-thumb{transform:scale(1.04);}
+.gallery-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(2,15,13,0.95) 0%,rgba(2,15,13,0.3) 50%,transparent 100%);opacity:0;transition:opacity 0.3s;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem;}
+.gallery-item:hover .gallery-overlay{opacity:1;}
+.gallery-item-title{font-family:'Cinzel',serif;font-size:0.85rem;color:var(--text-primary);margin-bottom:0.25rem;}
+.gallery-item-desc{font-size:0.68rem;color:var(--text-secondary);line-height:1.4;margin-bottom:0.4rem;}
+.tag-row{display:flex;gap:0.3rem;flex-wrap:wrap;}
+.tag{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.12em;padding:0.15rem 0.45rem;border:1px solid var(--teal-700);color:var(--teal-300);background:rgba(13,74,64,0.5);text-transform:uppercase;}
+.tag.char{border-color:rgba(0,229,255,0.3);color:var(--cyan);background:rgba(0,100,120,0.3);}
+.tag.planet{border-color:rgba(201,168,76,0.3);color:var(--gold);background:rgba(80,55,15,0.3);}
+.tag.theme{border-color:rgba(125,200,170,0.3);color:#9cdcc0;background:rgba(13,74,64,0.3);}
+
+/* Admin action bar */
+.card-admin-bar{position:absolute;top:0.5rem;right:0.5rem;display:none;gap:0.3rem;z-index:5;}
+.admin-mode .card-admin-bar{display:flex;}
+.card-admin-btn{background:rgba(2,15,13,0.85);border:1px solid var(--border);color:var(--text-secondary);font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.55rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;backdrop-filter:blur(4px);}
+.card-admin-btn:hover{border-color:var(--teal-400);color:var(--teal-300);}
+.card-admin-btn.del:hover{border-color:rgba(220,60,60,0.5);color:#e87070;}
+
+.empty-state{text-align:center;padding:6rem 2rem;color:var(--text-muted);grid-column:1/-1;}
+.empty-state .big-icon{font-size:3rem;margin-bottom:1rem;opacity:0.3;}
+
+/* Add cards */
+.add-card-grid{position:relative;aspect-ratio:3/4;background:var(--bg-card);border:1px dashed var(--teal-700);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;cursor:pointer;transition:all 0.3s;color:var(--text-muted);}
+.add-card-grid:hover{border-color:var(--teal-500);color:var(--teal-400);background:rgba(26,191,151,0.03);box-shadow:var(--glow);}
+.add-card{background:var(--bg-card);border:1px dashed var(--teal-700);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;cursor:pointer;transition:all 0.3s;padding:3rem;color:var(--text-muted);min-height:300px;}
+.add-card:hover{border-color:var(--teal-500);color:var(--teal-400);background:rgba(26,191,151,0.03);}
+.add-icon{width:48px;height:48px;border:1px dashed currentColor;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;}
+.add-label{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;font-weight:600;}
+
+/* LIGHTBOX */
+.lightbox{display:none;position:fixed;inset:0;z-index:500;background:rgba(1,8,7,0.97);backdrop-filter:blur(20px);align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lightbox-inner{max-width:92vw;max-height:92vh;position:relative;display:flex;flex-direction:column;align-items:center;}
+.lightbox-img{max-width:100%;max-height:78vh;object-fit:contain;display:block;}
+.lightbox-info{width:100%;padding:0.8rem 0 0;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.lightbox-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--text-primary);}
+.lightbox-desc{font-size:0.78rem;color:var(--text-secondary);font-weight:300;margin-top:0.2rem;}
+.lightbox-close{position:fixed;top:1.5rem;right:1.5rem;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:all 0.2s;z-index:10;}
+.lightbox-close:hover{border-color:var(--teal-400);color:var(--teal-300);}
+.lightbox-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(6,30,26,0.8);border:1px solid var(--border);color:var(--text-secondary);width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.4rem;transition:all 0.2s;backdrop-filter:blur(8px);}
+.lightbox-nav:hover{border-color:var(--teal-400);color:var(--teal-300);}
+.lightbox-prev{left:1rem;}
+.lightbox-next{right:1rem;}
+
+/* CHARACTERS */
+.chars-grid{padding:3rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem;}
+.char-card{background:var(--bg-card);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all 0.3s;position:relative;}
+.char-card:hover{border-color:var(--teal-500);transform:translateY(-4px);box-shadow:0 8px 40px rgba(26,191,151,0.2);}
+.char-portrait-placeholder{width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-elevated) 0%,var(--teal-900) 100%);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:4rem;color:var(--teal-700);}
+.char-portrait{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;}
+.char-info{padding:1.2rem;border-top:1px solid var(--border);}
+.char-name{font-family:'Cinzel',serif;font-size:1.1rem;margin-bottom:0.2rem;}
+.char-title-label{font-size:0.75rem;color:var(--teal-400);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.8rem;font-weight:600;}
+.char-excerpt{font-size:0.82rem;color:var(--text-secondary);font-weight:300;line-height:1.7;}
+
+/* CHAR DETAIL */
+.char-detail{display:none;position:fixed;inset:0;z-index:200;background:rgba(2,15,13,0.96);backdrop-filter:blur(16px);overflow-y:auto;padding:4rem 2rem;}
+.char-detail.open{display:flex;align-items:flex-start;justify-content:center;}
+.char-detail-inner{max-width:900px;width:100%;display:grid;grid-template-columns:340px 1fr;gap:3rem;border:1px solid var(--border);background:var(--bg-card);position:relative;}
+@media(max-width:700px){.char-detail-inner{grid-template-columns:1fr}}
+.char-detail-img-placeholder{width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-elevated) 0%,var(--teal-900) 100%);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:5rem;color:var(--teal-700);}
+.char-detail-img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;}
+.char-detail-body{padding:2rem 2rem 2rem 0;}
+.close-btn{position:absolute;top:1rem;right:1rem;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-secondary);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;transition:all 0.2s;z-index:10;}
+.close-btn:hover{border-color:var(--teal-400);color:var(--teal-300);}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin:1.5rem 0;}
+.stat-item{background:var(--bg-elevated);border:1px solid var(--border);padding:0.7rem 0.9rem;}
+.stat-label{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.2rem;font-family:'Orbitron',sans-serif;}
+.stat-value{font-size:0.88rem;color:var(--teal-300);font-weight:500;}
+.char-traits{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:1rem;}
+.trait{font-size:0.65rem;letter-spacing:0.1em;padding:0.3rem 0.7rem;border:1px solid var(--teal-700);color:var(--teal-300);text-transform:uppercase;font-family:'Orbitron',sans-serif;}
+.section-divider{width:60px;height:1px;background:var(--teal-700);margin:1.5rem 0;}
+
+/* PLANETS */
+.planets-grid{padding:3rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:2rem;}
+.planet-card{background:var(--bg-card);border:1px solid var(--border);overflow:hidden;transition:all 0.3s;position:relative;}
+.planet-card:hover{border-color:var(--teal-500);transform:translateY(-4px);box-shadow:0 8px 40px rgba(26,191,151,0.2);}
+.planet-visual{width:100%;height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.planet-image{width:100%;height:200px;object-fit:cover;display:block;}
+.planet-orb{width:100px;height:100px;border-radius:50%;box-shadow:inset -15px -10px 30px rgba(0,0,0,0.6),0 0 40px rgba(26,191,151,0.3);}
+.planet-info{padding:1.5rem;border-top:1px solid var(--border);}
+.planet-name{font-family:'Cinzel',serif;font-size:1.2rem;margin-bottom:0.2rem;}
+.planet-class{font-size:0.7rem;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;font-weight:600;margin-bottom:0.8rem;}
+.planet-desc{font-size:0.82rem;color:var(--text-secondary);font-weight:300;line-height:1.7;}
+.planet-stats{display:flex;gap:1rem;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);}
+.planet-stat{flex:1;text-align:center;}
+.planet-stat-val{font-family:'Orbitron',sans-serif;font-size:0.85rem;color:var(--teal-300);font-weight:600;}
+.planet-stat-key{font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:0.2rem;}
+
+/* LORE WIKI */
+.lore-layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px - 120px);}
+@media(max-width:780px){.lore-layout{grid-template-columns:1fr;}}
+.lore-nav{background:var(--bg-surface);border-right:1px solid var(--border);padding:1.5rem 0;}
+.lore-nav-search{padding:0 1.5rem 1rem;border-bottom:1px solid var(--border);margin-bottom:1rem;}
+.lore-nav-search input{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.78rem;padding:0.5rem 0.7rem;outline:none;}
+.lore-nav-search input:focus{border-color:var(--teal-500);}
+.lore-nav-search input::placeholder{color:var(--text-muted);}
+.lore-cat-group{margin-bottom:0.5rem;}
+.lore-cat{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 1.5rem;font-size:0.7rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-secondary);cursor:pointer;background:none;border:none;width:100%;text-align:left;border-left:2px solid transparent;transition:all 0.2s;font-family:'Raleway',sans-serif;}
+.lore-cat:hover{color:var(--teal-300);background:rgba(26,191,151,0.04);}
+.lore-cat.expanded{color:var(--teal-300);}
+.lore-cat-arrow{font-size:0.7rem;transition:transform 0.2s;color:var(--text-muted);}
+.lore-cat.expanded .lore-cat-arrow{transform:rotate(90deg);color:var(--teal-400);}
+.lore-entries-list{max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.lore-cat-group.expanded .lore-entries-list{max-height:1500px;}
+.lore-entry-link{display:block;padding:0.45rem 1.5rem 0.45rem 2.5rem;font-size:0.78rem;font-weight:400;color:var(--text-muted);cursor:pointer;background:none;border:none;width:100%;text-align:left;border-left:2px solid transparent;transition:all 0.2s;font-family:'Raleway',sans-serif;line-height:1.5;}
+.lore-entry-link:hover{color:var(--teal-300);background:rgba(26,191,151,0.04);}
+.lore-entry-link.active{color:var(--teal-300);border-left-color:var(--teal-400);background:rgba(26,191,151,0.06);font-weight:600;}
+.lore-empty-cat{padding:0.5rem 1.5rem 0.5rem 2.5rem;font-size:0.7rem;color:var(--text-muted);font-style:italic;}
+.lore-add-entry{padding:0.45rem 1.5rem 0.45rem 2.5rem;font-size:0.7rem;color:var(--gold);cursor:pointer;background:none;border:none;width:100%;text-align:left;letter-spacing:0.05em;display:none;font-family:'Raleway',sans-serif;}
+.admin-mode .lore-add-entry{display:block;}
+.lore-add-entry:hover{color:var(--gold);background:rgba(201,168,76,0.05);}
+.lore-add-cat{padding:0.6rem 1.5rem;font-size:0.65rem;color:var(--gold);cursor:pointer;background:none;border:none;width:100%;text-align:left;letter-spacing:0.18em;text-transform:uppercase;font-weight:600;display:none;border-top:1px solid var(--border);margin-top:1rem;font-family:'Raleway',sans-serif;}
+.admin-mode .lore-add-cat{display:block;}
+.lore-add-cat:hover{background:rgba(201,168,76,0.05);}
+
+.lore-content{padding:3rem;max-width:880px;}
+.lore-entry-view h1{font-family:'Cinzel',serif;font-size:2rem;margin-bottom:0.3rem;}
+.lore-entry-view .lore-cat-label{font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.3em;color:var(--cyan);text-transform:uppercase;margin-bottom:0.8rem;}
+.lore-entry-view .lore-meta{font-size:0.72rem;color:var(--teal-400);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.lore-actions{display:flex;gap:0.5rem;}
+.lore-actions button{background:transparent;border:1px solid var(--border);color:var(--text-secondary);font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.35rem 0.8rem;cursor:pointer;transition:all 0.2s;}
+.lore-actions button:hover{border-color:var(--teal-400);color:var(--teal-300);}
+.lore-actions button.del:hover{border-color:rgba(220,60,60,0.5);color:#e87070;}
+.lore-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:2rem;}
+.lore-entry-body p{color:var(--text-secondary);font-weight:300;margin-bottom:1.2rem;line-height:1.9;font-size:0.95rem;}
+.lore-entry-body h2{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--teal-300);margin:2rem 0 0.8rem;}
+.lore-entry-body h3{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--teal-300);margin:1.5rem 0 0.6rem;}
+.lore-entry-body strong{color:var(--text-primary);font-weight:600;}
+.lore-entry-body em{color:var(--teal-200);font-style:italic;}
+.lore-entry-body blockquote{background:var(--bg-elevated);border:1px solid var(--border);border-left:3px solid var(--teal-600);padding:1.1rem 1.4rem;margin:1.5rem 0;font-size:0.88rem;color:var(--text-secondary);font-style:italic;}
+.lore-entry-body ul,.lore-entry-body ol{margin:1rem 0;padding-left:1.5rem;color:var(--text-secondary);font-weight:300;}
+.lore-entry-body li{margin:0.35rem 0;line-height:1.8;}
+.lore-entry-body code{background:var(--bg-elevated);padding:0.1rem 0.4rem;font-family:'Courier New',monospace;font-size:0.85em;color:var(--teal-200);}
+.lore-entry-body a{color:var(--cyan);text-decoration:underline;text-decoration-color:rgba(0,229,255,0.3);}
+.lore-entry-body a:hover{text-decoration-color:var(--cyan);}
+.lore-empty-content{text-align:center;padding:5rem 2rem;color:var(--text-muted);}
+
+/* MODALS — shared */
+.upload-modal{display:none;position:fixed;inset:0;z-index:300;background:rgba(2,15,13,0.97);backdrop-filter:blur(18px);overflow-y:auto;padding:2.5rem 1.5rem;align-items:flex-start;justify-content:center;}
+.upload-modal.open{display:flex;}
+.upload-modal-inner{max-width:820px;width:100%;background:var(--bg-card);border:1px solid var(--border);position:relative;margin:auto;}
+.upload-modal-header{padding:1.2rem 1.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.upload-modal-title{font-family:'Cinzel',serif;font-size:1.05rem;}
+.upload-modal-eyebrow{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;margin-bottom:0.25rem;}
+.upload-modal-body{padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;}
+@media(max-width:600px){.upload-modal-body{grid-template-columns:1fr}}
+.upload-modal-body.single{grid-template-columns:1fr;}
+.modal-drop-zone{border:1px dashed var(--teal-700);background:var(--bg-elevated);min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;}
+.modal-drop-zone:hover,.modal-drop-zone.drag-over{border-color:var(--teal-400);background:rgba(26,191,151,0.04);}
+.modal-drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.modal-drop-icon{width:44px;height:44px;border:1px dashed var(--teal-600);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--teal-500);}
+.modal-drop-label{font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);}
+.modal-drop-sub{font-size:0.65rem;color:var(--teal-800);}
+.modal-preview-img{width:100%;max-height:240px;object-fit:contain;display:none;background:#000;}
+.modal-preview-name{font-family:'Courier New',monospace;font-size:0.6rem;color:var(--teal-400);padding:0.3rem 0;word-break:break-all;display:none;}
+.modal-replace-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.4rem 0.8rem;cursor:pointer;transition:all 0.2s;width:100%;margin-top:0.5rem;}
+.modal-replace-btn:hover{border-color:var(--teal-500);color:var(--teal-300);}
+.modal-replace-btn.visible{display:block;}
+.modal-field{margin-bottom:1.1rem;}
+.modal-label{display:block;font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.4rem;}
+.modal-input,.modal-textarea,.modal-select{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.85rem;padding:0.6rem 0.85rem;outline:none;transition:border-color 0.2s;resize:vertical;}
+.modal-input::placeholder,.modal-textarea::placeholder{color:var(--text-muted);}
+.modal-input:focus,.modal-textarea:focus,.modal-select:focus{border-color:var(--teal-500);}
+.modal-textarea{min-height:60px;line-height:1.6;}
+.modal-textarea.markdown{font-family:'Courier New',monospace;font-size:0.82rem;line-height:1.7;min-height:280px;}
+.modal-md-help{font-size:0.65rem;color:var(--text-muted);font-weight:300;margin-top:0.3rem;line-height:1.6;}
+.modal-md-help code{background:var(--bg-elevated);padding:0.05rem 0.3rem;font-family:'Courier New',monospace;color:var(--teal-300);}
+.modal-tag-section{margin-bottom:1rem;}
+.modal-tag-section-label{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.5rem;}
+.modal-tag-section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.modal-tag-options{display:flex;flex-wrap:wrap;gap:0.3rem;align-items:center;}
+.modal-tag-opt{background:transparent;border:1px solid var(--border);color:var(--text-secondary);font-family:'Raleway',sans-serif;font-size:0.7rem;padding:0.25rem 0.65rem;cursor:pointer;transition:all 0.18s;user-select:none;}
+.modal-tag-opt:hover{border-color:var(--teal-600);color:var(--teal-300);}
+.modal-tag-opt.selected{background:rgba(26,191,151,0.12);border-color:var(--teal-400);color:var(--teal-300);}
+.modal-tag-opt.char.selected{background:rgba(0,100,120,0.25);border-color:rgba(0,229,255,0.5);color:var(--cyan);}
+.modal-tag-opt.planet.selected{background:rgba(80,55,15,0.3);border-color:rgba(201,168,76,0.4);color:var(--gold);}
+.modal-tag-add{background:transparent;border:1px dashed var(--teal-700);color:var(--text-muted);font-family:'Raleway',sans-serif;font-size:0.7rem;padding:0.25rem 0.6rem;cursor:pointer;transition:all 0.2s;}
+.modal-tag-add:hover{border-color:var(--teal-500);color:var(--teal-300);}
+.modal-tag-input-row{display:flex;gap:0.4rem;align-items:center;width:100%;margin-top:0.4rem;}
+.modal-tag-input-row input{flex:1;background:var(--bg-elevated);border:1px solid var(--teal-600);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.78rem;padding:0.35rem 0.6rem;outline:none;}
+.modal-tag-input-row button{background:var(--teal-700);border:1px solid var(--teal-500);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.35rem 0.7rem;cursor:pointer;}
+.modal-tag-input-row button:hover{background:var(--teal-600);}
+
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.modal-validation{display:flex;gap:1rem;flex-wrap:wrap;font-size:0.7rem;color:var(--text-muted);}
+.modal-v-item{display:flex;align-items:center;gap:0.35rem;}
+.modal-v-dot{width:5px;height:5px;border-radius:50%;background:var(--teal-800);flex-shrink:0;transition:background 0.2s;}
+.modal-v-dot.ok{background:var(--teal-400);}
+.modal-actions{display:flex;gap:0.6rem;}
+.modal-submit-btn{background:var(--teal-700);border:1px solid var(--teal-500);color:var(--text-primary);font-family:'Raleway',sans-serif;font-weight:600;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.7rem 1.8rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.5rem;}
+.modal-submit-btn:hover{background:var(--teal-600);box-shadow:var(--glow);}
+.modal-submit-btn:disabled{opacity:0.3;cursor:not-allowed;box-shadow:none;}
+.modal-delete-btn{background:rgba(180,30,30,0.12);border:1px solid rgba(180,30,30,0.3);color:#e87070;font-family:'Raleway',sans-serif;font-weight:600;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.7rem 1.2rem;cursor:pointer;transition:all 0.2s;}
+.modal-delete-btn:hover{background:rgba(180,30,30,0.2);border-color:rgba(180,30,30,0.5);}
+.modal-spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--teal-300);border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+.modal-submit-btn.saving .modal-spinner{display:block;}
+.modal-success{padding:0.8rem 1.5rem;background:rgba(26,191,151,0.08);border-top:1px solid var(--teal-700);color:var(--teal-300);font-size:0.78rem;font-weight:300;display:none;}
+.modal-success.visible{display:block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ADMIN LOGIN */
+.admin-login-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(2,15,13,0.97);backdrop-filter:blur(18px);align-items:center;justify-content:center;}
+.admin-login-modal.open{display:flex;}
+.admin-login-box{background:var(--bg-card);border:1px solid var(--border);width:100%;max-width:380px;}
+.admin-login-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);}
+.admin-login-eyebrow{font-family:'Orbitron',sans-serif;font-size:0.5rem;letter-spacing:0.3em;color:var(--gold);text-transform:uppercase;margin-bottom:0.3rem;}
+.admin-login-title{font-family:'Cinzel',serif;font-size:1rem;}
+.admin-login-body{padding:1.4rem 1.5rem;}
+.admin-pw-wrap{position:relative;display:flex;}
+.admin-pw-input{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.9rem;padding:0.7rem 2.8rem 0.7rem 0.9rem;outline:none;transition:border-color 0.2s;}
+.admin-pw-input:focus{border-color:var(--teal-500);}
+.admin-pw-input::placeholder{color:var(--text-muted);}
+.admin-pw-toggle{position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;}
+.admin-pw-toggle:hover{color:var(--teal-300);}
+.admin-login-error{font-size:0.72rem;color:#e87070;margin-top:0.5rem;min-height:1.1em;font-weight:300;}
+.admin-login-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.8rem;justify-content:flex-end;}
+.admin-cancel-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'Raleway',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.6rem 1.1rem;cursor:pointer;transition:all 0.2s;}
+.admin-cancel-btn:hover{border-color:var(--teal-600);color:var(--text-secondary);}
+.admin-login-btn{background:var(--teal-700);border:1px solid var(--teal-500);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.6rem 1.3rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.5rem;}
+.admin-login-btn:hover{background:var(--teal-600);box-shadow:var(--glow);}
+.admin-login-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.admin-login-spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--teal-300);border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+.admin-login-btn.loading .admin-login-spinner{display:block;}
+
+/* CONFIRM */
+.confirm-modal{display:none;position:fixed;inset:0;z-index:600;background:rgba(2,15,13,0.97);backdrop-filter:blur(18px);align-items:center;justify-content:center;}
+.confirm-modal.open{display:flex;}
+.confirm-box{background:var(--bg-card);border:1px solid rgba(180,30,30,0.3);max-width:380px;width:100%;padding:2rem;}
+.confirm-title{font-family:'Cinzel',serif;font-size:1rem;margin-bottom:0.8rem;}
+.confirm-msg{font-size:0.85rem;color:var(--text-secondary);font-weight:300;line-height:1.7;margin-bottom:1.5rem;}
+.confirm-btns{display:flex;gap:0.8rem;justify-content:flex-end;}
+.confirm-cancel{background:transparent;border:1px solid var(--border);color:var(--text-muted);font-family:'Raleway',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.6rem 1.1rem;cursor:pointer;transition:all 0.2s;}
+.confirm-cancel:hover{border-color:var(--teal-600);color:var(--text-secondary);}
+.confirm-ok{background:rgba(180,30,30,0.2);border:1px solid rgba(180,30,30,0.4);color:#e87070;font-family:'Raleway',sans-serif;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.6rem 1.3rem;cursor:pointer;transition:all 0.2s;}
+.confirm-ok:hover{background:rgba(180,30,30,0.3);}
+
+/* PROMPT MODAL */
+.prompt-modal{display:none;position:fixed;inset:0;z-index:600;background:rgba(2,15,13,0.97);backdrop-filter:blur(18px);align-items:center;justify-content:center;padding:2rem;}
+.prompt-modal.open{display:flex;}
+.prompt-box{background:var(--bg-card);border:1px solid var(--border);max-width:420px;width:100%;padding:1.8rem;}
+.prompt-title{font-family:'Cinzel',serif;font-size:1rem;margin-bottom:0.5rem;}
+.prompt-desc{font-size:0.78rem;color:var(--text-secondary);font-weight:300;margin-bottom:1rem;}
+.prompt-input{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-primary);font-family:'Raleway',sans-serif;font-size:0.88rem;padding:0.65rem 0.85rem;outline:none;margin-bottom:1.2rem;}
+.prompt-input:focus{border-color:var(--teal-500);}
+.prompt-btns{display:flex;gap:0.7rem;justify-content:flex-end;}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;z-index:700;background:var(--bg-elevated);border:1px solid var(--teal-600);color:var(--teal-300);font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.8rem 1.2rem;transform:translateY(100px);opacity:0;transition:all 0.3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.error{border-color:rgba(180,30,30,0.4);color:#e87070;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg-base);}
+::-webkit-scrollbar-thumb{background:var(--teal-800);}
+::-webkit-scrollbar-thumb:hover{background:var(--teal-700);}
+</style>
+</head>
+<body>
+
+<!-- AGE GATE -->
+<div class="age-gate" id="ageGate">
+  <div class="age-gate-bg"></div>
+  <div class="age-gate-stars"></div>
+  <div class="age-gate-box">
+    <div class="age-gate-eyebrow">Adults Only — Restricted Content</div>
+    <div class="age-gate-title">ARDENVERSE</div>
+    <div class="age-gate-subtitle">by Demimond</div>
+    <div class="age-gate-divider"></div>
+    <div class="age-gate-warning">
+      <div class="age-gate-warning-label">⚠ 18+ Content Warning</div>
+      <p>This site contains original artwork and worldbuilding intended for mature audiences only. Material may include sensual or suggestive themes, fantasy violence, and adult subject matter.</p>
+    </div>
+    <p class="age-gate-statement">By entering, you confirm that you are <strong>at least 18 years of age</strong> (or the legal age of majority in your jurisdiction), and that you wish to view artistic and creative content of an adult nature. All content is original IP &copy; Demimond — all rights reserved.</p>
+    <div class="age-gate-buttons">
+      <button class="age-btn age-btn-enter" onclick="acceptAgeGate()">I am 18+ — Enter</button>
+      <button class="age-btn age-btn-exit" onclick="declineAgeGate()">Exit</button>
+    </div>
+    <div class="age-gate-footer">Your choice is remembered on this browser.</div>
+  </div>
+</div>
+
+<nav>
+  <div class="nav-logo" onclick="showSection('home')">DEMIMOND <span>ardenverse</span></div>
+  <ul class="nav-links">
+    <li><button onclick="showSection('home')" id="nav-home" class="active">Home</button></li>
+    <li><button onclick="showSection('gallery')" id="nav-gallery">Gallery</button></li>
+    <li><button onclick="showSection('characters')" id="nav-characters">Characters</button></li>
+    <li><button onclick="showSection('planets')" id="nav-planets">Worlds</button></li>
+    <li><button onclick="showSection('lore')" id="nav-lore">Lore</button></li>
+    <li><span class="admin-badge">Admin</span></li>
+  </ul>
+</nav>
+
+<!-- HOME -->
+<section id="section-home" class="section active">
+  <div class="hero">
+    <div class="hero-bg"></div><div class="stars"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Original Sci-Fi / Fantasy Art Universe</div>
+      <h1 class="hero-title">ARDENVERSE</h1>
+      <div class="hero-subtitle">by Demimond</div>
+      <div class="hero-divider"></div>
+      <p class="hero-desc">A vast civilizational tapestry spanning alien worlds, ancient factions, and beings who exist at the edge of comprehension. Explore the art. Read the lore. Discover what lurks between the stars.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" onclick="showSection('gallery')">Enter the Gallery</button>
+        <button class="btn btn-outline" onclick="showSection('lore')">Explore the Lore</button>
+      </div>
+    </div>
+    <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+  </div>
+  <div style="background:var(--bg-surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-civilizations" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Characters</div>
+    </div>
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-worlds" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Known Worlds</div>
+    </div>
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-lore" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Lore Entries</div>
+    </div>
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-images" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Gallery Images</div>
+    </div>
+  </div>
+  <div style="padding:4rem 3rem;">
+    <div class="page-eyebrow">Latest Works</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:1.8rem;margin-bottom:2rem;">Recent Gallery</h2>
+    <div id="home-recent" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="section-gallery" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">Visual Archive</div>
+    <h1 class="page-title">Gallery <span class="nsfw-badge">18+</span></h1>
+    <p class="page-desc">Browse the complete illustration archive. Filter by character, world, or theme.</p>
+  </div>
+  <div class="gallery-controls">
+    <input type="text" class="search-box" placeholder="Search by title or tag…" id="gallery-search" oninput="renderGallery()">
+    <div class="filter-group"><span class="filter-label">Character:</span><div id="filter-chars" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div></div>
+    <div class="filter-group"><span class="filter-label">Theme:</span><div id="filter-themes" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div></div>
+    <div class="filter-group"><span class="filter-label">World:</span><div id="filter-planets" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div></div>
+  </div>
+  <div class="gallery-count" id="gallery-count"></div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+</section>
+
+<!-- CHARACTERS -->
+<section id="section-characters" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">Cast of the Ardenverse</div>
+    <h1 class="page-title">Characters</h1>
+    <p class="page-desc">The inhabitants, entities, and beings that shape the Ardenverse.</p>
+  </div>
+  <div class="chars-grid" id="chars-grid"></div>
+</section>
+
+<div class="char-detail" id="char-detail">
+  <div class="char-detail-inner">
+    <button class="close-btn" onclick="closeCharDetail()">✕</button>
+    <div id="char-detail-img-wrap"></div>
+    <div class="char-detail-body" id="char-detail-body"></div>
+  </div>
+</div>
+
+<!-- PLANETS -->
+<section id="section-planets" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">Charted Territories</div>
+    <h1 class="page-title">Worlds &amp; Planets</h1>
+    <p class="page-desc">From verdant living domains to shattered orbital megastructures.</p>
+  </div>
+  <div class="planets-grid" id="planets-grid"></div>
+</section>
+
+<!-- LORE WIKI -->
+<section id="section-lore" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">The Canon</div>
+    <h1 class="page-title">Ardenverse Wiki</h1>
+    <p class="page-desc">An expanding compendium of history, factions, species, technology, and more — searchable and tagged.</p>
+  </div>
+  <div class="lore-layout">
+    <nav class="lore-nav">
+      <div class="lore-nav-search"><input type="text" id="lore-search" placeholder="Search wiki…" oninput="renderLoreSidebar()"></div>
+      <div id="lore-sidebar"></div>
+      <button class="lore-add-cat" onclick="addLoreCategory()">+ New Category</button>
+    </nav>
+    <div class="lore-content" id="lore-content">
+      <div class="lore-empty-content">
+        <div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">⌬</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">Select an entry from the sidebar</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</button>
+  <div class="lightbox-inner">
+    <img class="lightbox-img" id="lightbox-img" alt="">
+    <div class="lightbox-info">
+      <div>
+        <div class="lightbox-title" id="lightbox-title"></div>
+        <div class="lightbox-desc" id="lightbox-desc"></div>
+      </div>
+      <div class="tag-row" id="lightbox-tags" style="flex-shrink:0;max-width:40%;justify-content:flex-end;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div class="admin-login-modal" id="adminLoginModal">
+  <div class="admin-login-box">
+    <div class="admin-login-header">
+      <div class="admin-login-eyebrow">Ardenverse — Restricted</div>
+      <div class="admin-login-title">Admin Access</div>
+    </div>
+    <div class="admin-login-body">
+      <label class="modal-label" style="margin-bottom:0.4rem;display:block;">Password</label>
+      <div class="admin-pw-wrap">
+        <input class="admin-pw-input" type="password" id="adminPwInput" placeholder="Enter admin password…" autocomplete="current-password">
+        <button class="admin-pw-toggle" onclick="toggleAdminPwVis()" tabindex="-1">👁</button>
+      </div>
+      <div class="admin-login-error" id="adminLoginError"></div>
+    </div>
+    <div class="admin-login-footer">
+      <button class="admin-cancel-btn" onclick="closeAdminLoginModal()">Cancel</button>
+      <button class="admin-login-btn" id="adminLoginBtn" onclick="submitAdminLogin()">
+        <div class="admin-login-spinner"></div>
+        <span id="adminLoginBtnLabel">Authenticate</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="upload-modal" id="uploadModal">
+  <div class="upload-modal-inner">
+    <div class="upload-modal-header">
+      <div><div class="upload-modal-eyebrow">Admin — Gallery</div><div class="upload-modal-title" id="uploadModalTitle">New Image Entry</div></div>
+      <button class="close-btn" onclick="closeUploadModal()">✕</button>
+    </div>
+    <div class="upload-modal-body">
+      <div>
+        <div class="modal-drop-zone" id="modalDropZone">
+          <input type="file" id="modalFileInput" accept="image/*">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label">Drop image or click to browse</div>
+          <div class="modal-drop-sub">JPG · PNG · WEBP · GIF</div>
+        </div>
+        <img class="modal-preview-img" id="modalPreviewImg" alt="Preview">
+        <div class="modal-preview-name" id="modalPreviewName"></div>
+        <button class="modal-replace-btn" id="modalReplaceBtn" onclick="document.getElementById('modalFileInput').click()">Replace Image</button>
+      </div>
+      <div>
+        <div class="modal-field"><label class="modal-label">Title</label><input class="modal-input" type="text" id="modalTitle" placeholder="e.g. Eonore — The Permitted"></div>
+        <div class="modal-field"><label class="modal-label">Description</label><textarea class="modal-textarea" id="modalDesc" placeholder="Brief caption or lore note…"></textarea></div>
+        <div class="modal-tag-section"><div class="modal-tag-section-label">Characters</div><div class="modal-tag-options" id="upload-char-tags"></div></div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Themes</div>
+          <div class="modal-tag-options" id="upload-theme-tags"></div>
+        </div>
+        <div class="modal-tag-section"><div class="modal-tag-section-label">World / Location</div><div class="modal-tag-options" id="upload-planet-tags"></div></div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Custom Tags</div>
+          <div class="modal-tag-options" id="upload-custom-tags"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="mv-file"></div><span id="mv-file-lbl">No image</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="mv-title"></div><span id="mv-title-lbl">No title</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="imgDeleteBtn" style="display:none;" onclick="deleteCurrentImage()">Delete</button>
+        <button class="modal-submit-btn" id="modalSubmitBtn" onclick="saveImage()" disabled>
+          <div class="modal-spinner"></div><span id="modalSubmitLabel">Save to Gallery</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="modalSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- CHARACTER MODAL -->
+<div class="upload-modal" id="charModal">
+  <div class="upload-modal-inner" style="max-width:760px;">
+    <div class="upload-modal-header">
+      <div><div class="upload-modal-eyebrow">Admin — Characters</div><div class="upload-modal-title" id="charModalTitle">New Character</div></div>
+      <button class="close-btn" onclick="closeCharModal()">✕</button>
+    </div>
+    <div class="upload-modal-body" style="grid-template-columns:300px 1fr;">
+      <div>
+        <label class="modal-label">Portrait</label>
+        <div class="modal-drop-zone" id="charDropZone" style="aspect-ratio:3/4;min-height:0;">
+          <input type="file" id="charFileInput" accept="image/*">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label" style="text-align:center;padding:0 1rem;">Drop or click<br>(optional)</div>
+        </div>
+        <img class="modal-preview-img" id="charPreviewImg" alt="" style="aspect-ratio:3/4;max-height:none;">
+        <button class="modal-replace-btn" id="charReplaceBtn" onclick="document.getElementById('charFileInput').click()">Replace Portrait</button>
+        <div class="modal-field" style="margin-top:1rem;"><label class="modal-label">Full Name</label><input class="modal-input" type="text" id="cName" placeholder="e.g. Vesper"></div>
+        <div class="modal-field"><label class="modal-label">Nickname</label><input class="modal-input" type="text" id="cShort" placeholder="optional"></div>
+        <div class="modal-field"><label class="modal-label">Title / Role</label><input class="modal-input" type="text" id="cTitle" placeholder="e.g. Drift Cartographer"></div>
+      </div>
+      <div>
+        <div class="modal-field"><label class="modal-label">Excerpt</label><textarea class="modal-textarea" id="cExcerpt" placeholder="Shown on the character card…"></textarea></div>
+        <div class="modal-field"><label class="modal-label">Biography <span style="font-size:0.65em;font-family:sans-serif;letter-spacing:0;text-transform:none;color:var(--teal-700);">(blank line = paragraph)</span></label><textarea class="modal-textarea" id="cBio" style="min-height:140px;" placeholder="Full bio…"></textarea></div>
+        <div class="modal-field"><label class="modal-label">Traits <span style="font-size:0.65em;font-family:sans-serif;letter-spacing:0;text-transform:none;color:var(--teal-700);">(comma-separated)</span></label><input class="modal-input" type="text" id="cTraits" placeholder="e.g. Human-Baseline, Canon"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div class="modal-field"><label class="modal-label">Stat 1 Key</label><input class="modal-input" type="text" id="cs1k" placeholder="Classification"></div>
+          <div class="modal-field"><label class="modal-label">Stat 1 Value</label><input class="modal-input" type="text" id="cs1v"></div>
+          <div class="modal-field"><label class="modal-label">Stat 2 Key</label><input class="modal-input" type="text" id="cs2k"></div>
+          <div class="modal-field"><label class="modal-label">Stat 2 Value</label><input class="modal-input" type="text" id="cs2v"></div>
+          <div class="modal-field"><label class="modal-label">Stat 3 Key</label><input class="modal-input" type="text" id="cs3k"></div>
+          <div class="modal-field"><label class="modal-label">Stat 3 Value</label><input class="modal-input" type="text" id="cs3v"></div>
+          <div class="modal-field"><label class="modal-label">Stat 4 Key</label><input class="modal-input" type="text" id="cs4k"></div>
+          <div class="modal-field"><label class="modal-label">Stat 4 Value</label><input class="modal-input" type="text" id="cs4v"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="cv-name"></div><span id="cv-name-lbl">No name</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="cv-title"></div><span id="cv-title-lbl">No title</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="charDeleteBtn" style="display:none;" onclick="deleteCurrentChar()">Delete</button>
+        <button class="modal-submit-btn" id="charSubmitBtn" onclick="saveCharacter()" disabled>
+          <div class="modal-spinner"></div><span id="charSubmitLabel">Save Character</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="charSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- PLANET MODAL -->
+<div class="upload-modal" id="planetModal">
+  <div class="upload-modal-inner" style="max-width:760px;">
+    <div class="upload-modal-header">
+      <div><div class="upload-modal-eyebrow">Admin — Worlds</div><div class="upload-modal-title" id="planetModalTitle">New World</div></div>
+      <button class="close-btn" onclick="closePlanetModal()">✕</button>
+    </div>
+    <div class="upload-modal-body" style="grid-template-columns:300px 1fr;">
+      <div>
+        <label class="modal-label">World Image (optional)</label>
+        <div class="modal-drop-zone" id="planetDropZone" style="min-height:160px;">
+          <input type="file" id="planetFileInput" accept="image/*">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label" style="text-align:center;padding:0 1rem;">Drop or click<br>(orb fallback shown if empty)</div>
+        </div>
+        <img class="modal-preview-img" id="planetPreviewImgUploaded" alt="" style="max-height:200px;">
+        <button class="modal-replace-btn" id="planetReplaceBtn" onclick="document.getElementById('planetFileInput').click()">Replace Image</button>
+        <div class="modal-field" style="margin-top:1rem;"><label class="modal-label">Name</label><input class="modal-input" type="text" id="pName" placeholder="e.g. The Silent Meridian"></div>
+        <div class="modal-field"><label class="modal-label">Class / Type</label><input class="modal-input" type="text" id="pClass" placeholder="e.g. Dead Zone"></div>
+        <div class="modal-field"><label class="modal-label">Primary Color</label>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input class="modal-input" type="text" id="pColor" placeholder="#1abf97" style="flex:1;" oninput="syncColorPicker('pColor','pColorPicker');updatePlanetPreview()">
+            <input type="color" id="pColorPicker" value="#1abf97" oninput="document.getElementById('pColor').value=this.value;updatePlanetPreview();" style="width:36px;height:36px;border:1px solid var(--border);background:var(--bg-elevated);cursor:pointer;padding:2px;">
+          </div>
+        </div>
+        <div class="modal-field"><label class="modal-label">Secondary Color</label>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input class="modal-input" type="text" id="pColorB" placeholder="#0d4a40" style="flex:1;" oninput="syncColorPicker('pColorB','pColorBPicker');updatePlanetPreview()">
+            <input type="color" id="pColorBPicker" value="#0d4a40" oninput="document.getElementById('pColorB').value=this.value;updatePlanetPreview();" style="width:36px;height:36px;border:1px solid var(--border);background:var(--bg-elevated);cursor:pointer;padding:2px;">
+          </div>
+        </div>
+        <div><label class="modal-label">Orb Preview</label>
+          <div id="planetPreview" style="width:100%;height:80px;background:linear-gradient(135deg,#041a17 0%,#0d4a40 60%,#020f0d 100%);display:flex;align-items:center;justify-content:center;">
+            <div id="planetPreviewOrb" style="width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#1abf9788 0%,#0d4a40 60%,#020f0d 100%);box-shadow:inset -8px -6px 20px rgba(0,0,0,0.6),0 0 30px rgba(26,191,151,0.3);"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="modal-field"><label class="modal-label">Description</label><textarea class="modal-textarea" id="pDesc" style="min-height:90px;" placeholder="Main description…"></textarea></div>
+        <div class="modal-field"><label class="modal-label">Flavour Text</label><textarea class="modal-textarea" id="pDetails" style="min-height:70px;" placeholder="Italic secondary text…"></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div class="modal-field"><label class="modal-label">Stat 1 Key</label><input class="modal-input" type="text" id="ps1k"></div>
+          <div class="modal-field"><label class="modal-label">Stat 1 Value</label><input class="modal-input" type="text" id="ps1v"></div>
+          <div class="modal-field"><label class="modal-label">Stat 2 Key</label><input class="modal-input" type="text" id="ps2k"></div>
+          <div class="modal-field"><label class="modal-label">Stat 2 Value</label><input class="modal-input" type="text" id="ps2v"></div>
+          <div class="modal-field"><label class="modal-label">Stat 3 Key</label><input class="modal-input" type="text" id="ps3k"></div>
+          <div class="modal-field"><label class="modal-label">Stat 3 Value</label><input class="modal-input" type="text" id="ps3v"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="pv-name"></div><span id="pv-name-lbl">No name</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="pv-class"></div><span id="pv-class-lbl">No class</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="planetDeleteBtn" style="display:none;" onclick="deleteCurrentPlanet()">Delete</button>
+        <button class="modal-submit-btn" id="planetSubmitBtn" onclick="savePlanet()" disabled>
+          <div class="modal-spinner"></div><span id="planetSubmitLabel">Save World</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="planetSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- LORE ENTRY MODAL -->
+<div class="upload-modal" id="loreModal">
+  <div class="upload-modal-inner" style="max-width:780px;">
+    <div class="upload-modal-header">
+      <div><div class="upload-modal-eyebrow">Admin — Wiki Entry</div><div class="upload-modal-title" id="loreModalTitle">New Wiki Entry</div></div>
+      <button class="close-btn" onclick="closeLoreModal()">✕</button>
+    </div>
+    <div class="upload-modal-body single">
+      <div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="modal-field"><label class="modal-label">Entry Title</label><input class="modal-input" type="text" id="lTitle" placeholder="e.g. The Drift Operators"></div>
+          <div class="modal-field"><label class="modal-label">Category</label><select class="modal-select" id="lCategory"></select></div>
+        </div>
+        <div class="modal-field"><label class="modal-label">Subtitle / Meta <span style="font-size:0.65em;font-family:sans-serif;letter-spacing:0;text-transform:none;color:var(--teal-700);">(optional)</span></label><input class="modal-input" type="text" id="lMeta" placeholder="e.g. Political Faction — Active"></div>
+        <div class="modal-field">
+          <label class="modal-label">Content (Markdown)</label>
+          <textarea class="modal-textarea markdown" id="lContent" placeholder="# Heading&#10;&#10;Paragraph text. Use **bold** and *italic*.&#10;&#10;## Subheading&#10;&#10;- Bullet point&#10;- Another point&#10;&#10;> Blockquote text"></textarea>
+          <div class="modal-md-help">Markdown supported: <code># H1</code> <code>## H2</code> <code>**bold**</code> <code>*italic*</code> <code>- list</code> <code>&gt; quote</code> <code>[link](url)</code></div>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Custom Tags</div>
+          <div class="modal-tag-options" id="lore-custom-tags"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="lv-title"></div><span id="lv-title-lbl">No title</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="lv-cat"></div><span id="lv-cat-lbl">No category</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="lv-content"></div><span id="lv-content-lbl">No content</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="loreDeleteBtn" style="display:none;" onclick="deleteCurrentLore()">Delete</button>
+        <button class="modal-submit-btn" id="loreSubmitBtn" onclick="saveLore()" disabled>
+          <div class="modal-spinner"></div><span id="loreSubmitLabel">Save Entry</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="loreSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Confirm Delete</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="confirm-ok" id="confirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMPT -->
+<div class="prompt-modal" id="promptModal">
+  <div class="prompt-box">
+    <div class="prompt-title" id="promptTitle"></div>
+    <div class="prompt-desc" id="promptDesc"></div>
+    <input class="prompt-input" id="promptInput">
+    <div class="prompt-btns">
+      <button class="confirm-cancel" onclick="closePrompt()">Cancel</button>
+      <button class="modal-submit-btn" id="promptOk" style="padding:0.55rem 1.2rem;">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// AGE GATE (remembered forever via localStorage)
+// =====================================================================
+const AGE_GATE_KEY='arden_age_verified';
+function checkAgeGate(){
+  if(localStorage.getItem(AGE_GATE_KEY)==='true'){
+    document.getElementById('ageGate').classList.add('hidden');
+  }
+}
+function acceptAgeGate(){
+  localStorage.setItem(AGE_GATE_KEY,'true');
+  document.getElementById('ageGate').classList.add('hidden');
+}
+function declineAgeGate(){
+  window.location.href='https://www.google.com';
+}
+
+// =====================================================================
+// INDEXEDDB
+// =====================================================================
+const DB_NAME='ArdenverseDB', DB_VERSION=2;
+let db;
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,DB_VERSION);
+    r.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('gallery'))    d.createObjectStore('gallery',   {keyPath:'uuid'});
+      if(!d.objectStoreNames.contains('characters')) d.createObjectStore('characters',{keyPath:'uuid'});
+      if(!d.objectStoreNames.contains('planets'))    d.createObjectStore('planets',   {keyPath:'uuid'});
+      if(!d.objectStoreNames.contains('lore'))       d.createObjectStore('lore',      {keyPath:'uuid'});
+      if(!d.objectStoreNames.contains('loreCategories')) d.createObjectStore('loreCategories',{keyPath:'uuid'});
+      if(!d.objectStoreNames.contains('tags'))       d.createObjectStore('tags',      {keyPath:'uuid'});
+      if(!d.objectStoreNames.contains('meta'))       d.createObjectStore('meta',      {keyPath:'key'});
+    };
+    r.onsuccess=e=>{db=e.target.result;res(db);};
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+function uuid(){return crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&0x3|0x8).toString(16);});}
+function dbGetAll(s){return new Promise((r,j)=>{const t=db.transaction(s,'readonly'),q=t.objectStore(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});}
+function dbGet(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readonly'),q=t.objectStore(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});}
+function dbPut(s,o){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite'),q=t.objectStore(s).put(o);q.onsuccess=()=>r();q.onerror=()=>j(q.error);});}
+function dbDelete(s,k){return new Promise((r,j)=>{const t=db.transaction(s,'readwrite'),q=t.objectStore(s).delete(k);q.onsuccess=()=>r();q.onerror=()=>j(q.error);});}
+
+// =====================================================================
+// SEED DEFAULT LORE CATEGORIES (first run only)
+// =====================================================================
+async function seedLoreCategories(){
+  const flag=await dbGet('meta','lore_cats_seeded');
+  if(flag)return;
+  const defaults=[
+    {uuid:uuid(),name:'History',order:0,createdAt:Date.now()},
+    {uuid:uuid(),name:'Factions',order:1,createdAt:Date.now()+1},
+    {uuid:uuid(),name:'Species',order:2,createdAt:Date.now()+2},
+    {uuid:uuid(),name:'Technology',order:3,createdAt:Date.now()+3},
+    {uuid:uuid(),name:'Cosmology',order:4,createdAt:Date.now()+4},
+  ];
+  for(const c of defaults)await dbPut('loreCategories',c);
+  await dbPut('meta',{key:'lore_cats_seeded',value:true});
+}
+
+// =====================================================================
+// IN-MEMORY CACHE
+// =====================================================================
+let GALLERY=[],CHARACTERS=[],PLANETS=[],LORE_CATS=[],LORE=[],TAGS=[];
+
+async function loadAll(){
+  [GALLERY,CHARACTERS,PLANETS,LORE_CATS,LORE,TAGS]=await Promise.all([
+    dbGetAll('gallery'),dbGetAll('characters'),dbGetAll('planets'),
+    dbGetAll('loreCategories'),dbGetAll('lore'),dbGetAll('tags')
+  ]);
+  GALLERY.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  CHARACTERS.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  PLANETS.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  LORE_CATS.sort((a,b)=>(a.order||0)-(b.order||0));
+  LORE.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
+  TAGS.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+}
+
+// =====================================================================
+// MARKDOWN RENDERER (small, safe)
+// =====================================================================
+function md(text){
+  if(!text)return '';
+  // escape HTML first
+  let t=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // code blocks (preserve)
+  const codeBlocks=[];
+  t=t.replace(/```([\s\S]*?)```/g,(_,c)=>{codeBlocks.push(c);return `\x00CODEBLOCK${codeBlocks.length-1}\x00`;});
+  // headings
+  t=t.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  t=t.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  t=t.replace(/^# (.+)$/gm,'<h2>$1</h2>');
+  // blockquotes
+  t=t.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');
+  // collapse adjacent blockquotes
+  t=t.replace(/<\/blockquote>\n<blockquote>/g,'<br>');
+  // unordered lists
+  t=t.replace(/(^|\n)((?:- .+(?:\n|$))+)/g,(m,pre,list)=>{
+    const items=list.trim().split(/\n/).map(l=>l.replace(/^- /,'<li>')+'</li>').join('');
+    return pre+'<ul>'+items+'</ul>';
+  });
+  // ordered lists
+  t=t.replace(/(^|\n)((?:\d+\. .+(?:\n|$))+)/g,(m,pre,list)=>{
+    const items=list.trim().split(/\n/).map(l=>l.replace(/^\d+\. /,'<li>')+'</li>').join('');
+    return pre+'<ol>'+items+'</ol>';
+  });
+  // bold, italic, inline code
+  t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  t=t.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
+  // links
+  t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // paragraphs (split on double newlines, wrap non-block lines)
+  t=t.split(/\n\n+/).map(p=>{
+    const tr=p.trim();if(!tr)return '';
+    if(/^<(h[1-6]|ul|ol|blockquote|pre)/.test(tr))return tr;
+    return '<p>'+tr.replace(/\n/g,'<br>')+'</p>';
+  }).join('\n');
+  // restore code blocks
+  t=t.replace(/\x00CODEBLOCK(\d+)\x00/g,(_,i)=>`<pre><code>${codeBlocks[i]}</code></pre>`);
+  return t;
+}
+
+// =====================================================================
+// TOAST / CONFIRM / PROMPT
+// =====================================================================
+let toastTimer;
+function showToast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(err?' error':'')+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
+
+let confirmCb=null;
+function showConfirm(title,msg,cb){document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmMsg').textContent=msg;confirmCb=cb;document.getElementById('confirmModal').classList.add('open');}
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('open');confirmCb=null;}
+document.getElementById('confirmOk').onclick=()=>{if(confirmCb)confirmCb();closeConfirm();};
+
+let promptCb=null;
+function showPrompt(title,desc,placeholder,defaultVal,cb){
+  document.getElementById('promptTitle').textContent=title;
+  document.getElementById('promptDesc').textContent=desc||'';
+  const inp=document.getElementById('promptInput');
+  inp.placeholder=placeholder||'';
+  inp.value=defaultVal||'';
+  promptCb=cb;
+  document.getElementById('promptModal').classList.add('open');
+  setTimeout(()=>inp.focus(),50);
+}
+function closePrompt(){document.getElementById('promptModal').classList.remove('open');promptCb=null;}
+document.getElementById('promptOk').onclick=()=>{const v=document.getElementById('promptInput').value.trim();if(v&&promptCb)promptCb(v);closePrompt();};
+document.getElementById('promptInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const v=document.getElementById('promptInput').value.trim();if(v&&promptCb)promptCb(v);closePrompt();}
+  if(e.key==='Escape')closePrompt();
+});
+
+// =====================================================================
+// NAV
+// =====================================================================
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// =====================================================================
+// HOME
+// =====================================================================
+function renderHome(){
+  document.getElementById('stat-civilizations').textContent=CHARACTERS.length;
+  document.getElementById('stat-worlds').textContent=PLANETS.length;
+  document.getElementById('stat-lore').textContent=LORE.length;
+  document.getElementById('stat-images').textContent=GALLERY.length;
+  const recent=GALLERY.filter(g=>g.imageBlob).slice(0,3);
+  const c=document.getElementById('home-recent');
+  if(!recent.length){c.innerHTML='<div style="color:var(--text-muted);font-size:0.85rem;font-weight:300;">No images yet.</div>';return;}
+  c.innerHTML=recent.map(item=>`
+    <div class="gallery-item" onclick="showSection('gallery')" style="cursor:pointer;">
+      <img class="gallery-thumb" src="${URL.createObjectURL(item.imageBlob)}" alt="${esc(item.title)}">
+      <div class="gallery-overlay" style="opacity:1;background:linear-gradient(to top,rgba(2,15,13,0.9) 0%,transparent 60%);">
+        <div class="gallery-item-title">${esc(item.title)}</div>
+        <div class="tag-row">${(item.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+      </div>
+    </div>`).join('')
+  +`<div style="background:var(--bg-card);border:1px dashed var(--teal-700);display:flex;align-items:center;justify-content:center;aspect-ratio:3/4;color:var(--text-muted);font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;" onclick="showSection('gallery')">View All →</div>`;
+}
+
+// =====================================================================
+// GALLERY
+// =====================================================================
+let filters={char:'all',theme:'all',planet:'all'};
+let lightboxItems=[],lightboxIndex=0;
+
+function buildFilterBar(){
+  // Characters
+  const charSlugs=[...new Set(GALLERY.flatMap(g=>g.chars||[]))];
+  const charLabels={};CHARACTERS.forEach(c=>charLabels[c.slug]=c.name);
+  document.getElementById('filter-chars').innerHTML=
+    `<button class="filter-btn ${filters.char==='all'?'active':''}" onclick="setFilter('char','all',this)">All</button>`
+    +charSlugs.map(s=>`<button class="filter-btn ${filters.char===s?'active':''}" onclick="setFilter('char','${s}',this)">${esc(charLabels[s]||s)}</button>`).join('');
+
+  // Themes — pulled from custom theme tags
+  const themeTagNames=TAGS.filter(t=>t.kind==='theme').map(t=>t.name);
+  const usedThemes=[...new Set(GALLERY.flatMap(g=>g.themes||[]))];
+  // Themes show all defined theme tags + any used theme strings
+  const allThemes=[...new Set([...themeTagNames,...usedThemes])].sort();
+  document.getElementById('filter-themes').innerHTML=
+    `<button class="filter-btn ${filters.theme==='all'?'active':''}" onclick="setFilter('theme','all',this)">All</button>`
+    +allThemes.map(t=>`<button class="filter-btn ${filters.theme===t?'active':''}" onclick="setFilter('theme','${esc(t)}',this)">${esc(t)}</button>`).join('');
+
+  const planetSlugs=[...new Set(GALLERY.flatMap(g=>g.planets||[]))];
+  const planetLabels={};PLANETS.forEach(p=>planetLabels[p.slug]=p.name);
+  document.getElementById('filter-planets').innerHTML=
+    `<button class="filter-btn ${filters.planet==='all'?'active':''}" onclick="setFilter('planet','all',this)">All</button>`
+    +planetSlugs.map(s=>`<button class="filter-btn ${filters.planet===s?'active':''}" onclick="setFilter('planet','${s}',this)">${esc(planetLabels[s]||s)}</button>`).join('');
+}
+
+function setFilter(type,val,btn){
+  filters[type]=val;
+  btn.closest('div').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGallery();
+}
+
+function renderGallery(){
+  const search=document.getElementById('gallery-search').value.toLowerCase();
+  const isAdmin=document.body.classList.contains('admin-mode');
+  let items=GALLERY.filter(item=>{
+    if(filters.char!=='all'&&!(item.chars||[]).includes(filters.char))return false;
+    if(filters.theme!=='all'&&!(item.themes||[]).includes(filters.theme))return false;
+    if(filters.planet!=='all'&&!(item.planets||[]).includes(filters.planet))return false;
+    if(search){
+      const hay=(item.title+' '+(item.tags||[]).join(' ')+' '+(item.customTags||[]).join(' ')).toLowerCase();
+      if(!hay.includes(search))return false;
+    }
+    return true;
+  });
+  lightboxItems=items.filter(i=>i.imageBlob);
+  const grid=document.getElementById('gallery-grid');
+  document.getElementById('gallery-count').textContent=`Showing ${items.length} of ${GALLERY.length} image${GALLERY.length!==1?'s':''}`;
+  if(items.length===0&&!isAdmin){
+    grid.innerHTML=`<div class="empty-state"><div class="big-icon">⬡</div><div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;">No images yet</div></div>`;
+    return;
+  }
+  grid.innerHTML=items.map((item)=>{
+    const lbIdx=lightboxItems.findIndex(x=>x.uuid===item.uuid);
+    return `<div class="gallery-item" ${item.imageBlob?`onclick="openLightbox(${lbIdx})"`:'style="cursor:default;"'}>
+      ${item.imageBlob
+        ?`<img class="gallery-thumb" src="${URL.createObjectURL(item.imageBlob)}" alt="${esc(item.title)}" loading="lazy">`
+        :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
+      <div class="gallery-overlay">
+        <div class="gallery-item-title">${esc(item.title)}</div>
+        <div class="gallery-item-desc">${esc(item.desc||'')}</div>
+        <div class="tag-row">${(item.tags||[]).map(t=>{
+          const isChar=(item.chars||[]).some(c=>t.toLowerCase().includes(c));
+          const isPlanet=(item.planets||[]).some(p=>t.toLowerCase().includes(p.split('-')[0]));
+          return `<span class="tag ${isChar?'char':isPlanet?'planet':''}">${esc(t)}</span>`;
+        }).join('')}</div>
+      </div>
+      <div class="card-admin-bar">
+        <button class="card-admin-btn" onclick="event.stopPropagation();openEditImage('${item.uuid}')">Edit</button>
+        <button class="card-admin-btn del" onclick="event.stopPropagation();confirmDeleteImage('${item.uuid}','${esc(item.title)}')">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+  if(isAdmin){
+    const card=document.createElement('div');
+    card.className='add-card-grid';
+    card.innerHTML=`<div class="add-icon" style="width:40px;height:40px;font-size:1.3rem;">+</div><div class="add-label" style="font-size:0.65rem;">Add Image</div>`;
+    card.onclick=openUploadModal;
+    grid.appendChild(card);
+  }
+}
+
+// LIGHTBOX
+function openLightbox(idx){
+  if(idx<0||idx>=lightboxItems.length)return;
+  lightboxIndex=idx;const item=lightboxItems[idx];
+  document.getElementById('lightbox-img').src=URL.createObjectURL(item.imageBlob);
+  document.getElementById('lightbox-title').textContent=item.title;
+  document.getElementById('lightbox-desc').textContent=item.desc||'';
+  document.getElementById('lightbox-tags').innerHTML=(item.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow='';}
+function lightboxNav(d){openLightbox((lightboxIndex+d+lightboxItems.length)%lightboxItems.length);}
+document.getElementById('lightbox').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
+
+// =====================================================================
+// CHARACTERS
+// =====================================================================
+function renderChars(){
+  const grid=document.getElementById('chars-grid');
+  const isAdmin=document.body.classList.contains('admin-mode');
+  const svgs=[`<div class="char-portrait-placeholder" style="background:linear-gradient(135deg,#041a17 0%,#0d4a40 50%,#020f0d 100%)">⬡</div>`,
+              `<div class="char-portrait-placeholder" style="background:linear-gradient(135deg,#020f1e 0%,#0a2040 50%,#020f0d 100%)">◈</div>`];
+  if(!CHARACTERS.length&&!isAdmin){grid.innerHTML='<div style="padding:3rem;color:var(--text-muted);font-size:0.85rem;">No characters yet.</div>';return;}
+  grid.innerHTML=CHARACTERS.map((c,i)=>`
+    <div class="char-card" onclick="openCharDetail('${c.uuid}')">
+      ${c.imageBlob?`<img class="char-portrait" src="${URL.createObjectURL(c.imageBlob)}" alt="${esc(c.name)}">`:svgs[i%svgs.length]}
+      <div class="char-info">
+        <div class="char-name">${esc(c.name)}${c.shortName?` <span style="color:var(--text-muted);font-size:0.8rem;">/ ${esc(c.shortName)}</span>`:''}</div>
+        <div class="char-title-label">${esc(c.title)}</div>
+        <p class="char-excerpt">${esc(c.excerpt||'')}</p>
+      </div>
+      <div class="card-admin-bar">
+        <button class="card-admin-btn" onclick="event.stopPropagation();openEditChar('${c.uuid}')">Edit</button>
+        <button class="card-admin-btn del" onclick="event.stopPropagation();confirmDeleteChar('${c.uuid}','${esc(c.name)}')">Del</button>
+      </div>
+    </div>`).join('')
+  +(isAdmin?`<div class="add-card" onclick="openCharModal()"><div class="add-icon">+</div><div class="add-label">Add Character</div></div>`:'');
+}
+
+function openCharDetail(charUuid){
+  const c=CHARACTERS.find(x=>x.uuid===charUuid);if(!c)return;
+  document.getElementById('char-detail-img-wrap').innerHTML=c.imageBlob
+    ?`<img class="char-detail-img" src="${URL.createObjectURL(c.imageBlob)}" alt="${esc(c.name)}">`
+    :`<div class="char-detail-img-placeholder">⬡</div>`;
+  document.getElementById('char-detail-body').innerHTML=`
+    <div style="font-family:'Orbitron',sans-serif;font-size:0.6rem;letter-spacing:0.3em;color:var(--cyan);margin-bottom:0.5rem;margin-top:1rem;">CHARACTER FILE</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:1.8rem;margin-bottom:0.2rem;">${esc(c.name)}</h2>
+    <div style="font-size:0.8rem;color:var(--teal-400);letter-spacing:0.12em;text-transform:uppercase;font-weight:600;margin-bottom:1.5rem;">${esc(c.title)}</div>
+    <div class="stat-grid">${(c.stats||[]).map(s=>`<div class="stat-item"><div class="stat-label">${esc(s.k)}</div><div class="stat-value">${esc(s.v)}</div></div>`).join('')}</div>
+    <div class="section-divider"></div>
+    ${(c.bio||'').split('\n\n').map(p=>`<p style="font-size:0.88rem;color:var(--text-secondary);font-weight:300;line-height:1.9;margin-bottom:1rem;">${esc(p)}</p>`).join('')}
+    <div class="char-traits">${(c.traits||[]).map(t=>`<span class="trait">${esc(t)}</span>`).join('')}</div>`;
+  document.getElementById('char-detail').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCharDetail(){document.getElementById('char-detail').classList.remove('open');document.body.style.overflow='';}
+
+// =====================================================================
+// PLANETS
+// =====================================================================
+function renderPlanets(){
+  const grid=document.getElementById('planets-grid');
+  const isAdmin=document.body.classList.contains('admin-mode');
+  if(!PLANETS.length&&!isAdmin){grid.innerHTML='<div style="padding:3rem;color:var(--text-muted);font-size:0.85rem;">No worlds yet.</div>';return;}
+  grid.innerHTML=PLANETS.map(p=>{
+    const visual=p.imageBlob
+      ?`<img class="planet-image" src="${URL.createObjectURL(p.imageBlob)}" alt="${esc(p.name)}">`
+      :`<div class="planet-visual" style="background:linear-gradient(135deg,#041a17 0%,${p.colorB} 60%,#020f0d 100%)"><div class="planet-orb" style="background:radial-gradient(circle at 35% 35%,${p.color}88 0%,${p.colorB} 60%,#020f0d 100%);"></div></div>`;
+    return `<div class="planet-card">
+      ${visual}
+      <div class="planet-info">
+        <div class="planet-name">${esc(p.name)}</div>
+        <div class="planet-class">${esc(p.class)}</div>
+        <p class="planet-desc">${esc(p.desc||'')}</p>
+        <p style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin-top:0.8rem;font-weight:300;">${esc(p.details||'')}</p>
+        <div class="planet-stats">${(p.stats||[]).map(s=>`<div class="planet-stat"><div class="planet-stat-val">${esc(s.v)}</div><div class="planet-stat-key">${esc(s.k)}</div></div>`).join('')}</div>
+      </div>
+      <div class="card-admin-bar">
+        <button class="card-admin-btn" onclick="openEditPlanet('${p.uuid}')">Edit</button>
+        <button class="card-admin-btn del" onclick="confirmDeletePlanet('${p.uuid}','${esc(p.name)}')">Del</button>
+      </div>
+    </div>`;
+  }).join('')+(isAdmin?`<div class="add-card" onclick="openPlanetModal()"><div class="add-icon">+</div><div class="add-label">Add World</div></div>`:'');
+}
+
+// =====================================================================
+// LORE WIKI
+// =====================================================================
+let activeLoreUuid=null;
+let expandedCats=new Set();
+
+function renderLoreSidebar(){
+  const search=(document.getElementById('lore-search').value||'').toLowerCase();
+  const sidebar=document.getElementById('lore-sidebar');
+  let html='';
+  for(const cat of LORE_CATS){
+    let entries=LORE.filter(l=>l.categoryUuid===cat.uuid);
+    if(search){
+      entries=entries.filter(e=>(e.title+' '+(e.customTags||[]).join(' ')+' '+(e.content||'')).toLowerCase().includes(search));
+      if(entries.length>0)expandedCats.add(cat.uuid);
+    }
+    const isExp=expandedCats.has(cat.uuid)||search;
+    html+=`<div class="lore-cat-group ${isExp?'expanded':''}">
+      <button class="lore-cat ${isExp?'expanded':''}" onclick="toggleCat('${cat.uuid}')">
+        <span>${esc(cat.name)} <span style="color:var(--text-muted);font-weight:400;">(${entries.length})</span></span>
+        <span class="lore-cat-arrow">▶</span>
+      </button>
+      <div class="lore-entries-list">
+        ${entries.map(e=>`<button class="lore-entry-link ${activeLoreUuid===e.uuid?'active':''}" onclick="openLoreEntry('${e.uuid}')">${esc(e.title)}</button>`).join('')}
+        ${entries.length===0&&!search?'<div class="lore-empty-cat">No entries</div>':''}
+        <button class="lore-add-entry" onclick="openLoreModal('${cat.uuid}')">+ Add Entry</button>
+        <button class="lore-add-entry" style="color:var(--text-muted);" onclick="renameLoreCategory('${cat.uuid}')">↻ Rename Category</button>
+        <button class="lore-add-entry" style="color:#e87070;" onclick="confirmDeleteLoreCat('${cat.uuid}','${esc(cat.name)}',${entries.length})">✕ Delete Category</button>
+      </div>
+    </div>`;
+  }
+  sidebar.innerHTML=html;
+}
+
+function toggleCat(catUuid){
+  if(expandedCats.has(catUuid))expandedCats.delete(catUuid);else expandedCats.add(catUuid);
+  renderLoreSidebar();
+}
+
+function openLoreEntry(loreUuid){
+  const entry=LORE.find(l=>l.uuid===loreUuid);if(!entry)return;
+  activeLoreUuid=loreUuid;
+  expandedCats.add(entry.categoryUuid);
+  renderLoreSidebar();
+  const cat=LORE_CATS.find(c=>c.uuid===entry.categoryUuid);
+  const isAdmin=document.body.classList.contains('admin-mode');
+  document.getElementById('lore-content').innerHTML=`
+    <div class="lore-entry-view">
+      <div class="lore-cat-label">${esc(cat?cat.name:'Uncategorized')}</div>
+      <h1>${esc(entry.title)}</h1>
+      <div class="lore-meta">
+        <span>${esc(entry.meta||'')}</span>
+        ${isAdmin?`<div class="lore-actions">
+          <button onclick="openEditLore('${entry.uuid}')">Edit</button>
+          <button class="del" onclick="confirmDeleteLore('${entry.uuid}','${esc(entry.title)}')">Delete</button>
+        </div>`:''}
+      </div>
+      ${(entry.customTags||[]).length?`<div class="lore-entry-tags">${(entry.customTags||[]).map(t=>`<span class="tag theme">${esc(t)}</span>`).join('')}</div>`:''}
+      <div class="lore-entry-body">${md(entry.content||'')}</div>
+    </div>`;
+}
+
+async function addLoreCategory(){
+  showPrompt('New Wiki Category','Name for the new category','e.g. Religions','',async(name)=>{
+    const cat={uuid:uuid(),name,order:LORE_CATS.length,createdAt:Date.now()};
+    await dbPut('loreCategories',cat);
+    LORE_CATS.push(cat);LORE_CATS.sort((a,b)=>(a.order||0)-(b.order||0));
+    renderLoreSidebar();showToast('Category added');
+  });
+}
+
+function renameLoreCategory(catUuid){
+  const cat=LORE_CATS.find(c=>c.uuid===catUuid);if(!cat)return;
+  showPrompt('Rename Category','New name for this category','',cat.name,async(name)=>{
+    cat.name=name;await dbPut('loreCategories',cat);
+    renderLoreSidebar();
+    if(activeLoreUuid)openLoreEntry(activeLoreUuid);
+    showToast('Category renamed');
+  });
+}
+
+function confirmDeleteLoreCat(catUuid,name,count){
+  const msg=count>0?`Delete "${name}" and all ${count} entries inside? This cannot be undone.`:`Delete "${name}"?`;
+  showConfirm('Delete Category',msg,async()=>{
+    const entries=LORE.filter(l=>l.categoryUuid===catUuid);
+    for(const e of entries)await dbDelete('lore',e.uuid);
+    LORE=LORE.filter(l=>l.categoryUuid!==catUuid);
+    await dbDelete('loreCategories',catUuid);
+    LORE_CATS=LORE_CATS.filter(c=>c.uuid!==catUuid);
+    if(activeLoreUuid&&entries.find(e=>e.uuid===activeLoreUuid)){
+      activeLoreUuid=null;
+      document.getElementById('lore-content').innerHTML=`<div class="lore-empty-content"><div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">⌬</div><div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">Select an entry from the sidebar</div></div>`;
+    }
+    renderLoreSidebar();renderHome();showToast('Category deleted');
+  });
+}
+
+// =====================================================================
+// LORE ENTRY MODAL — CRUD
+// =====================================================================
+let editingLoreUuid=null;
+const lState={tags:[]};
+
+function populateLoreCategorySelect(){
+  const sel=document.getElementById('lCategory');
+  sel.innerHTML='<option value="">— Select category —</option>'
+    +LORE_CATS.map(c=>`<option value="${c.uuid}">${esc(c.name)}</option>`).join('');
+}
+
+function populateLoreCustomTags(){
+  const customTags=TAGS.filter(t=>t.kind==='custom').map(t=>t.name);
+  const container=document.getElementById('lore-custom-tags');
+  container.innerHTML=customTags.map(t=>`<button class="modal-tag-opt" data-name="${esc(t)}" onclick="loreToggleTag(this)">${esc(t)}</button>`).join('')
+    +`<button class="modal-tag-add" onclick="addCustomTagInline('lore')">+ New Tag</button>`;
+  // re-apply selected state
+  container.querySelectorAll('.modal-tag-opt').forEach(b=>{if(lState.tags.includes(b.dataset.name))b.classList.add('selected');});
+}
+
+function loreToggleTag(btn){
+  btn.classList.toggle('selected');
+  const name=btn.dataset.name;
+  if(btn.classList.contains('selected')){if(!lState.tags.includes(name))lState.tags.push(name);}
+  else{lState.tags=lState.tags.filter(x=>x!==name);}
+}
+
+function resetLoreModal(){
+  editingLoreUuid=null;lState.tags=[];
+  ['lTitle','lMeta','lContent'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('lCategory').value='';
+  document.getElementById('loreSuccess').classList.remove('visible');
+  document.getElementById('loreSubmitBtn').classList.remove('saving');
+  document.getElementById('loreDeleteBtn').style.display='none';
+  document.getElementById('loreModalTitle').textContent='New Wiki Entry';
+  document.getElementById('loreSubmitLabel').textContent='Save Entry';
+  populateLoreCategorySelect();
+  populateLoreCustomTags();
+  loreValidate();
+}
+
+function openLoreModal(catUuid){
+  resetLoreModal();
+  if(catUuid)document.getElementById('lCategory').value=catUuid;
+  document.getElementById('loreModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  loreValidate();
+}
+function closeLoreModal(){document.getElementById('loreModal').classList.remove('open');document.body.style.overflow='';}
+
+function openEditLore(loreUuid){
+  const e=LORE.find(x=>x.uuid===loreUuid);if(!e)return;
+  resetLoreModal();
+  editingLoreUuid=loreUuid;
+  document.getElementById('lTitle').value=e.title||'';
+  document.getElementById('lMeta').value=e.meta||'';
+  document.getElementById('lContent').value=e.content||'';
+  document.getElementById('lCategory').value=e.categoryUuid||'';
+  lState.tags=[...(e.customTags||[])];
+  populateLoreCustomTags();
+  document.getElementById('loreModalTitle').textContent='Edit Wiki Entry';
+  document.getElementById('loreSubmitLabel').textContent='Save Changes';
+  document.getElementById('loreDeleteBtn').style.display='';
+  document.getElementById('loreModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  loreValidate();
+}
+
+['lTitle','lContent'].forEach(id=>document.getElementById(id).addEventListener('input',loreValidate));
+document.getElementById('lCategory').addEventListener('change',loreValidate);
+
+function loreValidate(){
+  const hasTitle=!!document.getElementById('lTitle').value.trim();
+  const hasCat=!!document.getElementById('lCategory').value;
+  const hasContent=!!document.getElementById('lContent').value.trim();
+  const setDot=(id,ok,lbl)=>{document.getElementById(id).className='modal-v-dot'+(ok?' ok':'');document.getElementById(id+'-lbl').textContent=lbl;};
+  setDot('lv-title',hasTitle,hasTitle?document.getElementById('lTitle').value.trim():'No title');
+  setDot('lv-cat',hasCat,hasCat?'Category set':'No category');
+  setDot('lv-content',hasContent,hasContent?'Content set':'No content');
+  document.getElementById('loreSubmitBtn').disabled=!(hasTitle&&hasCat&&hasContent);
+}
+
+async function saveLore(){
+  const title=document.getElementById('lTitle').value.trim();
+  const meta=document.getElementById('lMeta').value.trim();
+  const content=document.getElementById('lContent').value.trim();
+  const categoryUuid=document.getElementById('lCategory').value;
+  const btn=document.getElementById('loreSubmitBtn');
+  btn.classList.add('saving');btn.disabled=true;
+  const existing=editingLoreUuid?LORE.find(x=>x.uuid===editingLoreUuid):null;
+  const entry={uuid:editingLoreUuid||uuid(),title,meta,content,categoryUuid,customTags:[...lState.tags],createdAt:existing?existing.createdAt:Date.now()};
+  await dbPut('lore',entry);
+  if(editingLoreUuid){const idx=LORE.findIndex(x=>x.uuid===editingLoreUuid);if(idx>=0)LORE[idx]=entry;}
+  else LORE.push(entry);
+  LORE.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
+  btn.classList.remove('saving');
+  document.getElementById('loreSuccess').classList.add('visible');
+  expandedCats.add(categoryUuid);
+  activeLoreUuid=entry.uuid;
+  renderLoreSidebar();openLoreEntry(entry.uuid);renderHome();
+  showToast(editingLoreUuid?'Entry updated':'Entry saved');
+  setTimeout(closeLoreModal,1000);
+}
+
+function confirmDeleteLore(loreUuid,title){showConfirm('Delete Entry',`Delete "${title}"? This cannot be undone.`,()=>deleteLore(loreUuid));}
+async function deleteLore(loreUuid){
+  await dbDelete('lore',loreUuid);
+  LORE=LORE.filter(x=>x.uuid!==loreUuid);
+  if(activeLoreUuid===loreUuid){activeLoreUuid=null;document.getElementById('lore-content').innerHTML=`<div class="lore-empty-content"><div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">⌬</div><div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">Select an entry from the sidebar</div></div>`;}
+  renderLoreSidebar();renderHome();showToast('Entry deleted');
+}
+function deleteCurrentLore(){confirmDeleteLore(editingLoreUuid,document.getElementById('lTitle').value.trim());closeLoreModal();}
+
+// =====================================================================
+// CUSTOM TAGS — inline creation
+// =====================================================================
+async function addCustomTagInline(context){
+  showPrompt('New Tag','Tag name (will be available everywhere)','e.g. Mystery','',async(name)=>{
+    const kind=context==='upload-theme'?'theme':'custom';
+    const existing=TAGS.find(t=>t.name.toLowerCase()===name.toLowerCase());
+    if(existing){showToast('Tag already exists',true);return;}
+    const tag={uuid:uuid(),name,kind,createdAt:Date.now()};
+    await dbPut('tags',tag);TAGS.push(tag);TAGS.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    if(context==='lore')populateLoreCustomTags();
+    if(context==='upload-theme'){populateUploadTags();}
+    if(context==='upload-custom')populateUploadTags();
+    showToast('Tag added');
+  });
+}
+
+// =====================================================================
+// ADMIN AUTH
+// =====================================================================
+const ADMIN_HASH='e81b8410077822473396cc3a1d0d90b50d613dc2bb4e0e70e6153a222e458316';
+const ADMIN_SALT='0a2c2a47c517e782c8892ea19f1e49a0fafc3e73c6a9bda97d470f87e86d191e';
+const ADMIN_STORE_KEY='arden_admin_v1';
+
+async function deriveKey(pw,saltHex){
+  const enc=new TextEncoder();
+  const km=await crypto.subtle.importKey('raw',enc.encode(pw),{name:'PBKDF2'},false,['deriveBits']);
+  const salt=new Uint8Array(saltHex.match(/../g).map(h=>parseInt(h,16)));
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},km,256);
+  return Array.from(new Uint8Array(bits)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function ctEq(a,b){if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0;}
+
+function adminLogin(){
+  if(ADMIN_HASH==='PASTE_HASH_HERE'){console.warn('[Ardenverse] No admin hash configured.');return;}
+  document.getElementById('adminPwInput').value='';
+  document.getElementById('adminLoginError').textContent='';
+  document.getElementById('adminLoginModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('adminPwInput').focus(),50);
+}
+function closeAdminLoginModal(){
+  document.getElementById('adminLoginModal').classList.remove('open');document.body.style.overflow='';
+  document.getElementById('adminPwInput').value='';document.getElementById('adminLoginError').textContent='';
+  const btn=document.getElementById('adminLoginBtn');btn.classList.remove('loading');btn.disabled=false;
+  document.getElementById('adminLoginBtnLabel').textContent='Authenticate';
+}
+function toggleAdminPwVis(){const i=document.getElementById('adminPwInput');i.type=i.type==='password'?'text':'password';}
+document.getElementById('adminPwInput').addEventListener('keydown',e=>{if(e.key==='Enter')submitAdminLogin();if(e.key==='Escape')closeAdminLoginModal();});
+
+async function submitAdminLogin(){
+  const pw=document.getElementById('adminPwInput').value;if(!pw)return;
+  const btn=document.getElementById('adminLoginBtn');
+  btn.classList.add('loading');btn.disabled=true;
+  document.getElementById('adminLoginBtnLabel').textContent='Verifying…';
+  const derived=await deriveKey(pw,ADMIN_SALT);
+  if(ctEq(derived,ADMIN_HASH)){
+    sessionStorage.setItem(ADMIN_STORE_KEY,derived);
+    document.body.classList.add('admin-mode');
+    closeAdminLoginModal();renderAll();showToast('Admin mode active');
+  }else{
+    document.getElementById('adminLoginError').textContent='Incorrect password.';
+    btn.classList.remove('loading');btn.disabled=false;
+    document.getElementById('adminLoginBtnLabel').textContent='Authenticate';
+    document.getElementById('adminPwInput').value='';document.getElementById('adminPwInput').focus();
+  }
+}
+function adminLogout(){sessionStorage.removeItem(ADMIN_STORE_KEY);document.body.classList.remove('admin-mode');renderAll();showToast('Logged out');}
+async function checkAdminSession(){if(ADMIN_HASH==='PASTE_HASH_HERE')return false;const s=sessionStorage.getItem(ADMIN_STORE_KEY);return s&&ctEq(s,ADMIN_HASH);}
+
+// =====================================================================
+// IMAGE MODAL — CREATE + EDIT
+// =====================================================================
+const mState={file:null,blob:null,editUuid:null,chars:[],themes:[],planets:[],customTags:[],displayTags:[]};
+
+function populateUploadTags(){
+  // Characters from CHARACTERS
+  document.getElementById('upload-char-tags').innerHTML=CHARACTERS.map(c=>
+    `<button class="modal-tag-opt char" data-type="char" data-id="${c.slug}" data-label="${esc(c.name)}" onclick="modalToggleTag(this)">${esc(c.name)}</button>`).join('');
+  // Themes — from TAGS where kind=theme
+  const themeTags=TAGS.filter(t=>t.kind==='theme');
+  document.getElementById('upload-theme-tags').innerHTML=themeTags.map(t=>
+    `<button class="modal-tag-opt" data-type="theme" data-id="${esc(t.name)}" data-label="${esc(t.name)}" onclick="modalToggleTag(this)">${esc(t.name)}</button>`).join('')
+    +`<button class="modal-tag-add" onclick="addCustomTagInline('upload-theme')">+ New Theme</button>`;
+  // Planets
+  document.getElementById('upload-planet-tags').innerHTML=PLANETS.map(p=>
+    `<button class="modal-tag-opt planet" data-type="planet" data-id="${p.slug}" data-label="${esc(p.name)}" onclick="modalToggleTag(this)">${esc(p.name)}</button>`).join('');
+  // Custom tags
+  const custTags=TAGS.filter(t=>t.kind==='custom');
+  document.getElementById('upload-custom-tags').innerHTML=custTags.map(t=>
+    `<button class="modal-tag-opt" data-type="custom" data-id="${esc(t.name)}" data-label="${esc(t.name)}" onclick="modalToggleTag(this)">${esc(t.name)}</button>`).join('')
+    +`<button class="modal-tag-add" onclick="addCustomTagInline('upload-custom')">+ New Tag</button>`;
+  // Restore selected
+  document.querySelectorAll('#uploadModal .modal-tag-opt').forEach(b=>{
+    const{type,id}=b.dataset;
+    if((type==='char'&&mState.chars.includes(id))||(type==='theme'&&mState.themes.includes(id))||(type==='planet'&&mState.planets.includes(id))||(type==='custom'&&mState.customTags.includes(id)))
+      b.classList.add('selected');
+  });
+}
+
+function resetUploadModal(){
+  mState.file=null;mState.blob=null;mState.editUuid=null;
+  mState.chars=[];mState.themes=[];mState.planets=[];mState.customTags=[];mState.displayTags=[];
+  document.getElementById('modalTitle').value='';
+  document.getElementById('modalDesc').value='';
+  document.getElementById('modalPreviewImg').style.display='none';
+  document.getElementById('modalPreviewName').style.display='none';
+  document.getElementById('modalDropZone').style.display='';
+  document.getElementById('modalReplaceBtn').classList.remove('visible');
+  document.getElementById('modalSuccess').classList.remove('visible');
+  document.getElementById('modalSubmitBtn').classList.remove('saving');
+  document.getElementById('modalSubmitBtn').disabled=true;
+  document.getElementById('imgDeleteBtn').style.display='none';
+  document.getElementById('uploadModalTitle').textContent='New Image Entry';
+  document.getElementById('modalSubmitLabel').textContent='Save to Gallery';
+  populateUploadTags();
+  modalValidate();
+}
+
+function openUploadModal(){resetUploadModal();document.getElementById('uploadModal').classList.add('open');document.body.style.overflow='hidden';}
+function closeUploadModal(){document.getElementById('uploadModal').classList.remove('open');document.body.style.overflow='';}
+
+function openEditImage(itemUuid){
+  const item=GALLERY.find(x=>x.uuid===itemUuid);if(!item)return;
+  resetUploadModal();
+  mState.editUuid=itemUuid;
+  mState.chars=[...(item.chars||[])];
+  mState.themes=[...(item.themes||[])];
+  mState.planets=[...(item.planets||[])];
+  mState.customTags=[...(item.customTags||[])];
+  mState.displayTags=[...(item.tags||[])];
+  if(item.imageBlob){
+    mState.blob=item.imageBlob;mState.file=true;
+    const img=document.getElementById('modalPreviewImg');
+    img.src=URL.createObjectURL(item.imageBlob);img.style.display='block';
+    document.getElementById('modalDropZone').style.display='none';
+    document.getElementById('modalPreviewName').textContent='Existing image';
+    document.getElementById('modalPreviewName').style.display='block';
+    document.getElementById('modalReplaceBtn').classList.add('visible');
+  }
+  document.getElementById('modalTitle').value=item.title||'';
+  document.getElementById('modalDesc').value=item.desc||'';
+  document.getElementById('uploadModalTitle').textContent='Edit Image';
+  document.getElementById('modalSubmitLabel').textContent='Save Changes';
+  document.getElementById('imgDeleteBtn').style.display='';
+  document.getElementById('uploadModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  populateUploadTags();
+  modalValidate();
+}
+
+const modalDrop=document.getElementById('modalDropZone');
+modalDrop.addEventListener('dragover',e=>{e.preventDefault();modalDrop.classList.add('drag-over');});
+modalDrop.addEventListener('dragleave',()=>modalDrop.classList.remove('drag-over'));
+modalDrop.addEventListener('drop',e=>{e.preventDefault();modalDrop.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))handleImageFile(f);});
+document.getElementById('modalFileInput').addEventListener('change',e=>{if(e.target.files[0])handleImageFile(e.target.files[0]);});
+
+function handleImageFile(file){
+  mState.file=file;mState.blob=file;
+  const reader=new FileReader();
+  reader.onload=e=>{const img=document.getElementById('modalPreviewImg');img.src=e.target.result;img.style.display='block';modalDrop.style.display='none';};
+  reader.readAsDataURL(file);
+  document.getElementById('modalPreviewName').textContent=file.name;
+  document.getElementById('modalPreviewName').style.display='block';
+  document.getElementById('modalReplaceBtn').classList.add('visible');
+  modalValidate();
+}
+
+function modalToggleTag(btn){
+  btn.classList.toggle('selected');
+  const{type,id,label}=btn.dataset;
+  const sel=btn.classList.contains('selected');
+  if(type==='char'){if(sel){if(!mState.chars.includes(id))mState.chars.push(id);}else mState.chars=mState.chars.filter(x=>x!==id);}
+  if(type==='theme'){if(sel){if(!mState.themes.includes(id))mState.themes.push(id);}else mState.themes=mState.themes.filter(x=>x!==id);}
+  if(type==='planet'){if(sel){if(!mState.planets.includes(id))mState.planets.push(id);}else mState.planets=mState.planets.filter(x=>x!==id);}
+  if(type==='custom'){if(sel){if(!mState.customTags.includes(id))mState.customTags.push(id);}else mState.customTags=mState.customTags.filter(x=>x!==id);}
+  if(sel){if(!mState.displayTags.includes(label))mState.displayTags.push(label);}
+  else mState.displayTags=mState.displayTags.filter(x=>x!==label);
+  modalValidate();
+}
+document.getElementById('modalTitle').addEventListener('input',modalValidate);
+
+function modalValidate(){
+  const hasFil=!!mState.file;const hasTitle=!!document.getElementById('modalTitle').value.trim();
+  const setDot=(id,ok,lbl)=>{document.getElementById(id).className='modal-v-dot'+(ok?' ok':'');document.getElementById(id+'-lbl').textContent=lbl;};
+  setDot('mv-file',hasFil,hasFil?'Image ready':'No image');
+  setDot('mv-title',hasTitle,hasTitle?'Title set':'No title');
+  document.getElementById('modalSubmitBtn').disabled=!(hasFil&&hasTitle);
+}
+
+async function saveImage(){
+  const title=document.getElementById('modalTitle').value.trim();
+  const desc=document.getElementById('modalDesc').value.trim();
+  const btn=document.getElementById('modalSubmitBtn');
+  btn.classList.add('saving');btn.disabled=true;
+  const entry={
+    uuid:mState.editUuid||uuid(),title,desc,imageBlob:mState.blob,
+    chars:[...mState.chars],themes:[...mState.themes],planets:[...mState.planets],
+    customTags:[...mState.customTags],tags:[...mState.displayTags],
+    createdAt:mState.editUuid?(GALLERY.find(x=>x.uuid===mState.editUuid)||{}).createdAt||Date.now():Date.now()
+  };
+  await dbPut('gallery',entry);
+  if(mState.editUuid){const idx=GALLERY.findIndex(x=>x.uuid===mState.editUuid);if(idx>=0)GALLERY[idx]=entry;}
+  else GALLERY.unshift(entry);
+  GALLERY.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  btn.classList.remove('saving');
+  document.getElementById('modalSuccess').classList.add('visible');
+  buildFilterBar();renderGallery();renderHome();
+  showToast(mState.editUuid?'Image updated':'Image saved');
+  setTimeout(closeUploadModal,1000);
+}
+
+function confirmDeleteImage(itemUuid,title){showConfirm('Delete Image',`Delete "${title}"? This cannot be undone.`,()=>deleteImage(itemUuid));}
+async function deleteImage(itemUuid){
+  await dbDelete('gallery',itemUuid);
+  GALLERY=GALLERY.filter(x=>x.uuid!==itemUuid);
+  buildFilterBar();renderGallery();renderHome();showToast('Image deleted');
+}
+function deleteCurrentImage(){confirmDeleteImage(mState.editUuid,document.getElementById('modalTitle').value.trim());closeUploadModal();}
+
+// =====================================================================
+// CHARACTER MODAL — CREATE + EDIT (with portrait upload)
+// =====================================================================
+let editingCharUuid=null;
+const cState={blob:null};
+
+function resetCharModal(){
+  editingCharUuid=null;cState.blob=null;
+  ['cName','cShort','cTitle','cExcerpt','cBio','cTraits','cs1k','cs1v','cs2k','cs2v','cs3k','cs3v','cs4k','cs4v'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('charPreviewImg').style.display='none';
+  document.getElementById('charDropZone').style.display='';
+  document.getElementById('charReplaceBtn').classList.remove('visible');
+  document.getElementById('charSuccess').classList.remove('visible');
+  document.getElementById('charSubmitBtn').classList.remove('saving');
+  document.getElementById('charDeleteBtn').style.display='none';
+  document.getElementById('charModalTitle').textContent='New Character';
+  document.getElementById('charSubmitLabel').textContent='Save Character';
+  charValidate();
+}
+function openCharModal(){resetCharModal();document.getElementById('charModal').classList.add('open');document.body.style.overflow='hidden';}
+function closeCharModal(){document.getElementById('charModal').classList.remove('open');document.body.style.overflow='';}
+
+function openEditChar(charUuid){
+  const c=CHARACTERS.find(x=>x.uuid===charUuid);if(!c)return;
+  resetCharModal();
+  editingCharUuid=charUuid;
+  document.getElementById('cName').value=c.name||'';
+  document.getElementById('cShort').value=c.shortName||'';
+  document.getElementById('cTitle').value=c.title||'';
+  document.getElementById('cExcerpt').value=c.excerpt||'';
+  document.getElementById('cBio').value=c.bio||'';
+  document.getElementById('cTraits').value=(c.traits||[]).join(', ');
+  const stats=c.stats||[];
+  ['cs1k','cs1v','cs2k','cs2v','cs3k','cs3v','cs4k','cs4v'].forEach((id,i)=>{
+    const stat=stats[Math.floor(i/2)];const isVal=i%2===1;
+    document.getElementById(id).value=stat?(isVal?stat.v:stat.k):'';
+  });
+  if(c.imageBlob){
+    cState.blob=c.imageBlob;
+    const img=document.getElementById('charPreviewImg');
+    img.src=URL.createObjectURL(c.imageBlob);img.style.display='block';
+    document.getElementById('charDropZone').style.display='none';
+    document.getElementById('charReplaceBtn').classList.add('visible');
+  }
+  document.getElementById('charModalTitle').textContent='Edit Character';
+  document.getElementById('charSubmitLabel').textContent='Save Changes';
+  document.getElementById('charDeleteBtn').style.display='';
+  document.getElementById('charModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  charValidate();
+}
+
+const charDrop=document.getElementById('charDropZone');
+charDrop.addEventListener('dragover',e=>{e.preventDefault();charDrop.classList.add('drag-over');});
+charDrop.addEventListener('dragleave',()=>charDrop.classList.remove('drag-over'));
+charDrop.addEventListener('drop',e=>{e.preventDefault();charDrop.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))handleCharFile(f);});
+document.getElementById('charFileInput').addEventListener('change',e=>{if(e.target.files[0])handleCharFile(e.target.files[0]);});
+
+function handleCharFile(file){
+  cState.blob=file;
+  const reader=new FileReader();
+  reader.onload=e=>{const img=document.getElementById('charPreviewImg');img.src=e.target.result;img.style.display='block';charDrop.style.display='none';};
+  reader.readAsDataURL(file);
+  document.getElementById('charReplaceBtn').classList.add('visible');
+}
+
+['cName','cTitle'].forEach(id=>document.getElementById(id).addEventListener('input',charValidate));
+function charValidate(){
+  const hasName=!!document.getElementById('cName').value.trim();
+  const hasTitle=!!document.getElementById('cTitle').value.trim();
+  const setDot=(id,ok,lbl)=>{document.getElementById(id).className='modal-v-dot'+(ok?' ok':'');document.getElementById(id+'-lbl').textContent=lbl;};
+  setDot('cv-name',hasName,hasName?document.getElementById('cName').value.trim():'No name');
+  setDot('cv-title',hasTitle,hasTitle?document.getElementById('cTitle').value.trim():'No title');
+  document.getElementById('charSubmitBtn').disabled=!(hasName&&hasTitle);
+}
+
+async function saveCharacter(){
+  const name=document.getElementById('cName').value.trim();
+  const short=document.getElementById('cShort').value.trim();
+  const title=document.getElementById('cTitle').value.trim();
+  const excerpt=document.getElementById('cExcerpt').value.trim();
+  const bio=document.getElementById('cBio').value.trim();
+  const traits=document.getElementById('cTraits').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const stats=[
+    {k:document.getElementById('cs1k').value.trim(),v:document.getElementById('cs1v').value.trim()},
+    {k:document.getElementById('cs2k').value.trim(),v:document.getElementById('cs2v').value.trim()},
+    {k:document.getElementById('cs3k').value.trim(),v:document.getElementById('cs3v').value.trim()},
+    {k:document.getElementById('cs4k').value.trim(),v:document.getElementById('cs4v').value.trim()},
+  ].filter(s=>s.k&&s.v);
+  const btn=document.getElementById('charSubmitBtn');
+  btn.classList.add('saving');btn.disabled=true;
+  const existing=editingCharUuid?CHARACTERS.find(x=>x.uuid===editingCharUuid):null;
+  const slug=existing?existing.slug:name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const char={uuid:editingCharUuid||uuid(),slug,name,title,excerpt,bio,traits,stats,
+    imageBlob:cState.blob,createdAt:existing?existing.createdAt:Date.now()};
+  if(short)char.shortName=short;
+  await dbPut('characters',char);
+  if(editingCharUuid){const idx=CHARACTERS.findIndex(x=>x.uuid===editingCharUuid);if(idx>=0)CHARACTERS[idx]=char;}
+  else{CHARACTERS.push(char);CHARACTERS.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));}
+  btn.classList.remove('saving');
+  document.getElementById('charSuccess').classList.add('visible');
+  renderChars();renderHome();buildFilterBar();
+  showToast(editingCharUuid?'Character updated':'Character saved');
+  setTimeout(closeCharModal,1000);
+}
+function confirmDeleteChar(charUuid,name){showConfirm('Delete Character',`Delete "${name}"? This cannot be undone.`,()=>deleteChar(charUuid));}
+async function deleteChar(charUuid){
+  await dbDelete('characters',charUuid);
+  CHARACTERS=CHARACTERS.filter(x=>x.uuid!==charUuid);
+  renderChars();renderHome();buildFilterBar();showToast('Character deleted');
+}
+function deleteCurrentChar(){confirmDeleteChar(editingCharUuid,document.getElementById('cName').value.trim());closeCharModal();}
+
+// =====================================================================
+// PLANET MODAL — CREATE + EDIT (with image upload)
+// =====================================================================
+let editingPlanetUuid=null;
+const pState={blob:null};
+
+function resetPlanetModal(){
+  editingPlanetUuid=null;pState.blob=null;
+  ['pName','pClass','pColor','pColorB','pDesc','pDetails','ps1k','ps1v','ps2k','ps2v','ps3k','ps3v'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pColorPicker').value='#1abf97';
+  document.getElementById('pColorBPicker').value='#0d4a40';
+  document.getElementById('planetPreviewImgUploaded').style.display='none';
+  document.getElementById('planetDropZone').style.display='';
+  document.getElementById('planetReplaceBtn').classList.remove('visible');
+  updatePlanetPreview();
+  document.getElementById('planetSuccess').classList.remove('visible');
+  document.getElementById('planetSubmitBtn').classList.remove('saving');
+  document.getElementById('planetDeleteBtn').style.display='none';
+  document.getElementById('planetModalTitle').textContent='New World';
+  document.getElementById('planetSubmitLabel').textContent='Save World';
+  planetValidate();
+}
+function openPlanetModal(){resetPlanetModal();document.getElementById('planetModal').classList.add('open');document.body.style.overflow='hidden';}
+function closePlanetModal(){document.getElementById('planetModal').classList.remove('open');document.body.style.overflow='';}
+
+function openEditPlanet(planetUuid){
+  const p=PLANETS.find(x=>x.uuid===planetUuid);if(!p)return;
+  resetPlanetModal();
+  editingPlanetUuid=planetUuid;
+  document.getElementById('pName').value=p.name||'';
+  document.getElementById('pClass').value=p.class||'';
+  document.getElementById('pColor').value=p.color||'#1abf97';
+  document.getElementById('pColorB').value=p.colorB||'#0d4a40';
+  document.getElementById('pColorPicker').value=p.color||'#1abf97';
+  document.getElementById('pColorBPicker').value=p.colorB||'#0d4a40';
+  document.getElementById('pDesc').value=p.desc||'';
+  document.getElementById('pDetails').value=p.details||'';
+  const stats=p.stats||[];
+  ['ps1k','ps1v','ps2k','ps2v','ps3k','ps3v'].forEach((id,i)=>{
+    const stat=stats[Math.floor(i/2)];const isVal=i%2===1;
+    document.getElementById(id).value=stat?(isVal?stat.v:stat.k):'';
+  });
+  if(p.imageBlob){
+    pState.blob=p.imageBlob;
+    const img=document.getElementById('planetPreviewImgUploaded');
+    img.src=URL.createObjectURL(p.imageBlob);img.style.display='block';
+    document.getElementById('planetDropZone').style.display='none';
+    document.getElementById('planetReplaceBtn').classList.add('visible');
+  }
+  updatePlanetPreview();
+  document.getElementById('planetModalTitle').textContent='Edit World';
+  document.getElementById('planetSubmitLabel').textContent='Save Changes';
+  document.getElementById('planetDeleteBtn').style.display='';
+  document.getElementById('planetModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  planetValidate();
+}
+
+const planetDrop=document.getElementById('planetDropZone');
+planetDrop.addEventListener('dragover',e=>{e.preventDefault();planetDrop.classList.add('drag-over');});
+planetDrop.addEventListener('dragleave',()=>planetDrop.classList.remove('drag-over'));
+planetDrop.addEventListener('drop',e=>{e.preventDefault();planetDrop.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))handlePlanetFile(f);});
+document.getElementById('planetFileInput').addEventListener('change',e=>{if(e.target.files[0])handlePlanetFile(e.target.files[0]);});
+
+function handlePlanetFile(file){
+  pState.blob=file;
+  const reader=new FileReader();
+  reader.onload=e=>{const img=document.getElementById('planetPreviewImgUploaded');img.src=e.target.result;img.style.display='block';planetDrop.style.display='none';};
+  reader.readAsDataURL(file);
+  document.getElementById('planetReplaceBtn').classList.add('visible');
+}
+
+['pName','pClass'].forEach(id=>document.getElementById(id).addEventListener('input',planetValidate));
+function planetValidate(){
+  const hasName=!!document.getElementById('pName').value.trim();
+  const hasClass=!!document.getElementById('pClass').value.trim();
+  const setDot=(id,ok,lbl)=>{document.getElementById(id).className='modal-v-dot'+(ok?' ok':'');document.getElementById(id+'-lbl').textContent=lbl;};
+  setDot('pv-name',hasName,hasName?document.getElementById('pName').value.trim():'No name');
+  setDot('pv-class',hasClass,hasClass?document.getElementById('pClass').value.trim():'No class');
+  document.getElementById('planetSubmitBtn').disabled=!(hasName&&hasClass);
+}
+function syncColorPicker(inputId,pickerId){const v=document.getElementById(inputId).value;if(/^#[0-9a-fA-F]{6}$/.test(v))document.getElementById(pickerId).value=v;}
+function updatePlanetPreview(){
+  const c=document.getElementById('pColor').value||'#1abf97';
+  const cB=document.getElementById('pColorB').value||'#0d4a40';
+  document.getElementById('planetPreview').style.background=`linear-gradient(135deg,#041a17 0%,${cB} 60%,#020f0d 100%)`;
+  document.getElementById('planetPreviewOrb').style.background=`radial-gradient(circle at 35% 35%,${c}88 0%,${cB} 60%,#020f0d 100%)`;
+}
+
+async function savePlanet(){
+  const name=document.getElementById('pName').value.trim();
+  const cls=document.getElementById('pClass').value.trim();
+  const color=document.getElementById('pColor').value.trim()||'#1abf97';
+  const colorB=document.getElementById('pColorB').value.trim()||'#0d4a40';
+  const desc=document.getElementById('pDesc').value.trim();
+  const details=document.getElementById('pDetails').value.trim();
+  const stats=[
+    {k:document.getElementById('ps1k').value.trim(),v:document.getElementById('ps1v').value.trim()},
+    {k:document.getElementById('ps2k').value.trim(),v:document.getElementById('ps2v').value.trim()},
+    {k:document.getElementById('ps3k').value.trim(),v:document.getElementById('ps3v').value.trim()},
+  ].filter(s=>s.k&&s.v);
+  const btn=document.getElementById('planetSubmitBtn');
+  btn.classList.add('saving');btn.disabled=true;
+  const existing=editingPlanetUuid?PLANETS.find(x=>x.uuid===editingPlanetUuid):null;
+  const slug=existing?existing.slug:name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const planet={uuid:editingPlanetUuid||uuid(),slug,name,class:cls,color,colorB,desc,details,stats,
+    imageBlob:pState.blob,createdAt:existing?existing.createdAt:Date.now()};
+  await dbPut('planets',planet);
+  if(editingPlanetUuid){const idx=PLANETS.findIndex(x=>x.uuid===editingPlanetUuid);if(idx>=0)PLANETS[idx]=planet;}
+  else{PLANETS.push(planet);PLANETS.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));}
+  btn.classList.remove('saving');
+  document.getElementById('planetSuccess').classList.add('visible');
+  renderPlanets();renderHome();buildFilterBar();
+  showToast(editingPlanetUuid?'World updated':'World saved');
+  setTimeout(closePlanetModal,1000);
+}
+function confirmDeletePlanet(planetUuid,name){showConfirm('Delete World',`Delete "${name}"? This cannot be undone.`,()=>deletePlanet(planetUuid));}
+async function deletePlanet(planetUuid){
+  await dbDelete('planets',planetUuid);
+  PLANETS=PLANETS.filter(x=>x.uuid!==planetUuid);
+  renderPlanets();renderHome();buildFilterBar();showToast('World deleted');
+}
+function deleteCurrentPlanet(){confirmDeletePlanet(editingPlanetUuid,document.getElementById('pName').value.trim());closePlanetModal();}
+
+// =====================================================================
+// UTILS
+// =====================================================================
+function esc(str){return String(str==null?'':str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function renderAll(){buildFilterBar();renderGallery();renderChars();renderPlanets();renderHome();renderLoreSidebar();}
+
+// =====================================================================
+// KEYBOARD + BACKDROP
+// =====================================================================
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(document.getElementById('promptModal').classList.contains('open')){closePrompt();return;}
+  if(document.getElementById('lightbox').classList.contains('open')){closeLightbox();return;}
+  if(document.getElementById('confirmModal').classList.contains('open')){closeConfirm();return;}
+  if(document.getElementById('adminLoginModal').classList.contains('open')){closeAdminLoginModal();return;}
+  if(document.getElementById('uploadModal').classList.contains('open')){closeUploadModal();return;}
+  if(document.getElementById('charModal').classList.contains('open')){closeCharModal();return;}
+  if(document.getElementById('planetModal').classList.contains('open')){closePlanetModal();return;}
+  if(document.getElementById('loreModal').classList.contains('open')){closeLoreModal();return;}
+  if(document.getElementById('char-detail').classList.contains('open')){closeCharDetail();return;}
+});
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('lightbox').classList.contains('open'))return;
+  if(e.key==='ArrowLeft')lightboxNav(-1);
+  if(e.key==='ArrowRight')lightboxNav(1);
+});
+['uploadModal','charModal','planetModal','loreModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.querySelector('.close-btn').click();});
+});
+
+// =====================================================================
+// INIT
+// =====================================================================
+checkAgeGate();
+(async()=>{
+  await openDB();
+  await seedLoreCategories();
+  await loadAll();
+  const isAdmin=await checkAdminSession();
+  if(isAdmin)document.body.classList.add('admin-mode');
+  renderAll();
+})();
+</script>
+</body>
+</html>
