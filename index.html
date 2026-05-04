@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demimond — Ardenverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/gallery.css">
+<link rel="stylesheet" href="css/characters.css">
+<link rel="stylesheet" href="css/planets.css">
+<link rel="stylesheet" href="css/lore.css">
+<link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AGE GATE
+════════════════════════════════════════════════════════════ -->
+<div class="age-gate" id="ageGate">
+  <div class="age-gate-bg"></div>
+  <div class="age-gate-stars"></div>
+  <div class="age-gate-box">
+    <div class="age-gate-eyebrow">Adults Only — Restricted Content</div>
+    <div class="age-gate-title">ARDENVERSE</div>
+    <div class="age-gate-subtitle">by Demimond</div>
+    <div class="age-gate-divider"></div>
+    <div class="age-gate-warning">
+      <div class="age-gate-warning-label">⚠ 18+ Content Warning</div>
+      <p>This site contains original artwork and worldbuilding intended for mature audiences only. Material may include sensual or suggestive themes, fantasy violence, and adult subject matter.</p>
+    </div>
+    <p class="age-gate-statement">By entering, you confirm that you are <strong>at least 18 years of age</strong> (or the legal age of majority in your jurisdiction), and that you wish to view artistic and creative content of an adult nature. All content is original IP &copy; Demimond — all rights reserved.</p>
+    <div class="age-gate-buttons">
+      <button class="age-btn age-btn-enter" id="age-btn-enter">I am 18+ — Enter</button>
+      <button class="age-btn age-btn-exit"  id="age-btn-exit">Exit</button>
+    </div>
+    <div class="age-gate-footer">Your choice is remembered on this browser.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════════════════════ -->
+<nav>
+  <div class="nav-logo">DEMIMOND <span>ardenverse</span></div>
+  <ul class="nav-links">
+    <li><button id="nav-home"       class="active">Home</button></li>
+    <li><button id="nav-gallery">Gallery</button></li>
+    <li><button id="nav-characters">Characters</button></li>
+    <li><button id="nav-planets">Worlds</button></li>
+    <li><button id="nav-lore">Lore</button></li>
+    <li><span class="admin-badge">Admin</span></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HOME
+════════════════════════════════════════════════════════════ -->
+<section id="section-home" class="section active">
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="stars"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Original Sci-Fi / Fantasy Art Universe</div>
+      <h1 class="hero-title">ARDENVERSE</h1>
+      <div class="hero-subtitle">by Demimond</div>
+      <div class="hero-divider"></div>
+      <p class="hero-desc">A vast civilizational tapestry spanning alien worlds, ancient factions, and beings who exist at the edge of comprehension. Explore the art. Read the lore. Discover what lurks between the stars.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary"  data-section="gallery">Enter the Gallery</button>
+        <button class="btn btn-outline"  data-section="lore">Explore the Lore</button>
+      </div>
+    </div>
+    <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+  </div>
+
+  <!-- Stats -->
+  <div style="background:var(--bg-surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:3rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-civilizations" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Characters</div>
+    </div>
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-worlds" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Known Worlds</div>
+    </div>
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-lore" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Lore Entries</div>
+    </div>
+    <div style="text-align:center;padding:1rem;">
+      <div id="stat-images" style="font-family:'Orbitron',sans-serif;font-size:2rem;color:var(--teal-400);font-weight:700;margin-bottom:0.5rem;">0</div>
+      <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);">Gallery Images</div>
+    </div>
+  </div>
+
+  <!-- Recent gallery preview -->
+  <div style="padding:4rem 3rem;">
+    <div class="page-eyebrow">Latest Works</div>
+    <h2 style="font-family:'Cinzel',serif;font-size:1.8rem;margin-bottom:2rem;">Recent Gallery</h2>
+    <div id="home-recent" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     GALLERY
+════════════════════════════════════════════════════════════ -->
+<section id="section-gallery" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">Visual Archive</div>
+    <h1 class="page-title">Gallery <span class="nsfw-badge">18+</span></h1>
+    <p class="page-desc">Browse the complete illustration archive. Filter by character, world, or theme.</p>
+  </div>
+  <div class="gallery-controls">
+    <input type="text" class="search-box" placeholder="Search by title or tag…" id="gallery-search">
+    <div class="filter-group">
+      <span class="filter-label">Character:</span>
+      <div id="filter-chars" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Theme:</span>
+      <div id="filter-themes" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">World:</span>
+      <div id="filter-planets" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+  <div class="gallery-count" id="gallery-count"></div>
+  <div class="gallery-grid"  id="gallery-grid"></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHARACTERS
+════════════════════════════════════════════════════════════ -->
+<section id="section-characters" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">Cast of the Ardenverse</div>
+    <h1 class="page-title">Characters</h1>
+    <p class="page-desc">The inhabitants, entities, and beings that shape the Ardenverse.</p>
+  </div>
+  <div class="chars-grid" id="chars-grid"></div>
+</section>
+
+<!-- Character detail overlay -->
+<div class="char-detail" id="char-detail">
+  <div class="char-detail-inner">
+    <button class="close-btn" aria-label="Close">✕</button>
+    <div id="char-detail-img-wrap"></div>
+    <div class="char-detail-body" id="char-detail-body"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     WORLDS / PLANETS
+════════════════════════════════════════════════════════════ -->
+<section id="section-planets" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">Charted Territories</div>
+    <h1 class="page-title">Worlds &amp; Planets</h1>
+    <p class="page-desc">From verdant living domains to shattered orbital megastructures.</p>
+  </div>
+  <div class="planets-grid" id="planets-grid"></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LORE WIKI
+════════════════════════════════════════════════════════════ -->
+<section id="section-lore" class="section">
+  <div class="page-header">
+    <div class="page-eyebrow">The Canon</div>
+    <h1 class="page-title">Ardenverse Wiki</h1>
+    <p class="page-desc">An expanding compendium of history, factions, species, technology, and more — searchable and tagged.</p>
+  </div>
+  <div class="lore-layout">
+    <nav class="lore-nav" aria-label="Wiki categories">
+      <div class="lore-nav-search">
+        <input type="text" id="lore-search" placeholder="Search wiki…" aria-label="Search wiki">
+      </div>
+      <div id="lore-sidebar"></div>
+      <button class="lore-add-cat" id="lore-add-cat-btn">+ New Category</button>
+    </nav>
+    <div class="lore-content" id="lore-content">
+      <div class="lore-empty-content">
+        <div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">⌬</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">Select an entry from the sidebar</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════════════════════════ -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">✕</button>
+  <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Previous image">‹</button>
+  <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Next image">›</button>
+  <div class="lightbox-inner">
+    <img class="lightbox-img" id="lightbox-img" alt="">
+    <div class="lightbox-info">
+      <div>
+        <div class="lightbox-title" id="lightbox-title"></div>
+        <div class="lightbox-desc"  id="lightbox-desc"></div>
+      </div>
+      <div class="tag-row" id="lightbox-tags" style="flex-shrink:0;max-width:40%;justify-content:flex-end;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN LOGIN MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="admin-login-modal" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle">
+  <div class="admin-login-box">
+    <div class="admin-login-header">
+      <div class="admin-login-eyebrow">Ardenverse — Restricted</div>
+      <div class="admin-login-title" id="adminLoginTitle">Admin Access</div>
+    </div>
+    <div class="admin-login-body">
+      <label class="modal-label" for="adminPwInput" style="margin-bottom:0.4rem;display:block;">Password</label>
+      <div class="admin-pw-wrap">
+        <input class="admin-pw-input" type="password" id="adminPwInput" placeholder="Enter admin password…" autocomplete="current-password">
+        <button class="admin-pw-toggle" id="adminPwToggle" tabindex="-1" aria-label="Toggle password visibility">👁</button>
+      </div>
+      <div class="admin-login-error" id="adminLoginError" role="alert"></div>
+    </div>
+    <div class="admin-login-footer">
+      <button class="admin-cancel-btn" id="adminCancelBtn">Cancel</button>
+      <button class="admin-login-btn"  id="adminLoginBtn">
+        <div class="admin-login-spinner"></div>
+        <span id="adminLoginBtnLabel">Authenticate</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     IMAGE UPLOAD / EDIT MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true">
+  <div class="upload-modal-inner">
+    <div class="upload-modal-header">
+      <div>
+        <div class="upload-modal-eyebrow">Admin — Gallery</div>
+        <div class="upload-modal-title" id="uploadModalTitle">New Image Entry</div>
+      </div>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="upload-modal-body">
+      <div>
+        <div class="modal-drop-zone" id="modalDropZone">
+          <input type="file" id="modalFileInput" accept="image/*" aria-label="Choose image file">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label">Drop image or click to browse</div>
+          <div class="modal-drop-sub">JPG · PNG · WEBP · GIF · max 10 MB</div>
+        </div>
+        <img class="modal-preview-img" id="modalPreviewImg" alt="Preview">
+        <div class="modal-preview-name" id="modalPreviewName"></div>
+        <button class="modal-replace-btn" id="modalReplaceBtn">Replace Image</button>
+      </div>
+      <div>
+        <div class="modal-field">
+          <label class="modal-label" for="modalTitle">Title</label>
+          <input class="modal-input" type="text" id="modalTitle" placeholder="e.g. Eonore — The Permitted">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="modalDesc">Description</label>
+          <textarea class="modal-textarea" id="modalDesc" placeholder="Brief caption or lore note…"></textarea>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Characters</div>
+          <div class="modal-tag-options" id="upload-char-tags"></div>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Themes</div>
+          <div class="modal-tag-options" id="upload-theme-tags"></div>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">World / Location</div>
+          <div class="modal-tag-options" id="upload-planet-tags"></div>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Custom Tags</div>
+          <div class="modal-tag-options" id="upload-custom-tags"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="mv-file"></div><span id="mv-file-lbl">No image</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="mv-title"></div><span id="mv-title-lbl">No title</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="imgDeleteBtn" style="display:none;">Delete</button>
+        <button class="modal-submit-btn" id="modalSubmitBtn" disabled>
+          <div class="modal-spinner"></div>
+          <span id="modalSubmitLabel">Save to Gallery</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="modalSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHARACTER MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="upload-modal" id="charModal" role="dialog" aria-modal="true">
+  <div class="upload-modal-inner" style="max-width:760px;">
+    <div class="upload-modal-header">
+      <div>
+        <div class="upload-modal-eyebrow">Admin — Characters</div>
+        <div class="upload-modal-title" id="charModalTitle">New Character</div>
+      </div>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="upload-modal-body" style="grid-template-columns:300px 1fr;">
+      <div>
+        <label class="modal-label">Portrait</label>
+        <div class="modal-drop-zone" id="charDropZone" style="aspect-ratio:3/4;min-height:0;">
+          <input type="file" id="charFileInput" accept="image/*" aria-label="Choose portrait image">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label" style="text-align:center;padding:0 1rem;">Drop or click<br>(optional)</div>
+        </div>
+        <img class="modal-preview-img" id="charPreviewImg" alt="" style="aspect-ratio:3/4;max-height:none;">
+        <button class="modal-replace-btn" id="charReplaceBtn">Replace Portrait</button>
+        <div class="modal-field" style="margin-top:1rem;">
+          <label class="modal-label" for="cName">Full Name</label>
+          <input class="modal-input" type="text" id="cName" placeholder="e.g. Vesper">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="cShort">Nickname</label>
+          <input class="modal-input" type="text" id="cShort" placeholder="optional">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="cTitle">Title / Role</label>
+          <input class="modal-input" type="text" id="cTitle" placeholder="e.g. Drift Cartographer">
+        </div>
+      </div>
+      <div>
+        <div class="modal-field">
+          <label class="modal-label" for="cExcerpt">Excerpt</label>
+          <textarea class="modal-textarea" id="cExcerpt" placeholder="Shown on the character card…"></textarea>
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="cBio">Biography <span style="font-size:0.65em;font-family:sans-serif;letter-spacing:0;text-transform:none;color:var(--teal-700);">(blank line = paragraph)</span></label>
+          <textarea class="modal-textarea" id="cBio" style="min-height:140px;" placeholder="Full bio…"></textarea>
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="cTraits">Traits <span style="font-size:0.65em;font-family:sans-serif;letter-spacing:0;text-transform:none;color:var(--teal-700);">(comma-separated)</span></label>
+          <input class="modal-input" type="text" id="cTraits" placeholder="e.g. Human-Baseline, Canon">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div class="modal-field"><label class="modal-label" for="cs1k">Stat 1 Key</label><input class="modal-input" type="text" id="cs1k" placeholder="Classification"></div>
+          <div class="modal-field"><label class="modal-label" for="cs1v">Stat 1 Value</label><input class="modal-input" type="text" id="cs1v"></div>
+          <div class="modal-field"><label class="modal-label" for="cs2k">Stat 2 Key</label><input class="modal-input" type="text" id="cs2k"></div>
+          <div class="modal-field"><label class="modal-label" for="cs2v">Stat 2 Value</label><input class="modal-input" type="text" id="cs2v"></div>
+          <div class="modal-field"><label class="modal-label" for="cs3k">Stat 3 Key</label><input class="modal-input" type="text" id="cs3k"></div>
+          <div class="modal-field"><label class="modal-label" for="cs3v">Stat 3 Value</label><input class="modal-input" type="text" id="cs3v"></div>
+          <div class="modal-field"><label class="modal-label" for="cs4k">Stat 4 Key</label><input class="modal-input" type="text" id="cs4k"></div>
+          <div class="modal-field"><label class="modal-label" for="cs4v">Stat 4 Value</label><input class="modal-input" type="text" id="cs4v"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="cv-name"></div><span id="cv-name-lbl">No name</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="cv-title"></div><span id="cv-title-lbl">No title</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="charDeleteBtn" style="display:none;">Delete</button>
+        <button class="modal-submit-btn" id="charSubmitBtn" disabled>
+          <div class="modal-spinner"></div>
+          <span id="charSubmitLabel">Save Character</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="charSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PLANET MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="upload-modal" id="planetModal" role="dialog" aria-modal="true">
+  <div class="upload-modal-inner" style="max-width:760px;">
+    <div class="upload-modal-header">
+      <div>
+        <div class="upload-modal-eyebrow">Admin — Worlds</div>
+        <div class="upload-modal-title" id="planetModalTitle">New World</div>
+      </div>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="upload-modal-body" style="grid-template-columns:300px 1fr;">
+      <div>
+        <label class="modal-label">World Image (optional)</label>
+        <div class="modal-drop-zone" id="planetDropZone" style="min-height:160px;">
+          <input type="file" id="planetFileInput" accept="image/*" aria-label="Choose world image">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label" style="text-align:center;padding:0 1rem;">Drop or click<br>(orb fallback if empty)</div>
+        </div>
+        <img class="modal-preview-img" id="planetPreviewImgUploaded" alt="" style="max-height:200px;">
+        <button class="modal-replace-btn" id="planetReplaceBtn">Replace Image</button>
+        <div class="modal-field" style="margin-top:1rem;">
+          <label class="modal-label" for="pName">Name</label>
+          <input class="modal-input" type="text" id="pName" placeholder="e.g. The Silent Meridian">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="pClass">Class / Type</label>
+          <input class="modal-input" type="text" id="pClass" placeholder="e.g. Dead Zone">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="pColor">Primary Color</label>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input class="modal-input" type="text" id="pColor" placeholder="#1abf97" style="flex:1;">
+            <input type="color" id="pColorPicker" value="#1abf97" style="width:36px;height:36px;border:1px solid var(--border);background:var(--bg-elevated);cursor:pointer;padding:2px;" aria-label="Primary color picker">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="pColorB">Secondary Color</label>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input class="modal-input" type="text" id="pColorB" placeholder="#0d4a40" style="flex:1;">
+            <input type="color" id="pColorBPicker" value="#0d4a40" style="width:36px;height:36px;border:1px solid var(--border);background:var(--bg-elevated);cursor:pointer;padding:2px;" aria-label="Secondary color picker">
+          </div>
+        </div>
+        <div>
+          <label class="modal-label">Orb Preview</label>
+          <div id="planetPreview" style="width:100%;height:80px;background:linear-gradient(135deg,#041a17 0%,#0d4a40 60%,#020f0d 100%);display:flex;align-items:center;justify-content:center;">
+            <div id="planetPreviewOrb" style="width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#1abf9788 0%,#0d4a40 60%,#020f0d 100%);box-shadow:inset -8px -6px 20px rgba(0,0,0,0.6),0 0 30px rgba(26,191,151,0.3);"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="modal-field">
+          <label class="modal-label" for="pDesc">Description</label>
+          <textarea class="modal-textarea" id="pDesc" style="min-height:90px;" placeholder="Main description…"></textarea>
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="pDetails">Flavour Text</label>
+          <textarea class="modal-textarea" id="pDetails" style="min-height:70px;" placeholder="Italic secondary text…"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+          <div class="modal-field"><label class="modal-label" for="ps1k">Stat 1 Key</label><input class="modal-input" type="text" id="ps1k"></div>
+          <div class="modal-field"><label class="modal-label" for="ps1v">Stat 1 Value</label><input class="modal-input" type="text" id="ps1v"></div>
+          <div class="modal-field"><label class="modal-label" for="ps2k">Stat 2 Key</label><input class="modal-input" type="text" id="ps2k"></div>
+          <div class="modal-field"><label class="modal-label" for="ps2v">Stat 2 Value</label><input class="modal-input" type="text" id="ps2v"></div>
+          <div class="modal-field"><label class="modal-label" for="ps3k">Stat 3 Key</label><input class="modal-input" type="text" id="ps3k"></div>
+          <div class="modal-field"><label class="modal-label" for="ps3v">Stat 3 Value</label><input class="modal-input" type="text" id="ps3v"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="pv-name"></div><span id="pv-name-lbl">No name</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="pv-class"></div><span id="pv-class-lbl">No class</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="planetDeleteBtn" style="display:none;">Delete</button>
+        <button class="modal-submit-btn" id="planetSubmitBtn" disabled>
+          <div class="modal-spinner"></div>
+          <span id="planetSubmitLabel">Save World</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="planetSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LORE ENTRY MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="upload-modal" id="loreModal" role="dialog" aria-modal="true">
+  <div class="upload-modal-inner" style="max-width:780px;">
+    <div class="upload-modal-header">
+      <div>
+        <div class="upload-modal-eyebrow">Admin — Wiki Entry</div>
+        <div class="upload-modal-title" id="loreModalTitle">New Wiki Entry</div>
+      </div>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="upload-modal-body single">
+      <div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="modal-field">
+            <label class="modal-label" for="lTitle">Entry Title</label>
+            <input class="modal-input" type="text" id="lTitle" placeholder="e.g. The Drift Operators">
+          </div>
+          <div class="modal-field">
+            <label class="modal-label" for="lCategory">Category</label>
+            <select class="modal-select" id="lCategory"></select>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="lMeta">Subtitle / Meta <span style="font-size:0.65em;font-family:sans-serif;letter-spacing:0;text-transform:none;color:var(--teal-700);">(optional)</span></label>
+          <input class="modal-input" type="text" id="lMeta" placeholder="e.g. Political Faction — Active">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="lContent">Content (Markdown)</label>
+          <textarea class="modal-textarea markdown" id="lContent" placeholder="# Heading&#10;&#10;Paragraph text. Use **bold** and *italic*.&#10;&#10;## Subheading&#10;&#10;- Bullet point&#10;&#10;> Blockquote text"></textarea>
+          <div class="modal-md-help">Markdown: <code># H1</code> <code>## H2</code> <code>**bold**</code> <code>*italic*</code> <code>- list</code> <code>&gt; quote</code> <code>[link](url)</code></div>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Custom Tags</div>
+          <div class="modal-tag-options" id="lore-custom-tags"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="lv-title"></div><span id="lv-title-lbl">No title</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="lv-cat"></div><span id="lv-cat-lbl">No category</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="lv-content"></div><span id="lv-content-lbl">No content</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="loreDeleteBtn" style="display:none;">Delete</button>
+        <button class="modal-submit-btn" id="loreSubmitBtn" disabled>
+          <div class="modal-spinner"></div>
+          <span id="loreSubmitLabel">Save Entry</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="loreSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════════════════════ -->
+<div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Confirm Delete</div>
+    <div class="confirm-msg"   id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancelBtn">Cancel</button>
+      <button class="confirm-ok"     id="confirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROMPT DIALOG
+════════════════════════════════════════════════════════════ -->
+<div class="prompt-modal" id="promptModal" role="dialog" aria-modal="true">
+  <div class="prompt-box">
+    <div class="prompt-title" id="promptTitle"></div>
+    <div class="prompt-desc"  id="promptDesc"></div>
+    <input class="prompt-input" id="promptInput" type="text">
+    <div class="prompt-btns">
+      <button class="confirm-cancel" id="promptCancelBtn">Cancel</button>
+      <button class="modal-submit-btn" id="promptOk" style="padding:0.55rem 1.2rem;">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

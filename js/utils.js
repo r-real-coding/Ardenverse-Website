@@ -1,0 +1,110 @@
+// Escape HTML and single quotes for safe insertion into HTML attributes & content
+export function esc(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Toast notification
+let _toastTimer = null;
+export function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (error ? ' error' : '') + ' show';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Confirm dialog
+let _confirmCb = null;
+export function showConfirm(title, msg, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  _confirmCb = cb;
+  document.getElementById('confirmModal').classList.add('open');
+}
+export function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('open');
+  _confirmCb = null;
+}
+export function initConfirm() {
+  document.getElementById('confirmOk').addEventListener('click', () => {
+    if (_confirmCb) _confirmCb();
+    closeConfirm();
+  });
+  document.getElementById('confirmCancelBtn').addEventListener('click', closeConfirm);
+}
+
+// Prompt dialog
+let _promptCb = null;
+export function showPrompt(title, desc, placeholder, defaultVal, cb) {
+  document.getElementById('promptTitle').textContent = title;
+  document.getElementById('promptDesc').textContent = desc || '';
+  const inp = document.getElementById('promptInput');
+  inp.placeholder = placeholder || '';
+  inp.value = defaultVal || '';
+  _promptCb = cb;
+  document.getElementById('promptModal').classList.add('open');
+  setTimeout(() => inp.focus(), 50);
+}
+export function closePrompt() {
+  document.getElementById('promptModal').classList.remove('open');
+  _promptCb = null;
+}
+export function initPrompt() {
+  document.getElementById('promptOk').addEventListener('click', () => {
+    const v = document.getElementById('promptInput').value.trim();
+    if (v && _promptCb) _promptCb(v);
+    closePrompt();
+  });
+  document.getElementById('promptCancelBtn').addEventListener('click', closePrompt);
+  document.getElementById('promptInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const v = document.getElementById('promptInput').value.trim();
+      if (v && _promptCb) _promptCb(v);
+      closePrompt();
+    }
+    if (e.key === 'Escape') closePrompt();
+  });
+}
+
+// Validate hex color
+export function isValidHex(str) {
+  return /^#[0-9a-fA-F]{6}$/.test(str);
+}
+
+// Track and revoke object URLs to prevent memory leaks
+const _activeUrls = new Set();
+export function createUrl(blob) {
+  const url = URL.createObjectURL(blob);
+  _activeUrls.add(url);
+  return url;
+}
+export function revokeUrl(url) {
+  if (url && _activeUrls.has(url)) {
+    URL.revokeObjectURL(url);
+    _activeUrls.delete(url);
+  }
+}
+export function revokeAllUrls() {
+  for (const url of _activeUrls) URL.revokeObjectURL(url);
+  _activeUrls.clear();
+}
+
+// File size validation (bytes)
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+export function validateFileSize(file) {
+  if (file.size > MAX_FILE_SIZE) {
+    showToast('Image exceeds 10 MB limit', true);
+    return false;
+  }
+  return true;
+}
+
+// Dispatch a data-changed event so app.js can re-render
+export function notifyDataChanged() {
+  document.dispatchEvent(new CustomEvent('arden:datachanged'));
+}
