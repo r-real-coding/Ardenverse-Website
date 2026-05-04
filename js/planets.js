@@ -1,6 +1,6 @@
 import { PLANETS, setPlanets } from './state.js';
 import { dbPut, dbDelete, newUuid } from './db.js';
-import { esc, showToast, showConfirm, createUrl, validateFileSize, isValidHex, notifyDataChanged } from './utils.js';
+import { esc, showToast, showConfirm, createUrl, revokeUrl, validateFileSize, isValidHex, notifyDataChanged } from './utils.js';
 
 let _editingPlanetUuid = null;
 const _pState = { blob: null };
@@ -104,6 +104,8 @@ export function openPlanetModal() {
 }
 
 export function closePlanetModal() {
+  const img = document.getElementById('planetPreviewImgUploaded');
+  if (img.src.startsWith('blob:')) { revokeUrl(img.src); img.src = ''; }
   document.getElementById('planetModal').classList.remove('open');
   document.body.style.overflow = '';
 }

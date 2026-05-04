@@ -78,8 +78,7 @@ export function dbDeleteMany(store, keys) {
     try {
       const tx = db.transaction(store, 'readwrite');
       const os = tx.objectStore(store);
-      let count = keys.length;
-      if (count === 0) { resolve(); return; }
+      if (keys.length === 0) { resolve(); return; }
       for (const key of keys) {
         const req = os.delete(key);
         req.onerror = () => reject(req.error);

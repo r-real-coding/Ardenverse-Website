@@ -43,7 +43,10 @@ export function md(text) {
   t = t.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   t = t.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
   t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-  t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, url) => {
+    if (!/^https?:\/\//i.test(url) && !url.startsWith('/')) return `[${label}](${url})`;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  });
 
   // Paragraphs: split on double newlines, wrap non-block-level content
   t = t.split(/\n\n+/).map(p => {
