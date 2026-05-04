@@ -25,7 +25,8 @@ export function renderLoreSidebar() {
     const isExp = _expandedCats.has(cat.uuid) || !!search;
     return `<div class="lore-cat-group ${isExp ? 'expanded' : ''}">
       <button class="lore-cat ${isExp ? 'expanded' : ''}" data-cat-uuid="${esc(cat.uuid)}">
-        <span>${esc(cat.name)} <span style="color:var(--text-muted);font-weight:400;">(${entries.length})</span></span>
+        <span class="lore-cat-name">${esc(cat.name)}</span>
+        <span class="lore-cat-count">${entries.length}</span>
         <span class="lore-cat-arrow">▶</span>
       </button>
       <div class="lore-entries-list">
@@ -60,20 +61,30 @@ export function openLoreEntry(loreUuid) {
   const isAdmin = document.body.classList.contains('admin-mode');
   document.getElementById('lore-content').innerHTML = `
     <div class="lore-entry-view">
-      <div class="lore-cat-label">${esc(cat ? cat.name : 'Uncategorized')}</div>
-      <h1>${esc(entry.title)}</h1>
-      <div class="lore-meta">
-        <span>${esc(entry.meta || '')}</span>
-        ${isAdmin ? `<div class="lore-actions">
-          <button data-action="edit-lore" data-uuid="${esc(entry.uuid)}">Edit</button>
-          <button class="del" data-action="del-lore" data-uuid="${esc(entry.uuid)}" data-title="${esc(entry.title)}">Delete</button>
-        </div>` : ''}
+      <div class="lore-entry-hero">
+        <div class="lore-breadcrumb">
+          <span>Wiki</span>
+          <span class="lore-breadcrumb-sep">›</span>
+          <span class="lore-breadcrumb-cat">${esc(cat ? cat.name : 'Uncategorized')}</span>
+        </div>
+        <h1 class="lore-entry-title">${esc(entry.title)}</h1>
+        <div class="lore-entry-meta-row">
+          <span class="lore-entry-meta-text">${esc(entry.meta || '')}</span>
+          <div class="lore-entry-admin">
+            <button data-action="edit-lore" data-uuid="${esc(entry.uuid)}">Edit</button>
+            <button class="del" data-action="del-lore" data-uuid="${esc(entry.uuid)}" data-title="${esc(entry.title)}">Delete</button>
+          </div>
+        </div>
       </div>
-      ${(entry.customTags || []).length
-        ? `<div class="lore-entry-tags">${(entry.customTags || []).map(t => `<span class="tag theme">${esc(t)}</span>`).join('')}</div>`
-        : ''}
-      <div class="lore-entry-body">${md(entry.content || '')}</div>
+      <div class="lore-entry-body-wrap">
+        ${(entry.customTags || []).length
+          ? `<div class="lore-entry-tags">${(entry.customTags || []).map(t => `<span class="tag theme">${esc(t)}</span>`).join('')}</div>`
+          : ''}
+        <div class="lore-entry-body">${md(entry.content || '')}</div>
+      </div>
     </div>`;
+  document.getElementById('lore-nav')?.classList.remove('open');
+  document.getElementById('lore-sidebar-overlay')?.classList.remove('visible');
 }
 
 // ── Category management ───────────────────────────────────────────────────────
@@ -248,8 +259,9 @@ export function deleteCurrentLore() {
 function _showEmptyLore() {
   document.getElementById('lore-content').innerHTML = `
     <div class="lore-empty-content">
-      <div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">⌬</div>
-      <div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">Select an entry from the sidebar</div>
+      <div class="lore-empty-icon">⌬</div>
+      <div class="lore-empty-heading">Ardenverse Wiki</div>
+      <p class="lore-empty-sub">Select an entry from the sidebar to begin reading.</p>
     </div>`;
 }
 
@@ -283,6 +295,21 @@ export function initLore() {
 
   // Add category button
   document.getElementById('lore-add-cat-btn').addEventListener('click', addLoreCategory);
+
+  // Mobile sidebar toggle
+  const toggle  = document.getElementById('lore-sidebar-toggle');
+  const overlay = document.getElementById('lore-sidebar-overlay');
+  const nav     = document.getElementById('lore-nav');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      nav.classList.toggle('open');
+      overlay.classList.toggle('visible');
+    });
+    overlay.addEventListener('click', () => {
+      nav.classList.remove('open');
+      overlay.classList.remove('visible');
+    });
+  }
 
   // Search
   document.getElementById('lore-search').addEventListener('input', renderLoreSidebar);
