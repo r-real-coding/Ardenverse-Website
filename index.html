@@ -177,17 +177,29 @@
     <p class="page-desc">An expanding compendium of history, factions, species, technology, and more — searchable and tagged.</p>
   </div>
   <div class="lore-layout">
-    <nav class="lore-nav" aria-label="Wiki categories">
-      <div class="lore-nav-search">
-        <input type="text" id="lore-search" placeholder="Search wiki…" aria-label="Search wiki">
+    <div class="lore-sidebar-overlay" id="lore-sidebar-overlay"></div>
+    <nav class="lore-nav" id="lore-nav" aria-label="Wiki categories">
+      <div class="lore-nav-header">
+        <div class="lore-nav-title">Wiki Index</div>
+        <div class="lore-nav-search">
+          <div class="lore-search-wrap">
+            <span class="lore-search-icon">⌕</span>
+            <input type="text" id="lore-search" placeholder="Search entries…" aria-label="Search wiki">
+          </div>
+        </div>
       </div>
-      <div id="lore-sidebar"></div>
+      <div class="lore-nav-divider"></div>
+      <div class="lore-cats-list" id="lore-sidebar"></div>
       <button class="lore-add-cat" id="lore-add-cat-btn">+ New Category</button>
     </nav>
-    <div class="lore-content" id="lore-content">
-      <div class="lore-empty-content">
-        <div style="font-size:3rem;margin-bottom:1rem;opacity:0.3;">⌬</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;">Select an entry from the sidebar</div>
+    <div class="lore-content-wrap">
+      <button class="lore-sidebar-toggle" id="lore-sidebar-toggle">☰ Browse Wiki</button>
+      <div class="lore-content" id="lore-content">
+        <div class="lore-empty-content">
+          <div class="lore-empty-icon">⌬</div>
+          <div class="lore-empty-heading">Ardenverse Wiki</div>
+          <p class="lore-empty-sub">Select an entry from the sidebar to begin reading.</p>
+        </div>
       </div>
     </div>
   </div>
