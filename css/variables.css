@@ -1,0 +1,24 @@
+:root {
+  --teal-900: #041a17;
+  --teal-800: #072e28;
+  --teal-700: #0d4a40;
+  --teal-600: #116655;
+  --teal-500: #148f72;
+  --teal-400: #1abf97;
+  --teal-300: #3dd9b3;
+  --teal-200: #7eecd3;
+  --cyan: #00e5ff;
+  --gold: #c9a84c;
+
+  --text-primary: #e8f5f2;
+  --text-secondary: #8ecfbf;
+  --text-muted: #4a8a7a;
+
+  --bg-base: #020f0d;
+  --bg-surface: #041a17;
+  --bg-card: #061e1a;
+  --bg-elevated: #0a2e28;
+
+  --border: rgba(26, 191, 151, 0.15);
+  --glow: 0 0 20px rgba(26, 191, 151, 0.3);
+}
