@@ -160,6 +160,7 @@ function _handlePlanetFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('planetDropZone').style.display = 'none';
   };
+  reader.onerror = () => showToast('Failed to read image file', true);
   reader.readAsDataURL(file);
   document.getElementById('planetReplaceBtn').classList.add('visible');
 }

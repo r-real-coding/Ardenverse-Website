@@ -1,6 +1,6 @@
 import { openDB, dbGet, dbPut, newUuid } from './db.js';
 import { GALLERY, CHARACTERS, PLANETS, LORE, loadAll } from './state.js';
-import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, createUrl } from './utils.js';
+import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, createUrl, revokeAllUrls, showToast } from './utils.js';
 import { checkAgeGate, acceptAgeGate, declineAgeGate, adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { renderGallery, buildFilterBar, openLightbox, closeLightbox, lightboxNav, openUploadModal, closeUploadModal, initGallery } from './gallery.js';
 import { renderChars, openCharDetail, closeCharDetail, openCharModal, closeCharModal, initCharacters } from './characters.js';
@@ -143,7 +143,12 @@ function _initKeyboard() {
   document.getElementById('adminPwToggle').addEventListener('click', toggleAdminPwVis);
 
   // Re-render when data changes
-  document.addEventListener('arden:datachanged', renderAll);
+  document.addEventListener('arden:datachanged', () => {
+    try { renderAll(); } catch (err) { console.error('Render error:', err); showToast('Render error — please reload', true); }
+  });
+
+  // Revoke all blob URLs on page unload to prevent memory leaks
+  window.addEventListener('beforeunload', revokeAllUrls);
 
   renderAll();
 })();

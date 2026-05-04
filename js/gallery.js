@@ -222,6 +222,7 @@ function _handleImageFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('modalDropZone').style.display = 'none';
   };
+  reader.onerror = () => showToast('Failed to read image file', true);
   reader.readAsDataURL(file);
   document.getElementById('modalPreviewName').textContent = file.name;
   document.getElementById('modalPreviewName').style.display = 'block';

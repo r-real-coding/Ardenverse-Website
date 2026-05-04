@@ -5,11 +5,12 @@
 export function md(text) {
   if (!text) return '';
 
-  // Escape HTML
+  // Escape HTML (including " to prevent href attribute breakout)
   let t = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
   // Extract fenced code blocks before other processing
   const codeBlocks = [];

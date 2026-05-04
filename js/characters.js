@@ -158,6 +158,7 @@ function _handleCharFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('charDropZone').style.display = 'none';
   };
+  reader.onerror = () => showToast('Failed to read image file', true);
   reader.readAsDataURL(file);
   document.getElementById('charReplaceBtn').classList.add('visible');
 }
