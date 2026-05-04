@@ -1,6 +1,6 @@
 import { CHARACTERS, setCharacters } from './state.js';
 import { dbPut, dbDelete, newUuid } from './db.js';
-import { esc, showToast, showConfirm, createUrl, validateFileSize, notifyDataChanged } from './utils.js';
+import { esc, showToast, showConfirm, createUrl, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 
 let _editingCharUuid = null;
 const _cState = { blob: null };
@@ -108,6 +108,8 @@ export function openCharModal() {
 }
 
 export function closeCharModal() {
+  const img = document.getElementById('charPreviewImg');
+  if (img.src.startsWith('blob:')) { revokeUrl(img.src); img.src = ''; }
   document.getElementById('charModal').classList.remove('open');
   document.body.style.overflow = '';
 }

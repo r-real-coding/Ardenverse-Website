@@ -1,6 +1,6 @@
 import { GALLERY, CHARACTERS, PLANETS, TAGS, setGallery } from './state.js';
 import { dbPut, dbDelete, newUuid } from './db.js';
-import { esc, showToast, showConfirm, createUrl, validateFileSize, notifyDataChanged } from './utils.js';
+import { esc, showToast, showConfirm, createUrl, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 import { mState, populateUploadTags } from './tags.js';
 
 let _filters = { char: 'all', theme: 'all', planet: 'all' };
@@ -87,11 +87,15 @@ export function renderGallery() {
       <div class="gallery-overlay">
         <div class="gallery-item-title">${esc(item.title)}</div>
         <div class="gallery-item-desc">${esc(item.desc || '')}</div>
-        <div class="tag-row">${(item.tags || []).map(t => {
-          const isChar   = (item.chars   || []).some(c => t.toLowerCase().includes(c));
-          const isPlanet = (item.planets || []).some(p => t.toLowerCase().includes(p.split('-')[0]));
-          return `<span class="tag ${isChar ? 'char' : isPlanet ? 'planet' : ''}">${esc(t)}</span>`;
-        }).join('')}</div>
+        <div class="tag-row">${(() => {
+          const charNames   = new Set(CHARACTERS.filter(c => (item.chars   || []).includes(c.slug)).map(c => c.name.toLowerCase()));
+          const planetNames = new Set(PLANETS.filter(p => (item.planets || []).includes(p.slug)).map(p => p.name.toLowerCase()));
+          return (item.tags || []).map(t => {
+            const tl = t.toLowerCase();
+            const cls = charNames.has(tl) ? 'char' : planetNames.has(tl) ? 'planet' : '';
+            return `<span class="tag ${cls}">${esc(t)}</span>`;
+          }).join('');
+        })()}</div>
       </div>
       <div class="card-admin-bar">
         <button class="card-admin-btn" data-action="edit-img" data-uuid="${esc(item.uuid)}">Edit</button>
@@ -173,6 +177,8 @@ export function openUploadModal() {
 }
 
 export function closeUploadModal() {
+  const img = document.getElementById('modalPreviewImg');
+  if (img.src.startsWith('blob:')) { revokeUrl(img.src); img.src = ''; }
   document.getElementById('uploadModal').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -328,6 +334,7 @@ export function initGallery() {
   document.getElementById('modalSubmitBtn').addEventListener('click', saveImage);
 
   // Modal close button + backdrop
+  document.getElementById('uploadModal').querySelector('.close-btn').addEventListener('click', closeUploadModal);
   document.getElementById('uploadModal').addEventListener('click', function(e) {
     if (e.target === this) closeUploadModal();
   });
