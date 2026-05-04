@@ -27,16 +27,19 @@ exports.handler = async (event) => {
   }
 
   try {
-    const body = event.isBase64Encoded
+    const buf = event.isBase64Encoded
       ? Buffer.from(event.body, 'base64')
       : Buffer.from(event.body ?? '', 'binary');
 
-    if (body.length > MAX_BYTES) {
+    if (buf.length > MAX_BYTES) {
       return { statusCode: 413, headers: HEADERS, body: JSON.stringify({ error: 'Image exceeds 25 MB limit' }) };
     }
 
+    // @netlify/blobs requires ArrayBuffer, not a Node Buffer
+    const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+
     const store = getStore('images');
-    await store.set(key, body, { metadata: { contentType } });
+    await store.set(key, arrayBuffer, { metadata: { contentType } });
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ key }) };
   } catch (err) {
     console.error('upload-image error:', err);

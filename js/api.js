@@ -72,7 +72,10 @@ export async function apiUploadImage(file) {
     },
     body: file,
   });
-  if (!res.ok) throw new Error(`Image upload failed (${res.status})`);
+  if (!res.ok) {
+    const msg = await res.json().then(j => j.error).catch(() => null);
+    throw new Error(msg || `Image upload failed (${res.status})`);
+  }
   return key;
 }
 
