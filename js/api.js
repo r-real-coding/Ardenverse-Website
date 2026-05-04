@@ -36,9 +36,9 @@ export async function apiAdminAuth(password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password }),
   });
-  if (!res.ok) return null;
+  if (!res.ok) return { ok: false, status: res.status };
   const { token } = await res.json();
-  return token || null;
+  return token ? { ok: true, token } : { ok: false, status: 200 };
 }
 
 // ── Data operations ───────────────────────────────────────────────────────────

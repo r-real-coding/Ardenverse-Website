@@ -57,27 +57,32 @@ export async function submitAdminLogin() {
   btn.disabled = true;
   document.getElementById('adminLoginBtnLabel').textContent = 'Verifying…';
 
+  const _fail = msg => {
+    document.getElementById('adminLoginError').textContent = msg;
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwInput').focus();
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    document.getElementById('adminLoginBtnLabel').textContent = 'Authenticate';
+  };
+
   try {
-    const token = await apiAdminAuth(pw);
-    if (token) {
-      saveAdminToken(token);
+    const result = await apiAdminAuth(pw);
+    if (result.ok) {
+      saveAdminToken(result.token);
       document.body.classList.add('admin-mode');
       closeAdminLoginModal();
       document.dispatchEvent(new CustomEvent('arden:datachanged'));
       showToast('Admin mode active');
+    } else if (result.status === 401) {
+      _fail('Incorrect password.');
+    } else if (result.status === 500) {
+      _fail('Server error — check Netlify env vars (JWT_SECRET, ADMIN_HASH, ADMIN_SALT).');
     } else {
-      document.getElementById('adminLoginError').textContent = 'Incorrect password.';
-      document.getElementById('adminPwInput').value = '';
-      document.getElementById('adminPwInput').focus();
-      btn.classList.remove('loading');
-      btn.disabled = false;
-      document.getElementById('adminLoginBtnLabel').textContent = 'Authenticate';
+      _fail(`Login failed (${result.status}). Try again.`);
     }
   } catch {
-    document.getElementById('adminLoginError').textContent = 'Connection error. Try again.';
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    document.getElementById('adminLoginBtnLabel').textContent = 'Authenticate';
+    _fail('Connection error. Try again.');
   }
 }
 
