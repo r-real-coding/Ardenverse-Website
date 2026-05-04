@@ -1,15 +1,15 @@
 import { GALLERY, CHARACTERS, PLANETS, TAGS, setGallery } from './state.js';
-import { dbPut, dbDelete, newUuid } from './db.js';
-import { esc, showToast, showConfirm, createUrl, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
+import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
+import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 import { mState, populateUploadTags } from './tags.js';
 
 let _filters = { char: 'all', theme: 'all', planet: 'all' };
-let _lightboxItems = [];
-let _lightboxIndex = 0;
+let _lightboxItems  = [];
+let _lightboxIndex  = 0;
 
 // ── Filter bar ────────────────────────────────────────────────────────────────
 export function buildFilterBar() {
-  const charSlugs = [...new Set(GALLERY.flatMap(g => g.chars || []))];
+  const charSlugs  = [...new Set(GALLERY.flatMap(g => g.chars   || []))];
   const charLabels = {};
   CHARACTERS.forEach(c => { charLabels[c.slug] = c.name; });
 
@@ -25,7 +25,7 @@ export function buildFilterBar() {
     makeFilterBtn('theme', 'all', 'All', _filters.theme === 'all')
     + themeNames.map(t => makeFilterBtn('theme', t, t, _filters.theme === t)).join('');
 
-  const planetSlugs = [...new Set(GALLERY.flatMap(g => g.planets || []))];
+  const planetSlugs  = [...new Set(GALLERY.flatMap(g => g.planets || []))];
   const planetLabels = {};
   PLANETS.forEach(p => { planetLabels[p.slug] = p.name; });
   document.getElementById('filter-planets').innerHTML =
@@ -45,7 +45,7 @@ export function setFilter(type, val) {
 
 // ── Gallery render ────────────────────────────────────────────────────────────
 export function renderGallery() {
-  const search = document.getElementById('gallery-search').value.toLowerCase();
+  const search  = document.getElementById('gallery-search').value.toLowerCase();
   const isAdmin = document.body.classList.contains('admin-mode');
 
   const items = GALLERY.filter(item => {
@@ -53,17 +53,13 @@ export function renderGallery() {
     if (_filters.theme  !== 'all' && !(item.themes  || []).includes(_filters.theme))  return false;
     if (_filters.planet !== 'all' && !(item.planets || []).includes(_filters.planet)) return false;
     if (search) {
-      const hay = (
-        (item.title || '') + ' ' +
-        (item.tags || []).join(' ') + ' ' +
-        (item.customTags || []).join(' ')
-      ).toLowerCase();
+      const hay = ((item.title || '') + ' ' + (item.tags || []).join(' ') + ' ' + (item.customTags || []).join(' ')).toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
   });
 
-  _lightboxItems = items.filter(i => i.imageBlob);
+  _lightboxItems = items.filter(i => i.imageKey);
   const grid = document.getElementById('gallery-grid');
   document.getElementById('gallery-count').textContent =
     `Showing ${items.length} of ${GALLERY.length} image${GALLERY.length !== 1 ? 's' : ''}`;
@@ -75,12 +71,12 @@ export function renderGallery() {
   }
 
   const html = items.map(item => {
-    const lbIdx = _lightboxItems.findIndex(x => x.uuid === item.uuid);
-    const imgUrl = item.imageBlob ? createUrl(item.imageBlob) : null;
+    const lbIdx  = _lightboxItems.findIndex(x => x.uuid === item.uuid);
+    const imgSrc = item.imageKey ? imageUrl(item.imageKey) : null;
     return `<div class="gallery-item" data-uuid="${esc(item.uuid)}"
-        ${imgUrl ? `data-lb-idx="${lbIdx}"` : 'style="cursor:default;"'}>
-      ${imgUrl
-        ? `<img class="gallery-thumb" src="${imgUrl}" alt="${esc(item.title)}" loading="lazy">`
+        ${imgSrc ? `data-lb-idx="${lbIdx}"` : 'style="cursor:default;"'}>
+      ${imgSrc
+        ? `<img class="gallery-thumb" src="${esc(imgSrc)}" alt="${esc(item.title)}" loading="lazy">`
         : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
             background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;
             letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
@@ -91,7 +87,7 @@ export function renderGallery() {
           const charNames   = new Set(CHARACTERS.filter(c => (item.chars   || []).includes(c.slug)).map(c => c.name.toLowerCase()));
           const planetNames = new Set(PLANETS.filter(p => (item.planets || []).includes(p.slug)).map(p => p.name.toLowerCase()));
           return (item.tags || []).map(t => {
-            const tl = t.toLowerCase();
+            const tl  = t.toLowerCase();
             const cls = charNames.has(tl) ? 'char' : planetNames.has(tl) ? 'planet' : '';
             return `<span class="tag ${cls}">${esc(t)}</span>`;
           }).join('');
@@ -121,9 +117,9 @@ export function openLightbox(idx) {
   if (idx < 0 || idx >= _lightboxItems.length) return;
   _lightboxIndex = idx;
   const item = _lightboxItems[idx];
-  document.getElementById('lightbox-img').src = createUrl(item.imageBlob);
+  document.getElementById('lightbox-img').src = imageUrl(item.imageKey);
   document.getElementById('lightbox-title').textContent = item.title;
-  document.getElementById('lightbox-desc').textContent = item.desc || '';
+  document.getElementById('lightbox-desc').textContent  = item.desc || '';
   document.getElementById('lightbox-tags').innerHTML = (item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -140,9 +136,9 @@ export function lightboxNav(d) {
 
 // ── Upload modal ──────────────────────────────────────────────────────────────
 function _modalValidate() {
-  const hasFil   = !!mState.file;
+  const hasFil   = !!(mState.file || mState.imageKey);
   const hasTitle = !!document.getElementById('modalTitle').value.trim();
-  const setDot = (id, ok, lbl) => {
+  const setDot   = (id, ok, lbl) => {
     document.getElementById(id).className = 'modal-v-dot' + (ok ? ' ok' : '');
     document.getElementById(id + '-lbl').textContent = lbl;
   };
@@ -152,20 +148,21 @@ function _modalValidate() {
 }
 
 function _resetUploadModal() {
-  mState.file = null; mState.blob = null; mState.editUuid = null;
+  mState.file = null; mState.imageKey = null; mState.editUuid = null;
   mState.chars = []; mState.themes = []; mState.planets = []; mState.customTags = []; mState.displayTags = [];
   document.getElementById('modalTitle').value = '';
-  document.getElementById('modalDesc').value = '';
-  document.getElementById('modalPreviewImg').style.display = 'none';
+  document.getElementById('modalDesc').value  = '';
+  document.getElementById('modalPreviewImg').style.display  = 'none';
+  document.getElementById('modalPreviewImg').src            = '';
   document.getElementById('modalPreviewName').style.display = 'none';
-  document.getElementById('modalDropZone').style.display = '';
+  document.getElementById('modalDropZone').style.display    = '';
   document.getElementById('modalReplaceBtn').classList.remove('visible');
   document.getElementById('modalSuccess').classList.remove('visible');
   document.getElementById('modalSubmitBtn').classList.remove('saving');
-  document.getElementById('modalSubmitBtn').disabled = true;
-  document.getElementById('imgDeleteBtn').style.display = 'none';
-  document.getElementById('uploadModalTitle').textContent = 'New Image Entry';
-  document.getElementById('modalSubmitLabel').textContent = 'Save to Gallery';
+  document.getElementById('modalSubmitBtn').disabled        = true;
+  document.getElementById('imgDeleteBtn').style.display     = 'none';
+  document.getElementById('uploadModalTitle').textContent   = 'New Image Entry';
+  document.getElementById('modalSubmitLabel').textContent   = 'Save to Gallery';
   populateUploadTags();
   _modalValidate();
 }
@@ -178,7 +175,8 @@ export function openUploadModal() {
 
 export function closeUploadModal() {
   const img = document.getElementById('modalPreviewImg');
-  if (img.src.startsWith('blob:')) { revokeUrl(img.src); img.src = ''; }
+  if (img.src.startsWith('blob:')) { revokeUrl(img.src); }
+  img.src = '';
   document.getElementById('uploadModal').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -187,26 +185,26 @@ export function openEditImage(itemUuid) {
   const item = GALLERY.find(x => x.uuid === itemUuid);
   if (!item) return;
   _resetUploadModal();
-  mState.editUuid   = itemUuid;
-  mState.chars      = [...(item.chars      || [])];
-  mState.themes     = [...(item.themes     || [])];
-  mState.planets    = [...(item.planets    || [])];
-  mState.customTags = [...(item.customTags || [])];
-  mState.displayTags= [...(item.tags       || [])];
-  if (item.imageBlob) {
-    mState.blob = item.imageBlob; mState.file = true;
+  mState.editUuid  = itemUuid;
+  mState.imageKey  = item.imageKey  || null;
+  mState.chars     = [...(item.chars      || [])];
+  mState.themes    = [...(item.themes     || [])];
+  mState.planets   = [...(item.planets    || [])];
+  mState.customTags= [...(item.customTags || [])];
+  mState.displayTags=  [...(item.tags     || [])];
+  if (item.imageKey) {
     const img = document.getElementById('modalPreviewImg');
-    img.src = createUrl(item.imageBlob); img.style.display = 'block';
-    document.getElementById('modalDropZone').style.display = 'none';
-    document.getElementById('modalPreviewName').textContent = 'Existing image';
+    img.src = imageUrl(item.imageKey); img.style.display = 'block';
+    document.getElementById('modalDropZone').style.display    = 'none';
+    document.getElementById('modalPreviewName').textContent   = 'Existing image';
     document.getElementById('modalPreviewName').style.display = 'block';
     document.getElementById('modalReplaceBtn').classList.add('visible');
   }
-  document.getElementById('modalTitle').value = item.title || '';
-  document.getElementById('modalDesc').value  = item.desc  || '';
+  document.getElementById('modalTitle').value           = item.title || '';
+  document.getElementById('modalDesc').value            = item.desc  || '';
   document.getElementById('uploadModalTitle').textContent = 'Edit Image';
   document.getElementById('modalSubmitLabel').textContent = 'Save Changes';
-  document.getElementById('imgDeleteBtn').style.display = '';
+  document.getElementById('imgDeleteBtn').style.display  = '';
   populateUploadTags();
   _modalValidate();
   document.getElementById('uploadModal').classList.add('open');
@@ -215,7 +213,7 @@ export function openEditImage(itemUuid) {
 
 function _handleImageFile(file) {
   if (!validateFileSize(file)) return;
-  mState.file = file; mState.blob = file;
+  mState.file = file;
   const reader = new FileReader();
   reader.onload = e => {
     const img = document.getElementById('modalPreviewImg');
@@ -224,7 +222,7 @@ function _handleImageFile(file) {
   };
   reader.onerror = () => showToast('Failed to read image file', true);
   reader.readAsDataURL(file);
-  document.getElementById('modalPreviewName').textContent = file.name;
+  document.getElementById('modalPreviewName').textContent   = file.name;
   document.getElementById('modalPreviewName').style.display = 'block';
   document.getElementById('modalReplaceBtn').classList.add('visible');
   _modalValidate();
@@ -237,26 +235,49 @@ export async function saveImage() {
   btn.classList.add('saving'); btn.disabled = true;
 
   const existing = mState.editUuid ? GALLERY.find(x => x.uuid === mState.editUuid) : null;
-  const entry = {
-    uuid:        mState.editUuid || newUuid(),
-    title, desc,
-    imageBlob:   mState.blob,
-    chars:       [...mState.chars],
-    themes:      [...mState.themes],
-    planets:     [...mState.planets],
-    customTags:  [...mState.customTags],
-    tags:        [...mState.displayTags],
-    createdAt:   existing ? existing.createdAt : Date.now(),
-  };
+  let imageKey   = mState.imageKey;
 
-  await dbPut('gallery', entry);
+  // Upload new file if one was selected
+  if (mState.file instanceof File) {
+    try {
+      const newKey = await apiUploadImage(mState.file);
+      // Delete old image blob when replacing
+      if (existing?.imageKey && existing.imageKey !== newKey) {
+        await apiDeleteImage(existing.imageKey).catch(() => {});
+      }
+      imageKey = newKey;
+    } catch {
+      showToast('Image upload failed', true);
+      btn.classList.remove('saving'); btn.disabled = false;
+      return;
+    }
+  }
+
+  const entry = {
+    uuid:       mState.editUuid || newUuid(),
+    title, desc, imageKey,
+    chars:      [...mState.chars],
+    themes:     [...mState.themes],
+    planets:    [...mState.planets],
+    customTags: [...mState.customTags],
+    tags:       [...mState.displayTags],
+    createdAt:  existing ? existing.createdAt : Date.now(),
+  };
 
   if (mState.editUuid) {
     const idx = GALLERY.findIndex(x => x.uuid === mState.editUuid);
-    if (idx >= 0) GALLERY[idx] = entry;
+    if (idx >= 0) GALLERY[idx] = entry; else GALLERY.unshift(entry);
   } else {
     GALLERY.unshift(entry);
     GALLERY.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  }
+
+  try {
+    await apiPutData('gallery', GALLERY);
+  } catch {
+    showToast('Failed to save gallery', true);
+    btn.classList.remove('saving'); btn.disabled = false;
+    return;
   }
 
   btn.classList.remove('saving');
@@ -271,8 +292,11 @@ export function confirmDeleteImage(itemUuid, title) {
 }
 
 export async function deleteImage(itemUuid) {
-  await dbDelete('gallery', itemUuid);
-  setGallery(GALLERY.filter(x => x.uuid !== itemUuid));
+  const item = GALLERY.find(x => x.uuid === itemUuid);
+  if (item?.imageKey) await apiDeleteImage(item.imageKey).catch(() => {});
+  const updated = GALLERY.filter(x => x.uuid !== itemUuid);
+  setGallery(updated);
+  await apiPutData('gallery', updated);
   notifyDataChanged();
   showToast('Image deleted');
 }
@@ -282,14 +306,12 @@ export function deleteCurrentImage() {
   closeUploadModal();
 }
 
-// ── Init: wire up drag-drop, file inputs, keyboard ───────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
 export function initGallery() {
-  // Filter bar delegation
   document.getElementById('filter-chars').addEventListener('click',   _filterClick);
   document.getElementById('filter-themes').addEventListener('click',  _filterClick);
   document.getElementById('filter-planets').addEventListener('click', _filterClick);
 
-  // Gallery grid delegation (lightbox open + admin actions)
   document.getElementById('gallery-grid').addEventListener('click', e => {
     const adminBtn = e.target.closest('[data-action]');
     if (adminBtn) {
@@ -303,7 +325,6 @@ export function initGallery() {
     if (card) openLightbox(parseInt(card.dataset.lbIdx, 10));
   });
 
-  // Lightbox backdrop & nav
   document.getElementById('lightbox').addEventListener('click', e => {
     if (e.target === document.getElementById('lightbox')) closeLightbox();
   });
@@ -311,7 +332,6 @@ export function initGallery() {
   document.getElementById('lightbox-prev').addEventListener('click', () => lightboxNav(-1));
   document.getElementById('lightbox-next').addEventListener('click', () => lightboxNav(1));
 
-  // Drop zone
   const drop = document.getElementById('modalDropZone');
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
@@ -327,20 +347,14 @@ export function initGallery() {
     document.getElementById('modalFileInput').click();
   });
 
-  // Title validation
   document.getElementById('modalTitle').addEventListener('input', _modalValidate);
-
-  // Delete & save buttons
   document.getElementById('imgDeleteBtn').addEventListener('click', deleteCurrentImage);
   document.getElementById('modalSubmitBtn').addEventListener('click', saveImage);
-
-  // Modal close button + backdrop
   document.getElementById('uploadModal').querySelector('.close-btn').addEventListener('click', closeUploadModal);
   document.getElementById('uploadModal').addEventListener('click', function(e) {
     if (e.target === this) closeUploadModal();
   });
 
-  // Search
   document.getElementById('gallery-search').addEventListener('input', renderGallery);
 }
 

@@ -1,13 +1,13 @@
 import { PLANETS, setPlanets } from './state.js';
-import { dbPut, dbDelete, newUuid } from './db.js';
-import { esc, showToast, showConfirm, createUrl, revokeUrl, validateFileSize, isValidHex, notifyDataChanged } from './utils.js';
+import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
+import { esc, showToast, showConfirm, revokeUrl, validateFileSize, isValidHex, notifyDataChanged } from './utils.js';
 
 let _editingPlanetUuid = null;
-const _pState = { blob: null };
+const _pState = { file: null, imageKey: null };
 
-// ── Render planets grid ───────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 export function renderPlanets() {
-  const grid = document.getElementById('planets-grid');
+  const grid    = document.getElementById('planets-grid');
   const isAdmin = document.body.classList.contains('admin-mode');
   if (!PLANETS.length && !isAdmin) {
     grid.innerHTML = '<div style="padding:3rem;color:var(--text-muted);font-size:0.85rem;">No worlds yet.</div>';
@@ -16,8 +16,8 @@ export function renderPlanets() {
   grid.innerHTML = PLANETS.map(p => {
     const safeColor  = isValidHex(p.color)  ? p.color  : '#1abf97';
     const safeColorB = isValidHex(p.colorB) ? p.colorB : '#0d4a40';
-    const visual = p.imageBlob
-      ? `<img class="planet-image" src="${createUrl(p.imageBlob)}" alt="${esc(p.name)}">`
+    const visual = p.imageKey
+      ? `<img class="planet-image" src="${esc(imageUrl(p.imageKey))}" alt="${esc(p.name)}">`
       : `<div class="planet-visual" style="background:linear-gradient(135deg,#041a17 0%,${safeColorB} 60%,#020f0d 100%)">
            <div class="planet-orb" style="background:radial-gradient(circle at 35% 35%,${safeColor}88 0%,${safeColorB} 60%,#020f0d 100%);"></div>
          </div>`;
@@ -68,7 +68,7 @@ export function syncColorPicker(inputId, pickerId) {
 function _planetValidate() {
   const hasName  = !!document.getElementById('pName').value.trim();
   const hasClass = !!document.getElementById('pClass').value.trim();
-  const setDot = (id, ok, lbl) => {
+  const setDot   = (id, ok, lbl) => {
     document.getElementById(id).className = 'modal-v-dot' + (ok ? ' ok' : '');
     document.getElementById(id + '-lbl').textContent = lbl;
   };
@@ -78,7 +78,7 @@ function _planetValidate() {
 }
 
 function _resetPlanetModal() {
-  _editingPlanetUuid = null; _pState.blob = null;
+  _editingPlanetUuid = null; _pState.file = null; _pState.imageKey = null;
   ['pName','pClass','pColor','pColorB','pDesc','pDetails',
    'ps1k','ps1v','ps2k','ps2v','ps3k','ps3v'].forEach(id => {
     document.getElementById(id).value = '';
@@ -86,14 +86,15 @@ function _resetPlanetModal() {
   document.getElementById('pColorPicker').value  = '#1abf97';
   document.getElementById('pColorBPicker').value = '#0d4a40';
   document.getElementById('planetPreviewImgUploaded').style.display = 'none';
-  document.getElementById('planetDropZone').style.display = '';
+  document.getElementById('planetPreviewImgUploaded').src           = '';
+  document.getElementById('planetDropZone').style.display           = '';
   document.getElementById('planetReplaceBtn').classList.remove('visible');
   updatePlanetPreview();
   document.getElementById('planetSuccess').classList.remove('visible');
   document.getElementById('planetSubmitBtn').classList.remove('saving');
-  document.getElementById('planetDeleteBtn').style.display = 'none';
-  document.getElementById('planetModalTitle').textContent = 'New World';
-  document.getElementById('planetSubmitLabel').textContent = 'Save World';
+  document.getElementById('planetDeleteBtn').style.display   = 'none';
+  document.getElementById('planetModalTitle').textContent    = 'New World';
+  document.getElementById('planetSubmitLabel').textContent   = 'Save World';
   _planetValidate();
 }
 
@@ -105,7 +106,8 @@ export function openPlanetModal() {
 
 export function closePlanetModal() {
   const img = document.getElementById('planetPreviewImgUploaded');
-  if (img.src.startsWith('blob:')) { revokeUrl(img.src); img.src = ''; }
+  if (img.src.startsWith('blob:')) { revokeUrl(img.src); }
+  img.src = '';
   document.getElementById('planetModal').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -115,6 +117,7 @@ export function openEditPlanet(planetUuid) {
   if (!p) return;
   _resetPlanetModal();
   _editingPlanetUuid = planetUuid;
+  _pState.imageKey   = p.imageKey || null;
   document.getElementById('pName').value    = p.name    || '';
   document.getElementById('pClass').value   = p.class   || '';
   document.getElementById('pColor').value   = p.color   || '#1abf97';
@@ -134,16 +137,15 @@ export function openEditPlanet(planetUuid) {
     document.getElementById(id).value = stat ? (isVal ? stat.v : stat.k) : '';
   });
 
-  if (p.imageBlob) {
-    _pState.blob = p.imageBlob;
+  if (p.imageKey) {
     const img = document.getElementById('planetPreviewImgUploaded');
-    img.src = createUrl(p.imageBlob); img.style.display = 'block';
+    img.src = imageUrl(p.imageKey); img.style.display = 'block';
     document.getElementById('planetDropZone').style.display = 'none';
     document.getElementById('planetReplaceBtn').classList.add('visible');
   }
 
   updatePlanetPreview();
-  document.getElementById('planetModalTitle').textContent = 'Edit World';
+  document.getElementById('planetModalTitle').textContent  = 'Edit World';
   document.getElementById('planetSubmitLabel').textContent = 'Save Changes';
   document.getElementById('planetDeleteBtn').style.display = '';
   document.getElementById('planetModal').classList.add('open');
@@ -153,7 +155,7 @@ export function openEditPlanet(planetUuid) {
 
 function _handlePlanetFile(file) {
   if (!validateFileSize(file)) return;
-  _pState.blob = file;
+  _pState.file = file;
   const reader = new FileReader();
   reader.onload = e => {
     const img = document.getElementById('planetPreviewImgUploaded');
@@ -184,24 +186,45 @@ export async function savePlanet() {
   btn.classList.add('saving'); btn.disabled = true;
 
   const existing = _editingPlanetUuid ? PLANETS.find(x => x.uuid === _editingPlanetUuid) : null;
+  let imageKey   = _pState.imageKey;
+
+  if (_pState.file instanceof File) {
+    try {
+      const newKey = await apiUploadImage(_pState.file);
+      if (existing?.imageKey && existing.imageKey !== newKey) {
+        await apiDeleteImage(existing.imageKey).catch(() => {});
+      }
+      imageKey = newKey;
+    } catch {
+      showToast('Image upload failed', true);
+      btn.classList.remove('saving'); btn.disabled = false;
+      return;
+    }
+  }
+
   const baseSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const slug = existing ? existing.slug : _uniqueSlug(baseSlug, PLANETS.map(p => p.slug));
+  const slug     = existing ? existing.slug : _uniqueSlug(baseSlug, PLANETS.map(p => p.slug));
 
   const planet = {
-    uuid:      _editingPlanetUuid || newUuid(),
-    slug, name, class: cls, color, colorB, desc, details, stats,
-    imageBlob: _pState.blob,
+    uuid: _editingPlanetUuid || newUuid(),
+    slug, name, class: cls, color, colorB, desc, details, stats, imageKey,
     createdAt: existing ? existing.createdAt : Date.now(),
   };
 
-  await dbPut('planets', planet);
-
   if (_editingPlanetUuid) {
     const idx = PLANETS.findIndex(x => x.uuid === _editingPlanetUuid);
-    if (idx >= 0) PLANETS[idx] = planet;
+    if (idx >= 0) PLANETS[idx] = planet; else PLANETS.push(planet);
   } else {
     PLANETS.push(planet);
     PLANETS.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  }
+
+  try {
+    await apiPutData('planets', PLANETS);
+  } catch {
+    showToast('Failed to save world', true);
+    btn.classList.remove('saving'); btn.disabled = false;
+    return;
   }
 
   btn.classList.remove('saving');
@@ -216,8 +239,11 @@ export function confirmDeletePlanet(planetUuid, name) {
 }
 
 export async function deletePlanet(planetUuid) {
-  await dbDelete('planets', planetUuid);
-  setPlanets(PLANETS.filter(x => x.uuid !== planetUuid));
+  const planet = PLANETS.find(x => x.uuid === planetUuid);
+  if (planet?.imageKey) await apiDeleteImage(planet.imageKey).catch(() => {});
+  const updated = PLANETS.filter(x => x.uuid !== planetUuid);
+  setPlanets(updated);
+  await apiPutData('planets', updated);
   notifyDataChanged();
   showToast('World deleted');
 }
@@ -259,7 +285,6 @@ export function initPlanets() {
     document.getElementById('planetFileInput').click();
   });
 
-  // Color pickers sync both ways
   document.getElementById('pColor').addEventListener('input', () => {
     syncColorPicker('pColor', 'pColorPicker'); updatePlanetPreview();
   });

@@ -1,18 +1,18 @@
 import { CHARACTERS, setCharacters } from './state.js';
-import { dbPut, dbDelete, newUuid } from './db.js';
-import { esc, showToast, showConfirm, createUrl, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
+import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
+import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 
 let _editingCharUuid = null;
-const _cState = { blob: null };
+const _cState = { file: null, imageKey: null };
 
 const PLACEHOLDER_SVGS = [
   `<div class="char-portrait-placeholder" style="background:linear-gradient(135deg,#041a17 0%,#0d4a40 50%,#020f0d 100%)">⬡</div>`,
   `<div class="char-portrait-placeholder" style="background:linear-gradient(135deg,#020f1e 0%,#0a2040 50%,#020f0d 100%)">◈</div>`,
 ];
 
-// ── Render characters grid ────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 export function renderChars() {
-  const grid = document.getElementById('chars-grid');
+  const grid    = document.getElementById('chars-grid');
   const isAdmin = document.body.classList.contains('admin-mode');
   if (!CHARACTERS.length && !isAdmin) {
     grid.innerHTML = '<div style="padding:3rem;color:var(--text-muted);font-size:0.85rem;">No characters yet.</div>';
@@ -20,8 +20,8 @@ export function renderChars() {
   }
   grid.innerHTML = CHARACTERS.map((c, i) => `
     <div class="char-card" data-char-uuid="${esc(c.uuid)}">
-      ${c.imageBlob
-        ? `<img class="char-portrait" src="${createUrl(c.imageBlob)}" alt="${esc(c.name)}">`
+      ${c.imageKey
+        ? `<img class="char-portrait" src="${esc(imageUrl(c.imageKey))}" alt="${esc(c.name)}">`
         : PLACEHOLDER_SVGS[i % PLACEHOLDER_SVGS.length]}
       <div class="char-info">
         <div class="char-name">${esc(c.name)}${c.shortName ? ` <span style="color:var(--text-muted);font-size:0.8rem;">/ ${esc(c.shortName)}</span>` : ''}</div>
@@ -45,8 +45,8 @@ export function openCharDetail(charUuid) {
   const c = CHARACTERS.find(x => x.uuid === charUuid);
   if (!c) return;
 
-  document.getElementById('char-detail-img-wrap').innerHTML = c.imageBlob
-    ? `<img class="char-detail-img" src="${createUrl(c.imageBlob)}" alt="${esc(c.name)}">`
+  document.getElementById('char-detail-img-wrap').innerHTML = c.imageKey
+    ? `<img class="char-detail-img" src="${esc(imageUrl(c.imageKey))}" alt="${esc(c.name)}">`
     : `<div class="char-detail-img-placeholder">⬡</div>`;
 
   document.getElementById('char-detail-body').innerHTML = `
@@ -71,11 +71,11 @@ export function closeCharDetail() {
   document.body.style.overflow = '';
 }
 
-// ── Character modal ───────────────────────────────────────────────────────────
+// ── Modal ─────────────────────────────────────────────────────────────────────
 function _charValidate() {
   const hasName  = !!document.getElementById('cName').value.trim();
   const hasTitle = !!document.getElementById('cTitle').value.trim();
-  const setDot = (id, ok, lbl) => {
+  const setDot   = (id, ok, lbl) => {
     document.getElementById(id).className = 'modal-v-dot' + (ok ? ' ok' : '');
     document.getElementById(id + '-lbl').textContent = lbl;
   };
@@ -85,19 +85,20 @@ function _charValidate() {
 }
 
 function _resetCharModal() {
-  _editingCharUuid = null; _cState.blob = null;
+  _editingCharUuid = null; _cState.file = null; _cState.imageKey = null;
   ['cName','cShort','cTitle','cExcerpt','cBio','cTraits',
    'cs1k','cs1v','cs2k','cs2v','cs3k','cs3v','cs4k','cs4v'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('charPreviewImg').style.display = 'none';
-  document.getElementById('charDropZone').style.display = '';
+  document.getElementById('charPreviewImg').src           = '';
+  document.getElementById('charDropZone').style.display   = '';
   document.getElementById('charReplaceBtn').classList.remove('visible');
   document.getElementById('charSuccess').classList.remove('visible');
   document.getElementById('charSubmitBtn').classList.remove('saving');
-  document.getElementById('charDeleteBtn').style.display = 'none';
-  document.getElementById('charModalTitle').textContent = 'New Character';
-  document.getElementById('charSubmitLabel').textContent = 'Save Character';
+  document.getElementById('charDeleteBtn').style.display  = 'none';
+  document.getElementById('charModalTitle').textContent   = 'New Character';
+  document.getElementById('charSubmitLabel').textContent  = 'Save Character';
   _charValidate();
 }
 
@@ -109,7 +110,8 @@ export function openCharModal() {
 
 export function closeCharModal() {
   const img = document.getElementById('charPreviewImg');
-  if (img.src.startsWith('blob:')) { revokeUrl(img.src); img.src = ''; }
+  if (img.src.startsWith('blob:')) { revokeUrl(img.src); }
+  img.src = '';
   document.getElementById('charModal').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -118,7 +120,8 @@ export function openEditChar(charUuid) {
   const c = CHARACTERS.find(x => x.uuid === charUuid);
   if (!c) return;
   _resetCharModal();
-  _editingCharUuid = charUuid;
+  _editingCharUuid     = charUuid;
+  _cState.imageKey     = c.imageKey || null;
   document.getElementById('cName').value    = c.name      || '';
   document.getElementById('cShort').value   = c.shortName || '';
   document.getElementById('cTitle').value   = c.title     || '';
@@ -128,20 +131,19 @@ export function openEditChar(charUuid) {
 
   const stats = c.stats || [];
   ['cs1k','cs1v','cs2k','cs2v','cs3k','cs3v','cs4k','cs4v'].forEach((id, i) => {
-    const stat   = stats[Math.floor(i / 2)];
-    const isVal  = i % 2 === 1;
+    const stat  = stats[Math.floor(i / 2)];
+    const isVal = i % 2 === 1;
     document.getElementById(id).value = stat ? (isVal ? stat.v : stat.k) : '';
   });
 
-  if (c.imageBlob) {
-    _cState.blob = c.imageBlob;
+  if (c.imageKey) {
     const img = document.getElementById('charPreviewImg');
-    img.src = createUrl(c.imageBlob); img.style.display = 'block';
+    img.src = imageUrl(c.imageKey); img.style.display = 'block';
     document.getElementById('charDropZone').style.display = 'none';
     document.getElementById('charReplaceBtn').classList.add('visible');
   }
 
-  document.getElementById('charModalTitle').textContent = 'Edit Character';
+  document.getElementById('charModalTitle').textContent  = 'Edit Character';
   document.getElementById('charSubmitLabel').textContent = 'Save Changes';
   document.getElementById('charDeleteBtn').style.display = '';
   document.getElementById('charModal').classList.add('open');
@@ -151,7 +153,7 @@ export function openEditChar(charUuid) {
 
 function _handleCharFile(file) {
   if (!validateFileSize(file)) return;
-  _cState.blob = file;
+  _cState.file = file;
   const reader = new FileReader();
   reader.onload = e => {
     const img = document.getElementById('charPreviewImg');
@@ -181,25 +183,46 @@ export async function saveCharacter() {
   btn.classList.add('saving'); btn.disabled = true;
 
   const existing = _editingCharUuid ? CHARACTERS.find(x => x.uuid === _editingCharUuid) : null;
+  let imageKey   = _cState.imageKey;
+
+  if (_cState.file instanceof File) {
+    try {
+      const newKey = await apiUploadImage(_cState.file);
+      if (existing?.imageKey && existing.imageKey !== newKey) {
+        await apiDeleteImage(existing.imageKey).catch(() => {});
+      }
+      imageKey = newKey;
+    } catch {
+      showToast('Image upload failed', true);
+      btn.classList.remove('saving'); btn.disabled = false;
+      return;
+    }
+  }
+
   const baseSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  let slug = existing ? existing.slug : _uniqueSlug(baseSlug, CHARACTERS.map(c => c.slug));
+  const slug     = existing ? existing.slug : _uniqueSlug(baseSlug, CHARACTERS.map(c => c.slug));
 
   const char = {
-    uuid:      _editingCharUuid || newUuid(),
-    slug, name, title, excerpt, bio, traits, stats,
-    imageBlob: _cState.blob,
+    uuid: _editingCharUuid || newUuid(),
+    slug, name, title, excerpt, bio, traits, stats, imageKey,
     createdAt: existing ? existing.createdAt : Date.now(),
   };
   if (short) char.shortName = short;
 
-  await dbPut('characters', char);
-
   if (_editingCharUuid) {
     const idx = CHARACTERS.findIndex(x => x.uuid === _editingCharUuid);
-    if (idx >= 0) CHARACTERS[idx] = char;
+    if (idx >= 0) CHARACTERS[idx] = char; else CHARACTERS.push(char);
   } else {
     CHARACTERS.push(char);
     CHARACTERS.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  }
+
+  try {
+    await apiPutData('characters', CHARACTERS);
+  } catch {
+    showToast('Failed to save character', true);
+    btn.classList.remove('saving'); btn.disabled = false;
+    return;
   }
 
   btn.classList.remove('saving');
@@ -214,8 +237,11 @@ export function confirmDeleteChar(charUuid, name) {
 }
 
 export async function deleteChar(charUuid) {
-  await dbDelete('characters', charUuid);
-  setCharacters(CHARACTERS.filter(x => x.uuid !== charUuid));
+  const char = CHARACTERS.find(x => x.uuid === charUuid);
+  if (char?.imageKey) await apiDeleteImage(char.imageKey).catch(() => {});
+  const updated = CHARACTERS.filter(x => x.uuid !== charUuid);
+  setCharacters(updated);
+  await apiPutData('characters', updated);
   notifyDataChanged();
   showToast('Character deleted');
 }
@@ -225,7 +251,6 @@ export function deleteCurrentChar() {
   closeCharModal();
 }
 
-// Append numeric suffix until slug is unique
 function _uniqueSlug(base, existingSlugs) {
   if (!existingSlugs.includes(base)) return base;
   let i = 2;
@@ -235,7 +260,6 @@ function _uniqueSlug(base, existingSlugs) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 export function initCharacters() {
-  // Char grid delegation
   document.getElementById('chars-grid').addEventListener('click', e => {
     const adminBtn = e.target.closest('[data-action]');
     if (adminBtn) {
@@ -249,13 +273,11 @@ export function initCharacters() {
     if (card) openCharDetail(card.dataset.charUuid);
   });
 
-  // Detail close
   document.getElementById('char-detail').addEventListener('click', e => {
     if (e.target === document.getElementById('char-detail')) closeCharDetail();
   });
   document.getElementById('char-detail').querySelector('.close-btn').addEventListener('click', closeCharDetail);
 
-  // Drop zone
   const drop = document.getElementById('charDropZone');
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
@@ -271,10 +293,7 @@ export function initCharacters() {
     document.getElementById('charFileInput').click();
   });
 
-  // Validation
   ['cName', 'cTitle'].forEach(id => document.getElementById(id).addEventListener('input', _charValidate));
-
-  // Buttons
   document.getElementById('charDeleteBtn').addEventListener('click', deleteCurrentChar);
   document.getElementById('charSubmitBtn').addEventListener('click', saveCharacter);
   document.getElementById('charModal').querySelector('.close-btn').addEventListener('click', closeCharModal);

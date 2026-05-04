@@ -1,11 +1,11 @@
 import { LORE_CATS, LORE, TAGS, setLore, setLoreCats } from './state.js';
-import { dbPut, dbDelete, dbDeleteMany, newUuid } from './db.js';
+import { apiPutData, newUuid } from './api.js';
 import { esc, showToast, showConfirm, showPrompt, notifyDataChanged } from './utils.js';
 import { md } from './markdown.js';
 import { lState, populateLoreCustomTags } from './tags.js';
 
-let _activeLoreUuid = null;
-let _expandedCats   = new Set();
+let _activeLoreUuid  = null;
+let _expandedCats    = new Set();
 let _editingLoreUuid = null;
 
 // ── Sidebar render ────────────────────────────────────────────────────────────
@@ -57,8 +57,7 @@ export function openLoreEntry(loreUuid) {
   _activeLoreUuid = loreUuid;
   _expandedCats.add(entry.categoryUuid);
   renderLoreSidebar();
-  const cat     = LORE_CATS.find(c => c.uuid === entry.categoryUuid);
-  const isAdmin = document.body.classList.contains('admin-mode');
+  const cat = LORE_CATS.find(c => c.uuid === entry.categoryUuid);
   document.getElementById('lore-content').innerHTML = `
     <div class="lore-entry-view">
       <div class="lore-entry-hero">
@@ -91,9 +90,9 @@ export function openLoreEntry(loreUuid) {
 export async function addLoreCategory() {
   showPrompt('New Wiki Category', 'Name for the new category', 'e.g. Religions', '', async name => {
     const cat = { uuid: newUuid(), name, order: LORE_CATS.length, createdAt: Date.now() };
-    await dbPut('loreCategories', cat);
     LORE_CATS.push(cat);
     LORE_CATS.sort((a, b) => (a.order || 0) - (b.order || 0));
+    await apiPutData('loreCategories', LORE_CATS);
     renderLoreSidebar();
     showToast('Category added');
   });
@@ -104,7 +103,7 @@ export function renameLoreCategory(catUuid) {
   if (!cat) return;
   showPrompt('Rename Category', 'New name for this category', '', cat.name, async name => {
     cat.name = name;
-    await dbPut('loreCategories', cat);
+    await apiPutData('loreCategories', LORE_CATS);
     renderLoreSidebar();
     if (_activeLoreUuid) openLoreEntry(_activeLoreUuid);
     showToast('Category renamed');
@@ -117,10 +116,12 @@ export function confirmDeleteLoreCat(catUuid, name, entryCount) {
     : `Delete "${name}"?`;
   showConfirm('Delete Category', msg, async () => {
     const entries = LORE.filter(l => l.categoryUuid === catUuid);
-    await dbDeleteMany('lore', entries.map(e => e.uuid));
     setLore(LORE.filter(l => l.categoryUuid !== catUuid));
-    await dbDelete('loreCategories', catUuid);
     setLoreCats(LORE_CATS.filter(c => c.uuid !== catUuid));
+    await Promise.all([
+      apiPutData('lore', LORE),
+      apiPutData('loreCategories', LORE_CATS),
+    ]);
     if (_activeLoreUuid && entries.find(e => e.uuid === _activeLoreUuid)) {
       _activeLoreUuid = null;
       _showEmptyLore();
@@ -142,7 +143,7 @@ function _loreValidate() {
   const hasTitle   = !!document.getElementById('lTitle').value.trim();
   const hasCat     = !!document.getElementById('lCategory').value;
   const hasContent = !!document.getElementById('lContent').value.trim();
-  const setDot = (id, ok, lbl) => {
+  const setDot     = (id, ok, lbl) => {
     document.getElementById(id).className = 'modal-v-dot' + (ok ? ' ok' : '');
     document.getElementById(id + '-lbl').textContent = lbl;
   };
@@ -158,9 +159,9 @@ function _resetLoreModal() {
   document.getElementById('lCategory').value = '';
   document.getElementById('loreSuccess').classList.remove('visible');
   document.getElementById('loreSubmitBtn').classList.remove('saving');
-  document.getElementById('loreDeleteBtn').style.display = 'none';
-  document.getElementById('loreModalTitle').textContent  = 'New Wiki Entry';
-  document.getElementById('loreSubmitLabel').textContent = 'Save Entry';
+  document.getElementById('loreDeleteBtn').style.display     = 'none';
+  document.getElementById('loreModalTitle').textContent      = 'New Wiki Entry';
+  document.getElementById('loreSubmitLabel').textContent     = 'Save Entry';
   _populateLoreCategorySelect();
   populateLoreCustomTags();
   _loreValidate();
@@ -184,10 +185,10 @@ export function openEditLore(loreUuid) {
   if (!e) return;
   _resetLoreModal();
   _editingLoreUuid = loreUuid;
-  document.getElementById('lTitle').value    = e.title       || '';
-  document.getElementById('lMeta').value     = e.meta        || '';
-  document.getElementById('lContent').value  = e.content     || '';
-  document.getElementById('lCategory').value = e.categoryUuid|| '';
+  document.getElementById('lTitle').value    = e.title        || '';
+  document.getElementById('lMeta').value     = e.meta         || '';
+  document.getElementById('lContent').value  = e.content      || '';
+  document.getElementById('lCategory').value = e.categoryUuid || '';
   lState.tags = [...(e.customTags || [])];
   populateLoreCustomTags();
   document.getElementById('loreModalTitle').textContent  = 'Edit Wiki Entry';
@@ -208,21 +209,27 @@ export async function saveLore() {
 
   const existing = _editingLoreUuid ? LORE.find(x => x.uuid === _editingLoreUuid) : null;
   const entry = {
-    uuid:        _editingLoreUuid || newUuid(),
+    uuid: _editingLoreUuid || newUuid(),
     title, meta, content, categoryUuid,
-    customTags:  [...lState.tags],
-    createdAt:   existing ? existing.createdAt : Date.now(),
+    customTags: [...lState.tags],
+    createdAt:  existing ? existing.createdAt : Date.now(),
   };
-
-  await dbPut('lore', entry);
 
   if (_editingLoreUuid) {
     const idx = LORE.findIndex(x => x.uuid === _editingLoreUuid);
-    if (idx >= 0) LORE[idx] = entry;
+    if (idx >= 0) LORE[idx] = entry; else LORE.push(entry);
   } else {
     LORE.push(entry);
   }
   LORE.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+  try {
+    await apiPutData('lore', LORE);
+  } catch {
+    showToast('Failed to save entry', true);
+    btn.classList.remove('saving'); btn.disabled = false;
+    return;
+  }
 
   btn.classList.remove('saving');
   document.getElementById('loreSuccess').classList.add('visible');
@@ -240,8 +247,9 @@ export function confirmDeleteLore(loreUuid, title) {
 }
 
 export async function deleteLore(loreUuid) {
-  await dbDelete('lore', loreUuid);
-  setLore(LORE.filter(x => x.uuid !== loreUuid));
+  const updated = LORE.filter(x => x.uuid !== loreUuid);
+  setLore(updated);
+  await apiPutData('lore', updated);
   if (_activeLoreUuid === loreUuid) {
     _activeLoreUuid = null;
     _showEmptyLore();
@@ -267,9 +275,8 @@ function _showEmptyLore() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 export function initLore() {
-  // Sidebar delegation
   document.getElementById('lore-sidebar').addEventListener('click', e => {
-    const catBtn   = e.target.closest('.lore-cat[data-cat-uuid]');
+    const catBtn = e.target.closest('.lore-cat[data-cat-uuid]');
     if (catBtn) { toggleCat(catBtn.dataset.catUuid); return; }
 
     const entryBtn = e.target.closest('.lore-entry-link[data-entry-uuid]');
@@ -284,7 +291,6 @@ export function initLore() {
     }
   });
 
-  // Lore content delegation (edit/delete actions)
   document.getElementById('lore-content').addEventListener('click', e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -293,8 +299,8 @@ export function initLore() {
     if (action === 'del-lore')  confirmDeleteLore(uuid, title);
   });
 
-  // Add category button
   document.getElementById('lore-add-cat-btn').addEventListener('click', addLoreCategory);
+  document.getElementById('lore-search').addEventListener('input', renderLoreSidebar);
 
   // Mobile sidebar toggle
   const toggle  = document.getElementById('lore-sidebar-toggle');
@@ -311,14 +317,8 @@ export function initLore() {
     });
   }
 
-  // Search
-  document.getElementById('lore-search').addEventListener('input', renderLoreSidebar);
-
-  // Modal validation
   ['lTitle', 'lContent'].forEach(id => document.getElementById(id).addEventListener('input', _loreValidate));
   document.getElementById('lCategory').addEventListener('change', _loreValidate);
-
-  // Buttons
   document.getElementById('loreDeleteBtn').addEventListener('click', deleteCurrentLore);
   document.getElementById('loreSubmitBtn').addEventListener('click', saveLore);
   document.getElementById('loreModal').querySelector('.close-btn').addEventListener('click', closeLoreModal);

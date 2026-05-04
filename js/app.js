@@ -1,27 +1,12 @@
-import { openDB, dbGet, dbPut, newUuid } from './db.js';
-import { GALLERY, CHARACTERS, PLANETS, LORE, loadAll } from './state.js';
-import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, createUrl, revokeAllUrls, showToast } from './utils.js';
+import { loadAll, GALLERY, CHARACTERS, PLANETS, LORE } from './state.js';
+import { imageUrl } from './api.js';
+import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, revokeAllUrls } from './utils.js';
 import { checkAgeGate, acceptAgeGate, declineAgeGate, adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { renderGallery, buildFilterBar, openLightbox, closeLightbox, lightboxNav, openUploadModal, closeUploadModal, initGallery } from './gallery.js';
 import { renderChars, openCharDetail, closeCharDetail, openCharModal, closeCharModal, initCharacters } from './characters.js';
 import { renderPlanets, openPlanetModal, closePlanetModal, initPlanets } from './planets.js';
 import { renderLoreSidebar, openLoreEntry, addLoreCategory, openLoreModal, closeLoreModal, initLore } from './lore.js';
 import { initTags } from './tags.js';
-
-// ── Seed default lore categories on first run ─────────────────────────────────
-async function seedLoreCategories() {
-  const flag = await dbGet('meta', 'lore_cats_seeded');
-  if (flag) return;
-  const defaults = [
-    { uuid: newUuid(), name: 'History',    order: 0, createdAt: Date.now()     },
-    { uuid: newUuid(), name: 'Factions',   order: 1, createdAt: Date.now() + 1 },
-    { uuid: newUuid(), name: 'Species',    order: 2, createdAt: Date.now() + 2 },
-    { uuid: newUuid(), name: 'Technology', order: 3, createdAt: Date.now() + 3 },
-    { uuid: newUuid(), name: 'Cosmology',  order: 4, createdAt: Date.now() + 4 },
-  ];
-  for (const c of defaults) await dbPut('loreCategories', c);
-  await dbPut('meta', { key: 'lore_cats_seeded', value: true });
-}
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 export function showSection(id) {
@@ -39,7 +24,7 @@ export function renderHome() {
   document.getElementById('stat-lore').textContent          = LORE.length;
   document.getElementById('stat-images').textContent        = GALLERY.length;
 
-  const recent = GALLERY.filter(g => g.imageBlob).slice(0, 3);
+  const recent    = GALLERY.filter(g => g.imageKey).slice(0, 3);
   const container = document.getElementById('home-recent');
   if (!recent.length) {
     container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;font-weight:300;">No images yet.</div>';
@@ -47,7 +32,7 @@ export function renderHome() {
   }
   container.innerHTML = recent.map(item => `
     <div class="gallery-item" data-goto-gallery style="cursor:pointer;">
-      <img class="gallery-thumb" src="${createUrl(item.imageBlob)}" alt="${esc(item.title)}">
+      <img class="gallery-thumb" src="${esc(imageUrl(item.imageKey))}" alt="${esc(item.title)}">
       <div class="gallery-overlay" style="opacity:1;background:linear-gradient(to top,rgba(2,15,13,0.9) 0%,transparent 60%);">
         <div class="gallery-item-title">${esc(item.title)}</div>
         <div class="tag-row">${(item.tags || []).slice(0, 3).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
@@ -71,7 +56,6 @@ export function renderAll() {
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 function _initKeyboard() {
   document.addEventListener('keydown', e => {
-    // Lightbox arrow navigation
     if (document.getElementById('lightbox').classList.contains('open')) {
       if (e.key === 'ArrowLeft')  { lightboxNav(-1); return; }
       if (e.key === 'ArrowRight') { lightboxNav(1);  return; }
@@ -93,14 +77,16 @@ function _initKeyboard() {
 (async () => {
   checkAgeGate();
 
-  await openDB();
-  await seedLoreCategories();
-  await loadAll();
+  try {
+    await loadAll();
+  } catch (err) {
+    console.error('Failed to load data:', err);
+    showToast('Failed to load content — check your connection', true);
+  }
 
-  const isAdmin = await checkAdminSession();
+  const isAdmin = checkAdminSession();
   if (isAdmin) document.body.classList.add('admin-mode');
 
-  // Init all modules
   initConfirm();
   initPrompt();
   initAuth();
@@ -111,7 +97,7 @@ function _initKeyboard() {
   initTags();
   _initKeyboard();
 
-  // Nav delegation
+  // Nav
   document.querySelector('.nav-logo').addEventListener('click', () => showSection('home'));
   document.getElementById('nav-home').addEventListener('click',       () => showSection('home'));
   document.getElementById('nav-gallery').addEventListener('click',    () => showSection('gallery'));
@@ -119,35 +105,28 @@ function _initKeyboard() {
   document.getElementById('nav-planets').addEventListener('click',    () => showSection('planets'));
   document.getElementById('nav-lore').addEventListener('click',       () => showSection('lore'));
 
-  // Hero CTAs
   document.querySelectorAll('[data-section]').forEach(el => {
     el.addEventListener('click', () => showSection(el.dataset.section));
   });
 
-  // Home recent preview → gallery
   document.getElementById('home-recent').addEventListener('click', e => {
     if (e.target.closest('[data-goto-gallery]')) showSection('gallery');
   });
 
-  // Admin login button (exposed for console use)
   window.adminLogin  = adminLogin;
   window.adminLogout = adminLogout;
 
-  // Age gate
   document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
   document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
 
-  // Admin login modal buttons
-  document.getElementById('adminLoginBtn').addEventListener('click', submitAdminLogin);
+  document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
   document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);
-  document.getElementById('adminPwToggle').addEventListener('click', toggleAdminPwVis);
+  document.getElementById('adminPwToggle').addEventListener('click',  toggleAdminPwVis);
 
-  // Re-render when data changes
   document.addEventListener('arden:datachanged', () => {
     try { renderAll(); } catch (err) { console.error('Render error:', err); showToast('Render error — please reload', true); }
   });
 
-  // Revoke all blob URLs on page unload to prevent memory leaks
   window.addEventListener('beforeunload', revokeAllUrls);
 
   renderAll();
