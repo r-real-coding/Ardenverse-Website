@@ -314,6 +314,11 @@
 }
 
 .lore-entry-body p { color: var(--text-secondary); font-weight: 300; margin-bottom: 1.3rem; line-height: 2; font-size: 0.95rem; }
+.lore-entry-body h1 {
+  font-family: 'Cinzel', serif; font-size: 1.7rem; color: var(--text-primary);
+  margin: 2.5rem 0 1rem; padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(26,191,151,0.25);
+}
 .lore-entry-body h2 {
   font-family: 'Cinzel', serif; font-size: 1.35rem; color: var(--teal-300);
   margin: 2.5rem 0 0.8rem; padding-bottom: 0.5rem;
