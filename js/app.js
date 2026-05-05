@@ -115,8 +115,8 @@ function _initKeyboard() {
     if (e.target.closest('[data-goto-gallery]')) showSection('gallery');
   });
 
-  window.adminLogin  = adminLogin;
-  window.adminLogout = adminLogout;
+  window.adminLogin = adminLogin;
+  document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
 
   document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
   document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
