@@ -21,7 +21,7 @@ export function renderChars() {
   grid.innerHTML = CHARACTERS.map((c, i) => `
     <div class="char-card" data-char-uuid="${esc(c.uuid)}">
       ${c.imageKey
-        ? `<img class="char-portrait" src="${esc(imageUrl(c.imageKey))}" alt="${esc(c.name)}">`
+        ? `<img class="char-portrait" src="${esc(imageUrl(c.imageKey))}" alt="${esc(c.name)}" loading="lazy">`
         : PLACEHOLDER_SVGS[i % PLACEHOLDER_SVGS.length]}
       <div class="char-info">
         <div class="char-name">${esc(c.name)}${c.shortName ? ` <span style="color:var(--text-muted);font-size:0.8rem;">/ ${esc(c.shortName)}</span>` : ''}</div>

@@ -17,6 +17,9 @@ function verifyJwt(token) {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
     const [header, body, sig] = parts;
+    // Reject any token whose header doesn't declare exactly HS256
+    const hdr = JSON.parse(Buffer.from(header, 'base64url').toString());
+    if (hdr.alg !== 'HS256') return null;
     const expected = createHmac('sha256', secret).update(`${header}.${body}`).digest('base64url');
     const sigBuf = Buffer.from(sig,      'base64url');
     const expBuf = Buffer.from(expected, 'base64url');

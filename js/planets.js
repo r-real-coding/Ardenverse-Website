@@ -17,7 +17,7 @@ export function renderPlanets() {
     const safeColor  = isValidHex(p.color)  ? p.color  : '#1abf97';
     const safeColorB = isValidHex(p.colorB) ? p.colorB : '#0d4a40';
     const visual = p.imageKey
-      ? `<img class="planet-image" src="${esc(imageUrl(p.imageKey))}" alt="${esc(p.name)}">`
+      ? `<img class="planet-image" src="${esc(imageUrl(p.imageKey))}" alt="${esc(p.name)}" loading="lazy">`
       : `<div class="planet-visual" style="background:linear-gradient(135deg,#041a17 0%,${safeColorB} 60%,#020f0d 100%)">
            <div class="planet-orb" style="background:radial-gradient(circle at 35% 35%,${safeColor}88 0%,${safeColorB} 60%,#020f0d 100%);"></div>
          </div>`;

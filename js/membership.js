@@ -9,7 +9,8 @@
 //   • We store the resulting short-lived JWT in sessionStorage.
 //   • isSubscriber() is used by gallery.js to gate content.
 
-const MEMBER_TOKEN_KEY = 'arden_member_token';
+const MEMBER_TOKEN_KEY  = 'arden_member_token';
+const OAUTH_STATE_KEY   = 'arden_oauth_state';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
 export function saveMemberToken(token) { sessionStorage.setItem(MEMBER_TOKEN_KEY, token); }
@@ -39,6 +40,13 @@ export function memberPlatform() {
   } catch {
     return null;
   }
+}
+
+// ── OAuth CSRF state ──────────────────────────────────────────────────────────
+function _generateState() {
+  const arr = new Uint8Array(24);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ── OAuth popup ───────────────────────────────────────────────────────────────
@@ -75,16 +83,35 @@ function openOAuthPopup(url) {
 function _handlePopupMessage(event) {
   // Only trust messages from our own origin (the popup lives there too).
   if (event.origin !== window.location.origin) return;
-  const { type, token, error } = event.data || {};
+  const { type, token, error, state } = event.data || {};
   if (type !== 'MEMBER_AUTH') return;
+
+  // CSRF: verify the state echoed from the callback matches what we stored.
+  const expectedState = sessionStorage.getItem(OAUTH_STATE_KEY);
+  sessionStorage.removeItem(OAUTH_STATE_KEY);
+  if (expectedState && state !== expectedState) {
+    if (_popupResolve) {
+      _popupResolve({ error: 'OAuth state mismatch — possible CSRF attack, please try again' });
+      _popupResolve = null;
+    }
+    return;
+  }
+
   if (_popupResolve) {
     _popupResolve({ token, error });
     _popupResolve = null;
   }
 }
 
-// ── OAuth URLs (fetched once from server) ─────────────────────────────────────
-let _oauthUrls = {}; // { patreon?: string, subscribestar?: string }
+// ── OAuth URLs (fetched per-connect, fresh state each time) ───────────────────
+async function _fetchOAuthUrls(state) {
+  const res = await fetch(`/.netlify/functions/get-oauth-url?state=${encodeURIComponent(state)}`);
+  if (!res.ok) throw new Error(`get-oauth-url failed (${res.status})`);
+  return res.json();
+}
+
+// Cached URL list just for button visibility (no state baked in, fetched once).
+let _cachedUrls = {};
 let _urlsFetched = false;
 
 async function ensureOAuthUrls() {
@@ -92,26 +119,38 @@ async function ensureOAuthUrls() {
   _urlsFetched = true;
   try {
     const res = await fetch('/.netlify/functions/get-oauth-url');
-    if (res.ok) _oauthUrls = await res.json();
+    if (res.ok) _cachedUrls = await res.json();
   } catch (err) {
     console.warn('Could not fetch OAuth URLs:', err);
   }
-  // Show/hide buttons based on what's configured server-side.
   _applyButtonVisibility();
 }
 
 function _applyButtonVisibility() {
-  const patreonBtn      = document.getElementById('connectPatreonBtn');
+  const patreonBtn       = document.getElementById('connectPatreonBtn');
   const subscribestarBtn = document.getElementById('connectSubscribestarBtn');
-  if (patreonBtn)       patreonBtn.style.display      = _oauthUrls.patreon      ? '' : 'none';
-  if (subscribestarBtn) subscribestarBtn.style.display = _oauthUrls.subscribestar ? '' : 'none';
+  if (patreonBtn)       patreonBtn.style.display       = _cachedUrls.patreon      ? '' : 'none';
+  if (subscribestarBtn) subscribestarBtn.style.display  = _cachedUrls.subscribestar ? '' : 'none';
 }
 
 // ── Connect flows ─────────────────────────────────────────────────────────────
 async function _connect(platform) {
-  await ensureOAuthUrls();
-  const url = _oauthUrls[platform];
+  // Generate a fresh CSRF state token for this flow and persist it.
+  const state = _generateState();
+  sessionStorage.setItem(OAUTH_STATE_KEY, state);
+
+  let urls;
+  try {
+    urls = await _fetchOAuthUrls(state);
+  } catch (err) {
+    sessionStorage.removeItem(OAUTH_STATE_KEY);
+    _showError('Could not reach the server — please try again');
+    return;
+  }
+
+  const url = urls[platform];
   if (!url) {
+    sessionStorage.removeItem(OAUTH_STATE_KEY);
     _showError(`${platform} is not configured on this site — contact the owner`);
     return;
   }
@@ -152,7 +191,7 @@ function _setConnecting(on) {
 
 // Update the member badge + logout button visibility in the nav.
 export function renderMemberBadge() {
-  const badge   = document.getElementById('memberBadge');
+  const badge    = document.getElementById('memberBadge');
   const platform = memberPlatform();
   if (badge) {
     badge.style.display = platform ? 'inline-block' : 'none';
