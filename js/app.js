@@ -33,7 +33,7 @@ export function renderHome() {
   }
   container.innerHTML = recent.map(item => `
     <div class="gallery-item" data-goto-gallery style="cursor:pointer;">
-      <img class="gallery-thumb" src="${esc(imageUrl(item.imageKey))}" alt="${esc(item.title)}">
+      <img class="gallery-thumb" src="${esc(imageUrl(item.imageKey))}" alt="${esc(item.title)}" loading="lazy">
       <div class="gallery-overlay" style="opacity:1;background:linear-gradient(to top,rgba(2,15,13,0.9) 0%,transparent 60%);">
         <div class="gallery-item-title">${esc(item.title)}</div>
         <div class="tag-row">${(item.tags || []).slice(0, 3).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
