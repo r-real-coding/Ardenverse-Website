@@ -95,10 +95,10 @@ export function revokeAllUrls() {
 }
 
 // File size validation (bytes)
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+export const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 export function validateFileSize(file) {
   if (file.size > MAX_FILE_SIZE) {
-    showToast('Image exceeds 10 MB limit', true);
+    showToast('Image exceeds 25 MB limit', true);
     return false;
   }
   return true;

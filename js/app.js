@@ -7,6 +7,7 @@ import { renderChars, openCharDetail, closeCharDetail, openCharModal, closeCharM
 import { renderPlanets, openPlanetModal, closePlanetModal, initPlanets } from './planets.js';
 import { renderLoreSidebar, openLoreEntry, addLoreCategory, openLoreModal, closeLoreModal, initLore } from './lore.js';
 import { initTags } from './tags.js';
+import { initMembership, renderMemberBadge } from './membership.js';
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 export function showSection(id) {
@@ -90,6 +91,7 @@ function _initKeyboard() {
   initConfirm();
   initPrompt();
   initAuth();
+  initMembership();
   initGallery();
   initCharacters();
   initPlanets();
