@@ -81,9 +81,7 @@ export function renderGallery() {
   });
 
   _lightboxItems = items.filter(i => i.imageKey);
-  const grid = document.getElementById('gallery-grid');
-  document.getElementById('gallery-count').textContent =
-    `Showing ${items.length} of ${GALLERY.length} image${GALLERY.length !== 1 ? 's' : ''}`;
+  count.textContent = `Showing ${items.length} of ${GALLERY.length} image${GALLERY.length !== 1 ? 's' : ''}`;
 
   if (items.length === 0 && !isAdmin) {
     grid.innerHTML = `<div class="empty-state"><div class="big-icon">⬡</div>
