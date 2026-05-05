@@ -16,10 +16,6 @@ export function showSection(id) {
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
   document.getElementById('nav-' + id).classList.add('active');
   window.scrollTo(0, 0);
-  // Close mobile nav if open
-  document.getElementById('nav-links')?.classList.remove('open');
-  document.getElementById('nav-hamburger')?.classList.remove('open');
-  document.getElementById('nav-hamburger')?.setAttribute('aria-expanded', 'false');
 }
 
 // ── Home ──────────────────────────────────────────────────────────────────────
@@ -80,10 +76,27 @@ function _initKeyboard() {
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 (async () => {
-  // Age gate must be wired before any async work so clicks are never missed
+  // Age gate + hamburger must be wired before any async work so clicks are never missed
   document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
   document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
   checkAgeGate();
+
+  const _hamburger = document.getElementById('nav-hamburger');
+  const _navLinks  = document.getElementById('nav-links');
+  function _closeNav() {
+    _navLinks.classList.remove('open');
+    _hamburger.classList.remove('open');
+    _hamburger.setAttribute('aria-expanded', 'false');
+  }
+  _hamburger.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = _navLinks.classList.toggle('open');
+    _hamburger.classList.toggle('open', isOpen);
+    _hamburger.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('nav')) _closeNav();
+  });
 
   try {
     await loadAll();
@@ -105,24 +118,6 @@ function _initKeyboard() {
   initLore();
   initTags();
   _initKeyboard();
-
-  // Nav — hamburger toggle
-  const _hamburger = document.getElementById('nav-hamburger');
-  const _navLinks  = document.getElementById('nav-links');
-  function _closeNav() {
-    _navLinks.classList.remove('open');
-    _hamburger.classList.remove('open');
-    _hamburger.setAttribute('aria-expanded', 'false');
-  }
-  _hamburger.addEventListener('click', () => {
-    const isOpen = _navLinks.classList.toggle('open');
-    _hamburger.classList.toggle('open', isOpen);
-    _hamburger.setAttribute('aria-expanded', String(isOpen));
-  });
-  // Close menu on outside click
-  document.addEventListener('click', e => {
-    if (!e.target.closest('nav')) _closeNav();
-  });
 
   // Nav — section links (close mobile menu after navigation)
   document.querySelector('.nav-logo').addEventListener('click', () => { showSection('home'); _closeNav(); });

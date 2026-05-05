@@ -34,13 +34,12 @@
 @media (max-width: 768px) {
   .nav-hamburger { display: flex; }
 
-  /* Keep nav sticky — only change padding. overflow:visible ensures dropdown isn't clipped. */
+  /* Keep nav sticky — only adjust padding. Dropdown is position:absolute relative to it. */
   body > nav { padding: 0 1.2rem; overflow: visible; }
 
-  /* Dropdown is position:fixed so it always sits below the sticky nav at the top of the viewport */
   .nav-links {
     display: none;
-    position: fixed;
+    position: fixed;        /* fixed so it always appears below the sticky nav */
     top: 64px;              /* matches nav height */
     left: 0; right: 0;
     flex-direction: column;
@@ -81,7 +80,7 @@
 
 /* ── HOME STATS + RECENT ────────────────────────────────── */
 @media (max-width: 768px) {
-  /* div order inside #section-home: 1=hero, 2=stats grid, 3=recent gallery */
+  /* div order: 1=hero, 2=stats grid, 3=recent gallery */
   #section-home > div:nth-of-type(2) { padding: 2rem 1.2rem; }
   #section-home > div:nth-of-type(3) { padding: 2.5rem 1.2rem; }
 }
@@ -98,7 +97,9 @@
   .gallery-count    { padding: 0.75rem 1.2rem 0; }
   .gallery-grid     { padding: 1rem 1.2rem 2.5rem; gap: 0.8rem; }
 
-  .lightbox-nav { width: 36px; height: 36px; font-size: 1.1rem; }
+  .lightbox-nav {
+    width: 36px; height: 36px; font-size: 1.1rem;
+  }
   .lightbox-prev { left: 0.4rem; }
   .lightbox-next { right: 0.4rem; }
   .lightbox-img  { max-height: 65vh; }
@@ -108,10 +109,11 @@
 /* ── CHARACTERS ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .chars-grid { padding: 1.5rem 1.2rem; gap: 1.2rem; }
+  /* Disable transform on touch — prevents layout shift */
   .char-card:hover  { transform: none; }
 
   .char-detail      { padding: 1.5rem 1rem; }
-  .char-detail-body { padding: 1.5rem; }
+  .char-detail-body { padding: 1.5rem; } /* restore left padding when stacked */
 }
 
 /* ── PLANETS ────────────────────────────────────────────── */
@@ -132,16 +134,27 @@
   }
   .upload-modal-body { padding: 1rem; gap: 1.2rem; }
 
-  .modal-footer { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  /* Stack validation dots + buttons on small screens */
+  .modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
   .modal-actions { justify-content: flex-end; }
 
+  /* Admin login */
   .admin-login-modal { align-items: flex-end; padding: 0; }
   .admin-login-box   { max-width: 100%; border-bottom: none; }
 
+  /* Confirm / Prompt */
   .confirm-modal,
   .prompt-modal  { padding: 1rem; align-items: flex-end; }
 
-  .toast { left: 1rem; right: 1rem; bottom: 1rem; text-align: center; }
+  /* Toast — center at bottom */
+  .toast {
+    left: 1rem; right: 1rem; bottom: 1rem;
+    text-align: center;
+  }
 }
 
 /* ── AGE GATE ───────────────────────────────────────────── */
@@ -163,4 +176,6 @@
   .stat-grid { grid-template-columns: 1fr; }
 
   .upload-modal-body { grid-template-columns: 1fr; }
+
+  /* Lore body padding already handled in lore.css @700px */
 }
