@@ -1,6 +1,6 @@
 import { CHARACTERS, setCharacters } from './state.js';
 import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
-import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
+import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataChanged, uniqueSlug } from './utils.js';
 
 let _editingCharUuid = null;
 const _cState = { file: null, imageKey: null };
@@ -160,7 +160,7 @@ function _handleCharFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('charDropZone').style.display = 'none';
   };
-  reader.onerror = () => showToast('Failed to read image file', true);
+  reader.onerror = () => { _cState.file = null; showToast('Failed to read image file', true); };
   reader.readAsDataURL(file);
   document.getElementById('charReplaceBtn').classList.add('visible');
 }
@@ -200,7 +200,7 @@ export async function saveCharacter() {
   }
 
   const baseSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const slug     = existing ? existing.slug : _uniqueSlug(baseSlug, CHARACTERS.map(c => c.slug));
+  const slug     = existing ? existing.slug : uniqueSlug(baseSlug, CHARACTERS.map(c => c.slug));
 
   const char = {
     uuid: _editingCharUuid || newUuid(),
@@ -249,13 +249,6 @@ export async function deleteChar(charUuid) {
 export function deleteCurrentChar() {
   confirmDeleteChar(_editingCharUuid, document.getElementById('cName').value.trim());
   closeCharModal();
-}
-
-function _uniqueSlug(base, existingSlugs) {
-  if (!existingSlugs.includes(base)) return base;
-  let i = 2;
-  while (existingSlugs.includes(`${base}-${i}`)) i++;
-  return `${base}-${i}`;
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

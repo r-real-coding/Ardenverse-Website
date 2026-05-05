@@ -1,6 +1,6 @@
 import { PLANETS, setPlanets } from './state.js';
 import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
-import { esc, showToast, showConfirm, revokeUrl, validateFileSize, isValidHex, notifyDataChanged } from './utils.js';
+import { esc, showToast, showConfirm, revokeUrl, validateFileSize, isValidHex, notifyDataChanged, uniqueSlug } from './utils.js';
 
 let _editingPlanetUuid = null;
 const _pState = { file: null, imageKey: null };
@@ -162,7 +162,7 @@ function _handlePlanetFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('planetDropZone').style.display = 'none';
   };
-  reader.onerror = () => showToast('Failed to read image file', true);
+  reader.onerror = () => { _pState.file = null; showToast('Failed to read image file', true); };
   reader.readAsDataURL(file);
   document.getElementById('planetReplaceBtn').classList.add('visible');
 }
@@ -203,7 +203,7 @@ export async function savePlanet() {
   }
 
   const baseSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const slug     = existing ? existing.slug : _uniqueSlug(baseSlug, PLANETS.map(p => p.slug));
+  const slug     = existing ? existing.slug : uniqueSlug(baseSlug, PLANETS.map(p => p.slug));
 
   const planet = {
     uuid: _editingPlanetUuid || newUuid(),
@@ -251,13 +251,6 @@ export async function deletePlanet(planetUuid) {
 export function deleteCurrentPlanet() {
   confirmDeletePlanet(_editingPlanetUuid, document.getElementById('pName').value.trim());
   closePlanetModal();
-}
-
-function _uniqueSlug(base, existingSlugs) {
-  if (!existingSlugs.includes(base)) return base;
-  let i = 2;
-  while (existingSlugs.includes(`${base}-${i}`)) i++;
-  return `${base}-${i}`;
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

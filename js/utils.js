@@ -103,3 +103,11 @@ export function validateFileSize(file) {
 export function notifyDataChanged() {
   document.dispatchEvent(new CustomEvent('arden:datachanged'));
 }
+
+// Generate a unique slug that doesn't collide with existingSlugs
+export function uniqueSlug(base, existingSlugs) {
+  if (!existingSlugs.includes(base)) return base;
+  let i = 2;
+  while (existingSlugs.includes(`${base}-${i}`)) i++;
+  return `${base}-${i}`;
+}
