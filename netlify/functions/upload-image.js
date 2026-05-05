@@ -4,7 +4,7 @@ const { verifyJwt, getTokenFromEvent } = require('./lib/_jwt');
 
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_BYTES = 25 * 1024 * 1024; // 25 MB — must match body_size_limit in netlify.toml
 const HEADERS = { 'Content-Type': 'application/json' };
 
 exports.handler = async (event) => {
@@ -32,7 +32,7 @@ exports.handler = async (event) => {
       : Buffer.from(event.body ?? '', 'binary');
 
     if (body.length > MAX_BYTES) {
-      return { statusCode: 413, headers: HEADERS, body: JSON.stringify({ error: 'Image exceeds 10 MB limit' }) };
+      return { statusCode: 413, headers: HEADERS, body: JSON.stringify({ error: 'Image exceeds 25 MB limit' }) };
     }
 
     const store = getStore('images');

@@ -5,6 +5,13 @@
 [functions]
   node_bundler = "esbuild"
 
+# Per-function body size limit for the image upload endpoint.
+# Netlify's default cap is 6 MB; 25 MB uploads would be rejected at the edge
+# before the function runs without this override (value is in bytes).
+[functions."upload-image"]
+  node_bundler = "esbuild"
+  body_size_limit = 26214400
+
 [build.environment]
   NODE_VERSION = "18"
 
@@ -14,6 +21,7 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self'; frame-ancestors 'none';"
 
 [[headers]]
   for = "/js/*"

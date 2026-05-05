@@ -2,6 +2,7 @@ import { GALLERY, CHARACTERS, PLANETS, TAGS, setGallery } from './state.js';
 import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
 import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 import { mState, populateUploadTags } from './tags.js';
+import { isSubscriber } from './membership.js';
 
 let _filters = { char: 'all', theme: 'all', planet: 'all' };
 let _lightboxItems  = [];
@@ -45,8 +46,28 @@ export function setFilter(type, val) {
 
 // ── Gallery render ────────────────────────────────────────────────────────────
 export function renderGallery() {
+  const isAdmin  = document.body.classList.contains('admin-mode');
+  const paywall  = document.getElementById('gallery-paywall');
+  const controls = document.getElementById('gallery-controls');
+  const count    = document.getElementById('gallery-count');
+  const grid     = document.getElementById('gallery-grid');
+
+  // Non-subscribers see the paywall; admins always bypass it.
+  if (!isAdmin && !isSubscriber()) {
+    if (paywall)  paywall.style.display  = '';
+    if (controls) controls.style.display = 'none';
+    if (count)    count.style.display    = 'none';
+    if (grid)     grid.style.display     = 'none';
+    return;
+  }
+
+  // Subscriber or admin — hide paywall and show content.
+  if (paywall)  paywall.style.display  = 'none';
+  if (controls) controls.style.display = '';
+  if (count)    count.style.display    = '';
+  if (grid)     grid.style.display     = '';
+
   const search  = document.getElementById('gallery-search').value.toLowerCase();
-  const isAdmin = document.body.classList.contains('admin-mode');
 
   const items = GALLERY.filter(item => {
     if (_filters.char   !== 'all' && !(item.chars   || []).includes(_filters.char))   return false;

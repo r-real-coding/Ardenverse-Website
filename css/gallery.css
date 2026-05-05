@@ -89,3 +89,97 @@
 .lightbox-nav:hover { border-color: var(--teal-400); color: var(--teal-300); }
 .lightbox-prev { left: 1rem; }
 .lightbox-next { right: 1rem; }
+
+/* GALLERY PAYWALL */
+.gallery-paywall {
+  position: relative; overflow: hidden;
+  min-height: 70vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--bg-base);
+}
+.paywall-stars {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 8%  18%, rgba(255,255,255,0.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 42%, rgba(255,255,255,0.30) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 12%, rgba(255,255,255,0.40) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 65%, rgba(255,255,255,0.28) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 28%, rgba(255,255,255,0.38) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.25) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 90%, rgba(200,220,255,0.35) 0%, transparent 100%),
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(13,74,64,0.25) 0%, transparent 70%);
+}
+.paywall-box {
+  position: relative; z-index: 1;
+  max-width: 560px; width: 100%;
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 3.5rem 3rem; text-align: center;
+}
+.paywall-eyebrow {
+  font-family: 'Orbitron', sans-serif; font-size: 0.58rem;
+  letter-spacing: 0.4em; color: var(--cyan); text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.paywall-title {
+  font-family: 'Cinzel', serif; font-size: 1.9rem; font-weight: 700;
+  color: var(--text-primary); margin-bottom: 1.5rem; letter-spacing: 0.04em;
+}
+.paywall-divider {
+  width: 80px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal-400), transparent);
+  margin: 0 auto 1.8rem;
+}
+.paywall-desc {
+  font-size: 0.88rem; color: var(--text-secondary); font-weight: 300;
+  line-height: 1.8; margin-bottom: 2.2rem; max-width: 440px; margin-left: auto; margin-right: auto;
+}
+.paywall-actions {
+  display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 1.2rem;
+}
+@media (min-width: 480px) {
+  .paywall-actions { flex-direction: row; justify-content: center; }
+}
+.paywall-btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-family: 'Raleway', sans-serif; font-weight: 600; font-size: 0.78rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.85rem 1.6rem; border: 1px solid; cursor: pointer;
+  transition: all 0.25s; text-decoration: none; justify-content: center;
+}
+.paywall-btn-icon {
+  width: 18px; height: 18px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; line-height: 1;
+}
+.paywall-btn-icon svg { width: 16px; height: 16px; fill: currentColor; }
+.paywall-btn-patreon {
+  background: rgba(255,102,0,0.08); border-color: rgba(255,102,0,0.35);
+  color: #ff9966;
+}
+.paywall-btn-patreon:hover {
+  background: rgba(255,102,0,0.18); border-color: rgba(255,102,0,0.6);
+  box-shadow: 0 0 20px rgba(255,102,0,0.15);
+}
+.paywall-btn-subscribestar {
+  background: rgba(26,191,151,0.08); border-color: var(--teal-600);
+  color: var(--teal-300);
+}
+.paywall-btn-subscribestar:hover {
+  background: rgba(26,191,151,0.15); border-color: var(--teal-400);
+  box-shadow: var(--glow);
+}
+.paywall-connecting {
+  font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em;
+  margin-bottom: 0.6rem; animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+.paywall-error {
+  font-size: 0.78rem; color: #e87070;
+  background: rgba(180,30,30,0.08); border: 1px solid rgba(180,30,30,0.2);
+  padding: 0.6rem 1rem; margin-bottom: 0.8rem; line-height: 1.5;
+}
+.paywall-footer {
+  font-size: 0.7rem; color: var(--text-muted); font-weight: 300; line-height: 1.6;
+  margin-top: 1.4rem;
+}

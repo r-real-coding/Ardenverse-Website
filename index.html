@@ -54,6 +54,10 @@
     <li><button id="nav-planets">Worlds</button></li>
     <li><button id="nav-lore">Lore</button></li>
     <li><span class="admin-badge">Admin</span></li>
+    <li>
+      <span class="member-badge" id="memberBadge" style="display:none;" title="Active subscriber">Member</span>
+      <button class="member-logout-btn" id="memberLogoutBtn" style="display:none;" title="Disconnect subscription" aria-label="Disconnect member subscription">✕</button>
+    </li>
   </ul>
 </nav>
 
@@ -115,7 +119,32 @@
     <h1 class="page-title">Gallery <span class="nsfw-badge">18+</span></h1>
     <p class="page-desc">Browse the complete illustration archive. Filter by character, world, or theme.</p>
   </div>
-  <div class="gallery-controls">
+
+  <!-- PAYWALL — shown to non-subscribers; hidden once verified -->
+  <div class="gallery-paywall" id="gallery-paywall" style="display:none;">
+    <div class="paywall-stars"></div>
+    <div class="paywall-box">
+      <div class="paywall-eyebrow">Members Only</div>
+      <h2 class="paywall-title">Gallery Access Required</h2>
+      <div class="paywall-divider"></div>
+      <p class="paywall-desc">The full gallery is available exclusively to active subscribers on Patreon or Subscribestar. Connect your account below to verify your membership and unlock instant access.</p>
+      <div class="paywall-actions">
+        <button class="paywall-btn paywall-btn-patreon" id="connectPatreonBtn">
+          <svg class="paywall-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.82 2C18.78 2 22 5.22 22 9.18c0 3.95-3.22 7.16-7.18 7.16-3.95 0-7.16-3.21-7.16-7.16C7.66 5.22 10.87 2 14.82 2zM2 22h3.5V2H2v20z"/></svg>
+          Connect Patreon
+        </button>
+        <button class="paywall-btn paywall-btn-subscribestar" id="connectSubscribestarBtn">
+          <span class="paywall-btn-icon" aria-hidden="true">★</span>
+          Connect Subscribestar
+        </button>
+      </div>
+      <div class="paywall-connecting" id="paywallConnecting" style="display:none;">Verifying subscription…</div>
+      <div class="paywall-error" id="membershipError" style="display:none;"></div>
+      <p class="paywall-footer">Already subscribed? Click your platform above to verify. Your session is remembered until you close the browser.</p>
+    </div>
+  </div>
+
+  <div class="gallery-controls" id="gallery-controls">
     <input type="text" class="search-box" placeholder="Search by title or tag…" id="gallery-search">
     <div class="filter-group">
       <span class="filter-label">Character:</span>
@@ -269,7 +298,7 @@
           <input type="file" id="modalFileInput" accept="image/*" aria-label="Choose image file">
           <div class="modal-drop-icon">↑</div>
           <div class="modal-drop-label">Drop image or click to browse</div>
-          <div class="modal-drop-sub">JPG · PNG · WEBP · GIF · max 10 MB</div>
+          <div class="modal-drop-sub">JPG · PNG · WEBP · GIF · max 25 MB</div>
         </div>
         <img class="modal-preview-img" id="modalPreviewImg" alt="Preview">
         <div class="modal-preview-name" id="modalPreviewName"></div>
