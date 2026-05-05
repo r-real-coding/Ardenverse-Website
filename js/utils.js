@@ -89,14 +89,24 @@ export function revokeAllUrls() {
   _activeUrls.clear();
 }
 
-// File size validation (bytes)
+// File size + type validation
 export const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
-export function validateFileSize(file) {
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif']);
+
+export function validateFile(file) {
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    showToast('Unsupported format — use JPG, PNG, GIF, WebP, or AVIF', true);
+    return false;
+  }
   if (file.size > MAX_FILE_SIZE) {
     showToast('Image exceeds 25 MB limit', true);
     return false;
   }
   return true;
+}
+
+export function validateFileSize(file) {
+  return validateFile(file);
 }
 
 // Dispatch a data-changed event so app.js can re-render
