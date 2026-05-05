@@ -9,9 +9,9 @@ const HEADERS = { 'Content-Type': 'application/json' };
 const MAX_ATTEMPTS  = 5;
 const WINDOW_SECS   = 15 * 60;
 
-async function checkRateLimit(ip) {
+async function checkRateLimit(ip, context) {
   try {
-    const store = getStore('ratelimit');
+    const store = getStore({ name: 'ratelimit', context });
     const key   = `admin:${ip}`;
     const now   = Math.floor(Date.now() / 1000);
     let data    = { count: 0, windowStart: now };
@@ -35,14 +35,14 @@ async function checkRateLimit(ip) {
   }
 }
 
-async function resetRateLimit(ip) {
+async function resetRateLimit(ip, context) {
   try {
-    const store = getStore('ratelimit');
+    const store = getStore({ name: 'ratelimit', context });
     await store.delete(`admin:${ip}`);
   } catch { /* best-effort */ }
 }
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
              (event.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
              'unknown';
 
-  const rl = await checkRateLimit(ip);
+  const rl = await checkRateLimit(ip, context);
   if (rl.limited) {
     return {
       statusCode: 429,
@@ -86,7 +86,7 @@ exports.handler = async (event) => {
     }
 
     // Successful login — clear the rate-limit counter for this IP
-    await resetRateLimit(ip);
+    await resetRateLimit(ip, context);
 
     const now = Math.floor(Date.now() / 1000);
     const token = signJwt({ sub: 'admin', iat: now, exp: now + 60 * 60 * 8 }); // 8-hour session

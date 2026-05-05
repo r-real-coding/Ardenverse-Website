@@ -5,7 +5,7 @@ const { verifyJwt, getTokenFromEvent } = require('./lib/_jwt');
 const ALLOWED_STORES = new Set(['gallery', 'characters', 'planets', 'lore', 'loreCategories', 'tags']);
 const HEADERS = { 'Content-Type': 'application/json' };
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
@@ -29,7 +29,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const blob = getStore('data');
+    const blob = getStore({ name: 'data', context });
     await blob.set(store, JSON.stringify(data));
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true }) };
   } catch (err) {
