@@ -7,7 +7,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB — must match body_size_limit in netlify.toml
 const HEADERS = { 'Content-Type': 'application/json' };
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
@@ -42,7 +42,7 @@ exports.handler = async (event) => {
 
     // Use Blob for binary storage — more reliably handled by @netlify/blobs than ArrayBuffer.slice()
     const blob = new Blob([buf], { type: mimeType });
-    const store = getStore('images');
+    const store = getStore({ name: 'images', context });
     await store.set(key, blob, { metadata: { contentType: mimeType } });
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ key }) };
   } catch (err) {

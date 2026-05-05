@@ -66,9 +66,9 @@ function escHtml(str) {
 }
 
 // ── Subscriber storage ────────────────────────────────────────────────────────
-async function upsertSubscriber(platform, platformId, data) {
+async function upsertSubscriber(platform, platformId, data, context) {
   try {
-    const store = getStore('subscribers');
+    const store = getStore({ name: 'subscribers', context });
     const key   = `${platform}:${platformId}`;
     let existing = {};
     try {
@@ -95,7 +95,7 @@ function issueMemberJwt(platform, platformId, tier) {
 }
 
 // ── Patreon handler ───────────────────────────────────────────────────────────
-async function handlePatreon(code, siteUrl, state) {
+async function handlePatreon(code, siteUrl, state, context) {
   const clientId     = process.env.PATREON_CLIENT_ID;
   const clientSecret = process.env.PATREON_CLIENT_SECRET;
   const campaignId   = process.env.PATREON_CAMPAIGN_ID; // optional filter
@@ -182,7 +182,7 @@ async function handlePatreon(code, siteUrl, state) {
     tier: isActive ? tier : 'none',
     accessToken:  access_token,
     refreshToken: refresh_token || null,
-  });
+  }, context);
 
   if (!isActive) {
     console.log(`Patreon auth: user ${userId} is not an active patron`);
@@ -194,7 +194,7 @@ async function handlePatreon(code, siteUrl, state) {
 }
 
 // ── Subscribestar handler ─────────────────────────────────────────────────────
-async function handleSubscribestar(code, siteUrl, state) {
+async function handleSubscribestar(code, siteUrl, state, context) {
   const clientId     = process.env.SUBSCRIBESTAR_CLIENT_ID;
   const clientSecret = process.env.SUBSCRIBESTAR_CLIENT_SECRET;
   const ssHost       = process.env.SUBSCRIBESTAR_HOST || 'https://subscribestar.adult';
@@ -276,7 +276,7 @@ async function handleSubscribestar(code, siteUrl, state) {
     tier: isActive ? tier : 'none',
     accessToken:  access_token,
     refreshToken: refresh_token || null,
-  });
+  }, context);
 
   if (!isActive) {
     console.log(`Subscribestar auth: user ${userId} has no active subscription`);
@@ -288,7 +288,7 @@ async function handleSubscribestar(code, siteUrl, state) {
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -309,8 +309,8 @@ exports.handler = async (event) => {
   const siteUrl = process.env.URL || `https://${event.headers.host}`;
 
   try {
-    if (platform === 'patreon')       return await handlePatreon(code, siteUrl, state);
-    if (platform === 'subscribestar') return await handleSubscribestar(code, siteUrl, state);
+    if (platform === 'patreon')       return await handlePatreon(code, siteUrl, state, context);
+    if (platform === 'subscribestar') return await handleSubscribestar(code, siteUrl, state, context);
     return paywallResponse(false, `Unknown platform: ${platform}`, state);
   } catch (err) {
     console.error('member-auth unhandled error:', err);

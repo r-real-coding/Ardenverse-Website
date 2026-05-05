@@ -27,7 +27,7 @@ function verifySignature(rawBody, signature, secret) {
   }
 }
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
@@ -56,7 +56,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const store = getStore('subscribers');
+    const store = getStore({ name: 'subscribers', context });
 
     // The member resource is payload.data; the patron user ID lives in the
     // relationships or in included[] resources.

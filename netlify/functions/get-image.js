@@ -23,7 +23,7 @@ function _isAuthorised(event) {
   return false;
 }
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -38,7 +38,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const store = getStore('images');
+    const store = getStore({ name: 'images', context });
     const result = await store.getWithMetadata(key, { type: 'arrayBuffer' });
     if (!result) return { statusCode: 404, body: 'Not found' };
     const { data, metadata } = result;

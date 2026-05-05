@@ -27,7 +27,7 @@ function verifySignature(rawBody, signatureHeader, secret) {
   }
 }
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
   console.log('Subscribestar webhook event:', eventType);
 
   try {
-    const store = getStore('subscribers');
+    const store = getStore({ name: 'subscribers', context });
 
     // Subscribestar payload shapes vary; handle common formats.
     const subscriber = payload.subscriber || payload.user || payload.data || {};
