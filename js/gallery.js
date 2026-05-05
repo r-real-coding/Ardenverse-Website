@@ -265,8 +265,8 @@ export async function saveImage() {
         await apiDeleteImage(existing.imageKey).catch(() => {});
       }
       imageKey = newKey;
-    } catch {
-      showToast('Image upload failed', true);
+    } catch (err) {
+      showToast(err.message || 'Image upload failed', true);
       btn.classList.remove('saving'); btn.disabled = false;
       return;
     }

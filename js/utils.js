@@ -78,11 +78,6 @@ export function isValidHex(str) {
 
 // Track and revoke object URLs to prevent memory leaks
 const _activeUrls = new Set();
-export function createUrl(blob) {
-  const url = URL.createObjectURL(blob);
-  _activeUrls.add(url);
-  return url;
-}
 export function revokeUrl(url) {
   if (url && _activeUrls.has(url)) {
     URL.revokeObjectURL(url);
@@ -107,4 +102,12 @@ export function validateFileSize(file) {
 // Dispatch a data-changed event so app.js can re-render
 export function notifyDataChanged() {
   document.dispatchEvent(new CustomEvent('arden:datachanged'));
+}
+
+// Generate a unique slug that doesn't collide with existingSlugs
+export function uniqueSlug(base, existingSlugs) {
+  if (!existingSlugs.includes(base)) return base;
+  let i = 2;
+  while (existingSlugs.includes(`${base}-${i}`)) i++;
+  return `${base}-${i}`;
 }

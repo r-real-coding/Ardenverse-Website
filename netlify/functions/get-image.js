@@ -15,7 +15,9 @@ exports.handler = async (event) => {
 
   try {
     const store = getStore('images');
-    const { data, metadata } = await store.getWithMetadata(key, { type: 'arrayBuffer' });
+    const result = await store.getWithMetadata(key, { type: 'arrayBuffer' });
+    if (!result) return { statusCode: 404, body: 'Not found' };
+    const { data, metadata } = result;
     if (!data) return { statusCode: 404, body: 'Not found' };
 
     const contentType = metadata?.contentType || 'image/jpeg';

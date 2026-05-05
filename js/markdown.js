@@ -22,7 +22,7 @@ export function md(text) {
   // Headings
   t = t.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   t = t.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  t = t.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+  t = t.replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
   // Blockquotes (collapse consecutive lines)
   t = t.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');

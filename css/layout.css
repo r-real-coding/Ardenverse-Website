@@ -100,7 +100,9 @@ body > nav {
   letter-spacing: 0.25em; color: var(--gold);
   border: 1px solid rgba(201,168,76,0.25); background: rgba(201,168,76,0.06);
   padding: 0.25rem 0.7rem; text-transform: uppercase; display: none;
+  cursor: pointer; transition: background 0.2s;
 }
+.admin-badge:hover { background: rgba(201,168,76,0.15); }
 .admin-mode .admin-badge { display: inline-block; }
 
 /* Member badge — shown when subscriber token is active */
