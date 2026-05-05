@@ -76,6 +76,9 @@ function _initKeyboard() {
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 (async () => {
+  // Age gate must be wired before any async work so clicks are never missed
+  document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
+  document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
   checkAgeGate();
 
   try {
@@ -117,9 +120,6 @@ function _initKeyboard() {
 
   window.adminLogin = adminLogin;
   document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
-
-  document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
-  document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
 
   document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
   document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);

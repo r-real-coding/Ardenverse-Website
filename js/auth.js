@@ -7,12 +7,15 @@ const AGE_GATE_KEY = 'arden_age_verified';
 export function checkAgeGate() {
   if (localStorage.getItem(AGE_GATE_KEY) === 'true') {
     document.getElementById('ageGate').classList.add('hidden');
+  } else {
+    document.body.style.overflow = 'hidden';
   }
 }
 
 export function acceptAgeGate() {
   localStorage.setItem(AGE_GATE_KEY, 'true');
   document.getElementById('ageGate').classList.add('hidden');
+  document.body.style.overflow = '';
 }
 
 export function declineAgeGate() {
