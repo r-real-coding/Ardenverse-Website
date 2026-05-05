@@ -21,28 +21,34 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Invalid or missing X-Image-Key header' }) };
   }
 
-  const contentType = event.headers['content-type'] || '';
-  if (!ALLOWED_TYPES.has(contentType.split(';')[0].trim())) {
+  const mimeType = (event.headers['content-type'] || '').split(';')[0].trim();
+  if (!ALLOWED_TYPES.has(mimeType)) {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Unsupported image type' }) };
   }
 
   try {
+    // Netlify base64-encodes binary request bodies; guard against a null body just in case.
     const buf = event.isBase64Encoded
-      ? Buffer.from(event.body, 'base64')
-      : Buffer.from(event.body ?? '', 'binary');
+      ? Buffer.from(event.body || '', 'base64')
+      : Buffer.from(event.body || '', 'binary');
 
     if (buf.length > MAX_BYTES) {
       return { statusCode: 413, headers: HEADERS, body: JSON.stringify({ error: 'Image exceeds 25 MB limit' }) };
     }
 
-    // @netlify/blobs requires ArrayBuffer, not a Node Buffer
-    const arrayBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+    if (buf.length === 0) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Empty image body' }) };
+    }
 
+    // Use Blob for binary storage — more reliably handled by @netlify/blobs than ArrayBuffer.slice()
+    const blob = new Blob([buf], { type: mimeType });
     const store = getStore('images');
-    await store.set(key, arrayBuffer, { metadata: { contentType } });
+    await store.set(key, blob, { metadata: { contentType: mimeType } });
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ key }) };
   } catch (err) {
-    console.error('upload-image error:', err);
-    return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Internal error' }) };
+    // Surface the underlying error message so it's visible in the network tab during debugging.
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('upload-image error:', msg, err);
+    return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: `Internal error: ${msg}` }) };
   }
 };
