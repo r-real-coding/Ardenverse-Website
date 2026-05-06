@@ -8,20 +8,20 @@ export let LORE       = [];
 export let TAGS       = [];
 
 export async function loadAll() {
-  const [gallery, characters, planets, loreCats, lore, tags] = await Promise.all([
-    apiGetData('gallery'),
-    apiGetData('characters'),
-    apiGetData('planets'),
-    apiGetData('loreCategories'),
-    apiGetData('lore'),
-    apiGetData('tags'),
-  ]);
+  const stores  = ['gallery', 'characters', 'planets', 'loreCategories', 'lore', 'tags'];
+  const results = await Promise.allSettled(stores.map(s => apiGetData(s)));
+  const [gallery, characters, planets, loreCats, lore, tags] = results.map((r, i) => {
+    if (r.status === 'rejected') { console.error(`Failed to load ${stores[i]}:`, r.reason); return null; }
+    return r.value;
+  });
   GALLERY    = (gallery     || []).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   CHARACTERS = (characters  || []).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   PLANETS    = (planets     || []).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   LORE_CATS  = (loreCats    || []).sort((a, b) => (a.order     || 0) - (b.order     || 0));
   LORE       = (lore        || []).sort((a, b) => (a.title     || '').localeCompare(b.title || ''));
   TAGS       = (tags        || []).sort((a, b) => (a.name      || '').localeCompare(b.name  || ''));
+  const failed = results.filter(r => r.status === 'rejected').length;
+  if (failed > 0) throw new Error(`${failed} of 6 data stores failed to load`);
 }
 
 export function setGallery(arr)    { GALLERY    = arr; }

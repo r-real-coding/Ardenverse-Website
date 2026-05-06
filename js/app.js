@@ -7,14 +7,17 @@ import { renderChars, openCharDetail, closeCharDetail, openCharModal, closeCharM
 import { renderPlanets, openPlanetModal, closePlanetModal, initPlanets } from './planets.js';
 import { renderLoreSidebar, openLoreEntry, addLoreCategory, openLoreModal, closeLoreModal, initLore } from './lore.js';
 import { initTags } from './tags.js';
-import { initMembership, renderMemberBadge } from './membership.js';
+import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 export function showSection(id) {
+  const section = document.getElementById('section-' + id);
+  const navBtn  = document.getElementById('nav-' + id);
+  if (!section || !navBtn) { console.warn(`showSection: unknown section "${id}"`); return; }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + id).classList.add('active');
+  section.classList.add('active');
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-  document.getElementById('nav-' + id).classList.add('active');
+  navBtn.classList.add('active');
   window.scrollTo(0, 0);
 }
 
@@ -25,8 +28,15 @@ export function renderHome() {
   document.getElementById('stat-lore').textContent          = LORE.length;
   document.getElementById('stat-images').textContent        = GALLERY.length;
 
-  const recent    = GALLERY.filter(g => g.imageKey).slice(0, 3);
+  const isAdmin   = document.body.classList.contains('admin-mode');
   const container = document.getElementById('home-recent');
+
+  if (!isSubscriber() && !isAdmin) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;font-weight:300;">Subscribe to see recent artwork.</div>';
+    return;
+  }
+
+  const recent = GALLERY.filter(g => g.imageKey).slice(0, 3);
   if (!recent.length) {
     container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;font-weight:300;">No images yet.</div>';
     return;
@@ -145,6 +155,18 @@ function _initKeyboard() {
   document.addEventListener('arden:datachanged', () => {
     try { renderAll(); } catch (err) { console.error('Render error:', err); showToast('Render error — please reload', true); }
   });
+
+  document.addEventListener('arden:adminexpired', () => {
+    adminLogout();
+    showToast('Admin session expired — please log in again', true);
+  });
+
+  // Detect mid-session token expiry every 60 s
+  setInterval(() => {
+    if (document.body.classList.contains('admin-mode') && !checkAdminSession()) {
+      document.dispatchEvent(new CustomEvent('arden:adminexpired'));
+    }
+  }, 60_000);
 
   window.addEventListener('beforeunload', revokeAllUrls);
 

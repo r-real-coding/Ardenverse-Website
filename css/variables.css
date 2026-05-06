@@ -12,7 +12,10 @@
 
   --text-primary: #e8f5f2;
   --text-secondary: #8ecfbf;
-  --text-muted: #4a8a7a;
+  --text-muted: #6fb5a5;
+
+  --text-xs: clamp(0.65rem, 1.2vw, 0.72rem);
+  --text-sm: clamp(0.75rem, 1.4vw, 0.82rem);
 
   --bg-base: #020f0d;
   --bg-surface: #041a17;

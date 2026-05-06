@@ -373,7 +373,7 @@
   position: fixed; inset: 0;
   background: rgba(2,15,13,0.75);
   z-index: 149;
-  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
 }
 .lore-sidebar-overlay.visible { display: block; }
 

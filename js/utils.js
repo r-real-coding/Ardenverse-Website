@@ -14,6 +14,7 @@ export function showToast(msg, error = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast' + (error ? ' error' : '') + ' show';
+  t.setAttribute('aria-live', error ? 'assertive' : 'polite');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
@@ -31,9 +32,10 @@ export function closeConfirm() {
   _confirmCb = null;
 }
 export function initConfirm() {
-  document.getElementById('confirmOk').addEventListener('click', () => {
-    if (_confirmCb) _confirmCb();
+  document.getElementById('confirmOk').addEventListener('click', async () => {
+    const cb = _confirmCb;
     closeConfirm();
+    if (cb) { try { await cb(); } catch (err) { console.error('Confirm callback failed:', err); } }
   });
   document.getElementById('confirmCancelBtn').addEventListener('click', closeConfirm);
 }
@@ -55,18 +57,16 @@ export function closePrompt() {
   _promptCb = null;
 }
 export function initPrompt() {
-  document.getElementById('promptOk').addEventListener('click', () => {
-    const v = document.getElementById('promptInput').value.trim();
-    if (v && _promptCb) _promptCb(v);
+  const _submit = async () => {
+    const v  = document.getElementById('promptInput').value.trim();
+    const cb = _promptCb;
     closePrompt();
-  });
+    if (v && cb) { try { await cb(v); } catch (err) { console.error('Prompt callback failed:', err); } }
+  };
+  document.getElementById('promptOk').addEventListener('click', _submit);
   document.getElementById('promptCancelBtn').addEventListener('click', closePrompt);
   document.getElementById('promptInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const v = document.getElementById('promptInput').value.trim();
-      if (v && _promptCb) _promptCb(v);
-      closePrompt();
-    }
+    if (e.key === 'Enter') _submit();
     if (e.key === 'Escape') closePrompt();
   });
 }

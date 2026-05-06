@@ -7,8 +7,13 @@ body {
   font-size: 15px;
   line-height: 1.7;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip; /* clip preserves sticky/fixed positioning unlike hidden */
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: var(--teal-800) var(--bg-base);
 }
+
+img { max-width: 100%; display: block; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
@@ -126,6 +131,30 @@ body {
   font-size: 1.5rem;
 }
 .add-label { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; }
+
+/* Focus visible — keyboard navigation indicator */
+:focus-visible {
+  outline: 2px solid var(--teal-400);
+  outline-offset: 2px;
+}
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--teal-400);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(26, 191, 151, 0.2);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 /* Animations */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

@@ -93,9 +93,9 @@ export function renderGallery() {
     const lbIdx  = _lightboxItems.findIndex(x => x.uuid === item.uuid);
     const imgSrc = item.imageKey ? imageUrl(item.imageKey) : null;
     return `<div class="gallery-item" data-uuid="${esc(item.uuid)}"
-        ${imgSrc ? `data-lb-idx="${lbIdx}"` : 'style="cursor:default;"'}>
+        ${imgSrc ? `data-lb-idx="${lbIdx}" role="button" tabindex="0" aria-label="${esc(item.title)}"` : 'style="cursor:default;"'}>
       ${imgSrc
-        ? `<img class="gallery-thumb" src="${esc(imgSrc)}" alt="${esc(item.title)}" loading="lazy">`
+        ? `<img class="gallery-thumb" src="${esc(imgSrc)}" alt="${esc(item.title)}" loading="lazy" width="400" height="533">`
         : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
             background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;
             letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
@@ -136,12 +136,15 @@ export function openLightbox(idx) {
   if (idx < 0 || idx >= _lightboxItems.length) return;
   _lightboxIndex = idx;
   const item = _lightboxItems[idx];
-  document.getElementById('lightbox-img').src = imageUrl(item.imageKey);
+  const img = document.getElementById('lightbox-img');
+  img.src = imageUrl(item.imageKey);
+  img.alt = item.title;
   document.getElementById('lightbox-title').textContent = item.title;
   document.getElementById('lightbox-desc').textContent  = item.desc || '';
   document.getElementById('lightbox-tags').innerHTML = (item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
+  document.getElementById('lightbox-close').focus();
 }
 
 export function closeLightbox() {
@@ -150,6 +153,7 @@ export function closeLightbox() {
 }
 
 export function lightboxNav(d) {
+  if (_lightboxItems.length === 0) return;
   openLightbox((_lightboxIndex + d + _lightboxItems.length) % _lightboxItems.length);
 }
 
@@ -190,6 +194,7 @@ export function openUploadModal() {
   _resetUploadModal();
   document.getElementById('uploadModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('modalTitle').focus(), 50);
 }
 
 export function closeUploadModal() {
@@ -311,18 +316,30 @@ export function confirmDeleteImage(itemUuid, title) {
 }
 
 export async function deleteImage(itemUuid) {
-  const item = GALLERY.find(x => x.uuid === itemUuid);
-  if (item?.imageKey) await apiDeleteImage(item.imageKey).catch(() => {});
-  const updated = GALLERY.filter(x => x.uuid !== itemUuid);
+  const item     = GALLERY.find(x => x.uuid === itemUuid);
+  const snapshot = [...GALLERY];
+  const updated  = GALLERY.filter(x => x.uuid !== itemUuid);
   setGallery(updated);
-  await apiPutData('gallery', updated);
+  try {
+    await apiPutData('gallery', updated);
+  } catch {
+    setGallery(snapshot);
+    showToast('Failed to delete — please try again', true);
+    notifyDataChanged();
+    return;
+  }
+  if (item?.imageKey) await apiDeleteImage(item.imageKey).catch(() => {});
   notifyDataChanged();
   showToast('Image deleted');
 }
 
 export function deleteCurrentImage() {
-  confirmDeleteImage(mState.editUuid, document.getElementById('modalTitle').value.trim());
-  closeUploadModal();
+  const uuid  = mState.editUuid;
+  const title = document.getElementById('modalTitle').value.trim();
+  showConfirm('Delete Image', `Delete "${title}"? This cannot be undone.`, async () => {
+    closeUploadModal();
+    await deleteImage(uuid);
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
@@ -350,6 +367,24 @@ export function initGallery() {
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
   document.getElementById('lightbox-prev').addEventListener('click', () => lightboxNav(-1));
   document.getElementById('lightbox-next').addEventListener('click', () => lightboxNav(1));
+
+  // Swipe support for mobile
+  let _touchStartX = 0;
+  document.getElementById('lightbox').addEventListener('touchstart', e => {
+    _touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+  document.getElementById('lightbox').addEventListener('touchend', e => {
+    const delta = e.changedTouches[0].screenX - _touchStartX;
+    if (Math.abs(delta) > 50) lightboxNav(delta < 0 ? 1 : -1);
+  }, { passive: true });
+
+  // Keyboard access for gallery items
+  document.getElementById('gallery-grid').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const card = e.target.closest('.gallery-item[data-lb-idx]');
+      if (card) { e.preventDefault(); openLightbox(parseInt(card.dataset.lbIdx, 10)); }
+    }
+  });
 
   const drop = document.getElementById('modalDropZone');
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });

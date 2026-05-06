@@ -116,10 +116,12 @@ let _urlsFetched = false;
 
 async function ensureOAuthUrls() {
   if (_urlsFetched) return;
-  _urlsFetched = true;
   try {
     const res = await fetch('/.netlify/functions/get-oauth-url');
-    if (res.ok) _cachedUrls = await res.json();
+    if (res.ok) {
+      _cachedUrls = await res.json();
+      _urlsFetched = true; // only mark fetched on success so failed attempts can retry
+    }
   } catch (err) {
     console.warn('Could not fetch OAuth URLs:', err);
   }

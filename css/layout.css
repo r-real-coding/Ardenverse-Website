@@ -74,9 +74,9 @@
 /* NAV */
 body > nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(2,15,13,0.92); backdrop-filter: blur(12px);
+  background: rgba(2,15,13,0.92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 0 2rem;
+  padding: 0 max(2rem, env(safe-area-inset-right)) 0 max(2rem, env(safe-area-inset-left));
   display: flex; align-items: center; justify-content: space-between;
   height: 64px;
 }
@@ -122,12 +122,12 @@ body > nav {
 .member-logout-btn:hover { color: #e87070; }
 
 /* SECTIONS */
-.section { display: none; min-height: calc(100vh - 64px); }
+.section { display: none; min-height: calc(100vh - 64px); min-height: calc(100dvh - 64px); }
 .section.active { display: block; animation: fadeIn 0.3s ease; }
 
 /* HERO */
 .hero {
-  position: relative; min-height: calc(100vh - 64px);
+  position: relative; min-height: calc(100vh - 64px); min-height: calc(100dvh - 64px);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
 .hero-bg {
@@ -216,7 +216,7 @@ body > nav {
   font-family: 'Orbitron', sans-serif; font-size: 0.5rem;
   letter-spacing: 0.1em; text-transform: uppercase;
   padding: 0.25rem 0.55rem; cursor: pointer; transition: all 0.2s;
-  white-space: nowrap; backdrop-filter: blur(4px);
+  white-space: nowrap; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
 }
 .card-admin-btn:hover { border-color: var(--teal-400); color: var(--teal-300); }
 .card-admin-btn.del:hover { border-color: rgba(220,60,60,0.5); color: #e87070; }

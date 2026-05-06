@@ -17,7 +17,7 @@ export function renderPlanets() {
     const safeColor  = isValidHex(p.color)  ? p.color  : '#1abf97';
     const safeColorB = isValidHex(p.colorB) ? p.colorB : '#0d4a40';
     const visual = p.imageKey
-      ? `<img class="planet-image" src="${esc(imageUrl(p.imageKey))}" alt="${esc(p.name)}" loading="lazy">`
+      ? `<img class="planet-image" src="${esc(imageUrl(p.imageKey))}" alt="${esc(p.name)}" loading="lazy" width="800" height="533">`
       : `<div class="planet-visual" style="background:linear-gradient(135deg,#041a17 0%,${safeColorB} 60%,#020f0d 100%)">
            <div class="planet-orb" style="background:radial-gradient(circle at 35% 35%,${safeColor}88 0%,${safeColorB} 60%,#020f0d 100%);"></div>
          </div>`;
@@ -102,6 +102,7 @@ export function openPlanetModal() {
   _resetPlanetModal();
   document.getElementById('planetModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('pName').focus(), 50);
 }
 
 export function closePlanetModal() {
@@ -239,18 +240,30 @@ export function confirmDeletePlanet(planetUuid, name) {
 }
 
 export async function deletePlanet(planetUuid) {
-  const planet = PLANETS.find(x => x.uuid === planetUuid);
-  if (planet?.imageKey) await apiDeleteImage(planet.imageKey).catch(() => {});
-  const updated = PLANETS.filter(x => x.uuid !== planetUuid);
+  const planet   = PLANETS.find(x => x.uuid === planetUuid);
+  const snapshot = [...PLANETS];
+  const updated  = PLANETS.filter(x => x.uuid !== planetUuid);
   setPlanets(updated);
-  await apiPutData('planets', updated);
+  try {
+    await apiPutData('planets', updated);
+  } catch {
+    setPlanets(snapshot);
+    showToast('Failed to delete — please try again', true);
+    notifyDataChanged();
+    return;
+  }
+  if (planet?.imageKey) await apiDeleteImage(planet.imageKey).catch(() => {});
   notifyDataChanged();
   showToast('World deleted');
 }
 
 export function deleteCurrentPlanet() {
-  confirmDeletePlanet(_editingPlanetUuid, document.getElementById('pName').value.trim());
-  closePlanetModal();
+  const uuid = _editingPlanetUuid;
+  const name = document.getElementById('pName').value.trim();
+  showConfirm('Delete World', `Delete "${name}"? This cannot be undone.`, async () => {
+    closePlanetModal();
+    await deletePlanet(uuid);
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

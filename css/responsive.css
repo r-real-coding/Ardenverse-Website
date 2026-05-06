@@ -11,6 +11,8 @@
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0.45rem 0.6rem;
+  min-width: 44px;
+  min-height: 44px;
   line-height: 1;
   flex-direction: column;
   gap: 5px;
@@ -38,12 +40,15 @@
    * nav has backdrop-filter which makes it a containing block for position:fixed children —
    * defeating any floating dropdown approach. Instead, expand the nav in-place vertically.
    * height:auto + flex-wrap lets the links row below the logo/hamburger row.
+   * Disable backdrop-filter on mobile — fires every scroll frame and causes jank.
    */
   body > nav {
-    padding: 0 1.2rem;
+    padding: 0 max(1.2rem, env(safe-area-inset-right)) 0 max(1.2rem, env(safe-area-inset-left));
     height: auto;
     flex-wrap: wrap;
     align-items: center;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    background: rgba(2,15,13,0.98);
   }
 
   .nav-logo { flex: 1; }
@@ -171,6 +176,66 @@
   .age-gate-subtitle { font-size: 0.75rem; }
   .age-gate-buttons  { flex-direction: column; }
   .age-btn           { width: 100%; }
+}
+
+/* ── MODALS: safe-area + momentum scrolling ─────────────── */
+.upload-modal,
+.char-detail,
+.lightbox {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Toast — safe area aware */
+.toast {
+  bottom: max(2rem, env(safe-area-inset-bottom));
+  right: max(2rem, env(safe-area-inset-right));
+}
+
+/* Lightbox close — safe area aware */
+.lightbox-close {
+  top: max(1.5rem, env(safe-area-inset-top));
+  right: max(1.5rem, env(safe-area-inset-right));
+}
+
+/* ── TOUCH TARGETS — ensure 44×44 px minimum ────────────── */
+@media (hover: none) {
+  .filter-btn {
+    min-height: 44px;
+    padding: 0.55rem 1rem;
+  }
+  .modal-tag-opt {
+    min-height: 44px;
+    padding: 0.6rem 0.8rem;
+    display: flex;
+    align-items: center;
+  }
+  .lore-entry-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .close-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .member-logout-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── GALLERY OVERLAY — touch devices ────────────────────── */
+/* On touch screens, always show overlay so first tap opens lightbox */
+@media (hover: none) {
+  .gallery-item:hover .gallery-thumb { transform: none; }
+  .gallery-overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(2,15,13,0.85) 0%, transparent 60%);
+  }
 }
 
 /* ── SMALL PHONES (≤ 480px) ─────────────────────────────── */

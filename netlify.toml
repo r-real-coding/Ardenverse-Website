@@ -24,7 +24,7 @@
     X-Robots-Tag = "noindex, nofollow"
     # img-src: 'self' data: blob: only — no wildcard https: (images are served from same origin)
     # object-src 'none' blocks Flash/plugins; base-uri 'self' blocks base-tag injection
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
 
 [[headers]]
   for = "/robots.txt"

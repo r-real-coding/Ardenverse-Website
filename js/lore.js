@@ -24,7 +24,7 @@ export function renderLoreSidebar() {
     }
     const isExp = _expandedCats.has(cat.uuid) || !!search;
     return `<div class="lore-cat-group ${isExp ? 'expanded' : ''}">
-      <button class="lore-cat ${isExp ? 'expanded' : ''}" data-cat-uuid="${esc(cat.uuid)}">
+      <button class="lore-cat ${isExp ? 'expanded' : ''}" data-cat-uuid="${esc(cat.uuid)}" aria-expanded="${isExp ? 'true' : 'false'}">
         <span class="lore-cat-name">${esc(cat.name)}</span>
         <span class="lore-cat-count">${entries.length}</span>
         <span class="lore-cat-arrow">▶</span>
@@ -92,9 +92,14 @@ export async function addLoreCategory() {
     const cat = { uuid: newUuid(), name, order: LORE_CATS.length, createdAt: Date.now() };
     LORE_CATS.push(cat);
     LORE_CATS.sort((a, b) => (a.order || 0) - (b.order || 0));
-    await apiPutData('loreCategories', LORE_CATS);
-    renderLoreSidebar();
-    showToast('Category added');
+    try {
+      await apiPutData('loreCategories', LORE_CATS);
+      renderLoreSidebar();
+      showToast('Category added');
+    } catch {
+      LORE_CATS.pop();
+      showToast('Failed to add category', true);
+    }
   });
 }
 
@@ -260,14 +265,18 @@ export async function deleteLore(loreUuid) {
 }
 
 export function deleteCurrentLore() {
-  confirmDeleteLore(_editingLoreUuid, document.getElementById('lTitle').value.trim());
-  closeLoreModal();
+  const uuid  = _editingLoreUuid;
+  const title = document.getElementById('lTitle').value.trim();
+  showConfirm('Delete Entry', `Delete "${title}"? This cannot be undone.`, async () => {
+    closeLoreModal();
+    await deleteLore(uuid);
+  });
 }
 
 function _showEmptyLore() {
   document.getElementById('lore-content').innerHTML = `
     <div class="lore-empty-content">
-      <div class="lore-empty-icon">⌬</div>
+      <div class="lore-empty-icon" aria-hidden="true">⌬</div>
       <div class="lore-empty-heading">Ardenverse Wiki</div>
       <p class="lore-empty-sub">Select an entry from the sidebar to begin reading.</p>
     </div>`;
