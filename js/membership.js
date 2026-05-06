@@ -105,7 +105,7 @@ function _handlePopupMessage(event) {
 
 // ── OAuth URLs (fetched per-connect, fresh state each time) ───────────────────
 async function _fetchOAuthUrls(state) {
-  const res = await fetch(`/.netlify/functions/get-oauth-url?state=${encodeURIComponent(state)}`);
+  const res = await fetch(`/api/get-oauth-url?state=${encodeURIComponent(state)}`);
   if (!res.ok) throw new Error(`get-oauth-url failed (${res.status})`);
   return res.json();
 }
@@ -117,7 +117,7 @@ let _urlsFetched = false;
 async function ensureOAuthUrls() {
   if (_urlsFetched) return;
   try {
-    const res = await fetch('/.netlify/functions/get-oauth-url');
+    const res = await fetch('/api/get-oauth-url');
     if (res.ok) {
       _cachedUrls = await res.json();
       _urlsFetched = true; // only mark fetched on success so failed attempts can retry

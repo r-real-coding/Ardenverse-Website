@@ -1,4 +1,4 @@
-const BASE = '/.netlify/functions';
+const BASE = '/api';
 
 // ── UUID ──────────────────────────────────────────────────────────────────────
 export function newUuid() {
@@ -62,12 +62,10 @@ export async function apiPutData(store, data) {
 
 // ── Image operations ──────────────────────────────────────────────────────────
 export async function apiUploadImage(file) {
-  const key = newUuid();
   const res = await fetch(`${BASE}/upload-image`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${_token()}`,
-      'X-Image-Key': key,
       'Content-Type': file.type || 'image/jpeg',
     },
     body: file,
@@ -76,6 +74,7 @@ export async function apiUploadImage(file) {
     const msg = await res.json().then(j => j.error).catch(() => null);
     throw new Error(msg || `Image upload failed (${res.status})`);
   }
+  const { key } = await res.json();
   return key;
 }
 
