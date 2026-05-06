@@ -2,11 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{if(localStorage.getItem('arden_age_verified')==='true')document.documentElement.classList.add('age-verified')}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="RATING" content="RTA-5042-1996-1400-1577-RTA">
+<meta name="description" content="Ardenverse — original sci-fi/fantasy adult art universe by Demimond. Members-only gallery, characters, worlds, and lore.">
+<meta property="og:title" content="Demimond — Ardenverse">
+<meta property="og:description" content="Original sci-fi/fantasy adult art universe. Members only.">
+<meta property="og:type" content="website">
 <title>Demimond — Ardenverse</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="modulepreload" href="js/app.js">
+<link rel="modulepreload" href="js/state.js">
+<link rel="modulepreload" href="js/api.js">
 <link rel="stylesheet" href="css/variables.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
@@ -16,6 +26,7 @@
 <link rel="stylesheet" href="css/lore.css">
 <link rel="stylesheet" href="css/modals.css">
 <link rel="stylesheet" href="css/responsive.css">
+<style>html.age-verified .age-gate{display:none!important}</style>
 </head>
 <body>
 
@@ -31,13 +42,13 @@
     <div class="age-gate-subtitle">by Demimond</div>
     <div class="age-gate-divider"></div>
     <div class="age-gate-warning">
-      <div class="age-gate-warning-label">⚠ 18+ Content Warning</div>
+      <div class="age-gate-warning-label"><span aria-hidden="true">⚠</span> 18+ Content Warning</div>
       <p>This site contains original artwork and worldbuilding intended for mature audiences only. Material may include sensual or suggestive themes, fantasy violence, and adult subject matter.</p>
     </div>
     <p class="age-gate-statement">By entering, you confirm that you are <strong>at least 18 years of age</strong> (or the legal age of majority in your jurisdiction), and that you wish to view artistic and creative content of an adult nature. All content is original IP &copy; Demimond — all rights reserved.</p>
     <div class="age-gate-buttons">
-      <button class="age-btn age-btn-enter" id="age-btn-enter">I am 18+ — Enter</button>
-      <button class="age-btn age-btn-exit"  id="age-btn-exit">Exit</button>
+      <button type="button" class="age-btn age-btn-enter" id="age-btn-enter">I am 18+ — Enter</button>
+      <button type="button" class="age-btn age-btn-exit"  id="age-btn-exit">Exit</button>
     </div>
     <div class="age-gate-footer">Your choice is remembered on this browser.</div>
   </div>
@@ -46,7 +57,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      NAVIGATION
 ════════════════════════════════════════════════════════════ -->
-<nav>
+<nav aria-label="Main navigation">
   <div class="nav-logo">DEMIMOND <span>ardenverse</span></div>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -120,7 +131,7 @@
 <section id="section-gallery" class="section">
   <div class="page-header">
     <div class="page-eyebrow">Visual Archive</div>
-    <h1 class="page-title">Gallery <span class="nsfw-badge">18+</span></h1>
+    <h2 class="page-title">Gallery <span class="nsfw-badge">18+</span></h2>
     <p class="page-desc">Browse the complete illustration archive. Filter by character, world, or theme.</p>
   </div>
 
@@ -173,7 +184,7 @@
 <section id="section-characters" class="section">
   <div class="page-header">
     <div class="page-eyebrow">Cast of the Ardenverse</div>
-    <h1 class="page-title">Characters</h1>
+    <h2 class="page-title">Characters</h2>
     <p class="page-desc">The inhabitants, entities, and beings that shape the Ardenverse.</p>
   </div>
   <div class="chars-grid" id="chars-grid"></div>
@@ -194,7 +205,7 @@
 <section id="section-planets" class="section">
   <div class="page-header">
     <div class="page-eyebrow">Charted Territories</div>
-    <h1 class="page-title">Worlds &amp; Planets</h1>
+    <h2 class="page-title">Worlds &amp; Planets</h2>
     <p class="page-desc">From verdant living domains to shattered orbital megastructures.</p>
   </div>
   <div class="planets-grid" id="planets-grid"></div>
@@ -206,7 +217,7 @@
 <section id="section-lore" class="section">
   <div class="page-header">
     <div class="page-eyebrow">The Canon</div>
-    <h1 class="page-title">Ardenverse Wiki</h1>
+    <h2 class="page-title">Ardenverse Wiki</h2>
     <p class="page-desc">An expanding compendium of history, factions, species, technology, and more — searchable and tagged.</p>
   </div>
   <div class="lore-layout">
@@ -216,7 +227,7 @@
         <div class="lore-nav-title">Wiki Index</div>
         <div class="lore-nav-search">
           <div class="lore-search-wrap">
-            <span class="lore-search-icon">⌕</span>
+            <span class="lore-search-icon" aria-hidden="true">⌕</span>
             <input type="text" id="lore-search" placeholder="Search entries…" aria-label="Search wiki">
           </div>
         </div>
@@ -229,7 +240,7 @@
       <button class="lore-sidebar-toggle" id="lore-sidebar-toggle">☰ Browse Wiki</button>
       <div class="lore-content" id="lore-content">
         <div class="lore-empty-content">
-          <div class="lore-empty-icon">⌬</div>
+          <div class="lore-empty-icon" aria-hidden="true">⌬</div>
           <div class="lore-empty-heading">Ardenverse Wiki</div>
           <p class="lore-empty-sub">Select an entry from the sidebar to begin reading.</p>
         </div>
@@ -287,7 +298,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      IMAGE UPLOAD / EDIT MODAL
 ════════════════════════════════════════════════════════════ -->
-<div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true">
+<div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
   <div class="upload-modal-inner">
     <div class="upload-modal-header">
       <div>
@@ -299,7 +310,7 @@
     <div class="upload-modal-body">
       <div>
         <div class="modal-drop-zone" id="modalDropZone">
-          <input type="file" id="modalFileInput" accept="image/*" aria-label="Choose image file">
+          <input type="file" id="modalFileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" aria-label="Choose image file">
           <div class="modal-drop-icon">↑</div>
           <div class="modal-drop-label">Drop image or click to browse</div>
           <div class="modal-drop-sub">JPG · PNG · WEBP · GIF · max 25 MB</div>
@@ -355,7 +366,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      CHARACTER MODAL
 ════════════════════════════════════════════════════════════ -->
-<div class="upload-modal" id="charModal" role="dialog" aria-modal="true">
+<div class="upload-modal" id="charModal" role="dialog" aria-modal="true" aria-labelledby="charModalTitle">
   <div class="upload-modal-inner" style="max-width:760px;">
     <div class="upload-modal-header">
       <div>
@@ -368,7 +379,7 @@
       <div>
         <label class="modal-label">Portrait</label>
         <div class="modal-drop-zone" id="charDropZone" style="aspect-ratio:3/4;min-height:0;">
-          <input type="file" id="charFileInput" accept="image/*" aria-label="Choose portrait image">
+          <input type="file" id="charFileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" aria-label="Choose portrait image">
           <div class="modal-drop-icon">↑</div>
           <div class="modal-drop-label" style="text-align:center;padding:0 1rem;">Drop or click<br>(optional)</div>
         </div>
@@ -432,7 +443,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      PLANET MODAL
 ════════════════════════════════════════════════════════════ -->
-<div class="upload-modal" id="planetModal" role="dialog" aria-modal="true">
+<div class="upload-modal" id="planetModal" role="dialog" aria-modal="true" aria-labelledby="planetModalTitle">
   <div class="upload-modal-inner" style="max-width:760px;">
     <div class="upload-modal-header">
       <div>
@@ -445,7 +456,7 @@
       <div>
         <label class="modal-label">World Image (optional)</label>
         <div class="modal-drop-zone" id="planetDropZone" style="min-height:160px;">
-          <input type="file" id="planetFileInput" accept="image/*" aria-label="Choose world image">
+          <input type="file" id="planetFileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" aria-label="Choose world image">
           <div class="modal-drop-icon">↑</div>
           <div class="modal-drop-label" style="text-align:center;padding:0 1rem;">Drop or click<br>(orb fallback if empty)</div>
         </div>
@@ -519,7 +530,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      LORE ENTRY MODAL
 ════════════════════════════════════════════════════════════ -->
-<div class="upload-modal" id="loreModal" role="dialog" aria-modal="true">
+<div class="upload-modal" id="loreModal" role="dialog" aria-modal="true" aria-labelledby="loreModalTitle">
   <div class="upload-modal-inner" style="max-width:780px;">
     <div class="upload-modal-header">
       <div>

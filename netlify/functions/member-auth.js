@@ -23,10 +23,12 @@ const PATREON_IDENTITY_URL = 'https://www.patreon.com/api/oauth2/v2/identity';
 const MEMBER_TTL_SECONDS = 24 * 60 * 60;
 
 // ── HTML popup response ───────────────────────────────────────────────────────
-function paywallResponse(success, payload) {
+// state is echoed back so the opener can verify the CSRF token it sent.
+function paywallResponse(success, payload, state) {
+  const stateField = state ? `, state: ${JSON.stringify(state)}` : '';
   const msg = success
-    ? `{ type: 'MEMBER_AUTH', token: ${JSON.stringify(payload)} }`
-    : `{ type: 'MEMBER_AUTH', error: ${JSON.stringify(String(payload))} }`;
+    ? `{ type: 'MEMBER_AUTH', token: ${JSON.stringify(payload)}${stateField} }`
+    : `{ type: 'MEMBER_AUTH', error: ${JSON.stringify(String(payload))}${stateField} }`;
 
   const statusText = success ? '&#x2713; Verified! Closing…' : `&#x2715; ${escHtml(String(payload))}`;
 
@@ -64,9 +66,9 @@ function escHtml(str) {
 }
 
 // ── Subscriber storage ────────────────────────────────────────────────────────
-async function upsertSubscriber(platform, platformId, data) {
+async function upsertSubscriber(platform, platformId, data, context) {
   try {
-    const store = getStore('subscribers');
+    const store = getStore({ name: 'subscribers', context });
     const key   = `${platform}:${platformId}`;
     let existing = {};
     try {
@@ -93,13 +95,13 @@ function issueMemberJwt(platform, platformId, tier) {
 }
 
 // ── Patreon handler ───────────────────────────────────────────────────────────
-async function handlePatreon(code, siteUrl) {
+async function handlePatreon(code, siteUrl, state, context) {
   const clientId     = process.env.PATREON_CLIENT_ID;
   const clientSecret = process.env.PATREON_CLIENT_SECRET;
   const campaignId   = process.env.PATREON_CAMPAIGN_ID; // optional filter
 
   if (!clientId || !clientSecret) {
-    return paywallResponse(false, 'Patreon is not configured on this site');
+    return paywallResponse(false, 'Patreon is not configured on this site', state);
   }
 
   const redirectUri = `${siteUrl}/.netlify/functions/member-auth?platform=patreon`;
@@ -121,12 +123,12 @@ async function handlePatreon(code, siteUrl) {
     if (!tokenRes.ok) {
       const text = await tokenRes.text();
       console.error('Patreon token exchange failed:', tokenRes.status, text);
-      return paywallResponse(false, 'Patreon token exchange failed — please try again');
+      return paywallResponse(false, 'Patreon token exchange failed — please try again', state);
     }
     tokenData = await tokenRes.json();
   } catch (err) {
     console.error('Patreon token fetch error:', err);
-    return paywallResponse(false, 'Network error contacting Patreon');
+    return paywallResponse(false, 'Network error contacting Patreon', state);
   }
 
   const { access_token, refresh_token } = tokenData;
@@ -144,17 +146,17 @@ async function handlePatreon(code, siteUrl) {
     if (!identityRes.ok) {
       const text = await identityRes.text();
       console.error('Patreon identity failed:', identityRes.status, text);
-      return paywallResponse(false, 'Failed to retrieve Patreon profile');
+      return paywallResponse(false, 'Failed to retrieve Patreon profile', state);
     }
     identity = await identityRes.json();
   } catch (err) {
     console.error('Patreon identity fetch error:', err);
-    return paywallResponse(false, 'Network error retrieving Patreon profile');
+    return paywallResponse(false, 'Network error retrieving Patreon profile', state);
   }
 
   const userId = identity?.data?.id;
   const email  = identity?.data?.attributes?.email || '';
-  if (!userId) return paywallResponse(false, 'Could not identify your Patreon account');
+  if (!userId) return paywallResponse(false, 'Could not identify your Patreon account', state);
 
   // Step 3: check active membership
   const memberships = (identity.included || []).filter(x => x.type === 'member');
@@ -180,26 +182,26 @@ async function handlePatreon(code, siteUrl) {
     tier: isActive ? tier : 'none',
     accessToken:  access_token,
     refreshToken: refresh_token || null,
-  });
+  }, context);
 
   if (!isActive) {
     console.log(`Patreon auth: user ${userId} is not an active patron`);
-    return paywallResponse(false, 'An active Patreon membership is required to access the Gallery');
+    return paywallResponse(false, 'An active Patreon membership is required to access the Gallery', state);
   }
 
   console.log(`Patreon auth: user ${userId} granted (tier: ${tier})`);
-  return paywallResponse(true, issueMemberJwt('patreon', userId, tier));
+  return paywallResponse(true, issueMemberJwt('patreon', userId, tier), state);
 }
 
 // ── Subscribestar handler ─────────────────────────────────────────────────────
-async function handleSubscribestar(code, siteUrl) {
+async function handleSubscribestar(code, siteUrl, state, context) {
   const clientId     = process.env.SUBSCRIBESTAR_CLIENT_ID;
   const clientSecret = process.env.SUBSCRIBESTAR_CLIENT_SECRET;
   const ssHost       = process.env.SUBSCRIBESTAR_HOST || 'https://subscribestar.adult';
   const creatorId    = process.env.SUBSCRIBESTAR_CREATOR_ID; // optional filter
 
   if (!clientId || !clientSecret) {
-    return paywallResponse(false, 'Subscribestar is not configured on this site');
+    return paywallResponse(false, 'Subscribestar is not configured on this site', state);
   }
 
   const redirectUri = `${siteUrl}/.netlify/functions/member-auth?platform=subscribestar`;
@@ -221,12 +223,12 @@ async function handleSubscribestar(code, siteUrl) {
     if (!tokenRes.ok) {
       const text = await tokenRes.text();
       console.error('Subscribestar token exchange failed:', tokenRes.status, text);
-      return paywallResponse(false, 'Subscribestar token exchange failed — please try again');
+      return paywallResponse(false, 'Subscribestar token exchange failed — please try again', state);
     }
     tokenData = await tokenRes.json();
   } catch (err) {
     console.error('Subscribestar token fetch error:', err);
-    return paywallResponse(false, 'Network error contacting Subscribestar');
+    return paywallResponse(false, 'Network error contacting Subscribestar', state);
   }
 
   const { access_token, refresh_token } = tokenData;
@@ -240,12 +242,12 @@ async function handleSubscribestar(code, siteUrl) {
     if (!userRes.ok) {
       const text = await userRes.text();
       console.error('Subscribestar user fetch failed:', userRes.status, text);
-      return paywallResponse(false, 'Failed to retrieve Subscribestar profile');
+      return paywallResponse(false, 'Failed to retrieve Subscribestar profile', state);
     }
     userJson = await userRes.json();
   } catch (err) {
     console.error('Subscribestar user fetch error:', err);
-    return paywallResponse(false, 'Network error retrieving Subscribestar profile');
+    return paywallResponse(false, 'Network error retrieving Subscribestar profile', state);
   }
 
   // The Subscribestar API wraps the user in a top-level `user` key on some
@@ -253,7 +255,7 @@ async function handleSubscribestar(code, siteUrl) {
   const user   = userJson.user || userJson;
   const userId = String(user.id || '');
   const email  = String(user.email || '');
-  if (!userId) return paywallResponse(false, 'Could not identify your Subscribestar account');
+  if (!userId) return paywallResponse(false, 'Could not identify your Subscribestar account', state);
 
   // Step 3: check active subscription
   const subscriptions = user.subscriptions || [];
@@ -274,19 +276,19 @@ async function handleSubscribestar(code, siteUrl) {
     tier: isActive ? tier : 'none',
     accessToken:  access_token,
     refreshToken: refresh_token || null,
-  });
+  }, context);
 
   if (!isActive) {
     console.log(`Subscribestar auth: user ${userId} has no active subscription`);
-    return paywallResponse(false, 'An active Subscribestar subscription is required to access the Gallery');
+    return paywallResponse(false, 'An active Subscribestar subscription is required to access the Gallery', state);
   }
 
   console.log(`Subscribestar auth: user ${userId} granted (tier: ${tier})`);
-  return paywallResponse(true, issueMemberJwt('subscribestar', userId, tier));
+  return paywallResponse(true, issueMemberJwt('subscribestar', userId, tier), state);
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -295,22 +297,23 @@ exports.handler = async (event) => {
   const platform = params.platform;
   const code     = params.code;
   const oauthErr = params.error;
+  const state    = params.state || '';
 
   if (oauthErr) {
-    return paywallResponse(false, `OAuth denied: ${oauthErr}`);
+    return paywallResponse(false, `OAuth denied: ${oauthErr}`, state);
   }
   if (!code) {
-    return paywallResponse(false, 'Missing authorization code');
+    return paywallResponse(false, 'Missing authorization code', state);
   }
 
   const siteUrl = process.env.URL || `https://${event.headers.host}`;
 
   try {
-    if (platform === 'patreon')       return await handlePatreon(code, siteUrl);
-    if (platform === 'subscribestar') return await handleSubscribestar(code, siteUrl);
-    return paywallResponse(false, `Unknown platform: ${platform}`);
+    if (platform === 'patreon')       return await handlePatreon(code, siteUrl, state, context);
+    if (platform === 'subscribestar') return await handleSubscribestar(code, siteUrl, state, context);
+    return paywallResponse(false, `Unknown platform: ${platform}`, state);
   } catch (err) {
     console.error('member-auth unhandled error:', err);
-    return paywallResponse(false, 'An internal error occurred — please try again');
+    return paywallResponse(false, 'An internal error occurred — please try again', state);
   }
 };

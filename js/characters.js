@@ -19,9 +19,9 @@ export function renderChars() {
     return;
   }
   grid.innerHTML = CHARACTERS.map((c, i) => `
-    <div class="char-card" data-char-uuid="${esc(c.uuid)}">
+    <div class="char-card" data-char-uuid="${esc(c.uuid)}" role="button" tabindex="0" aria-label="${esc(c.name)}">
       ${c.imageKey
-        ? `<img class="char-portrait" src="${esc(imageUrl(c.imageKey))}" alt="${esc(c.name)}">`
+        ? `<img class="char-portrait" src="${esc(imageUrl(c.imageKey))}" alt="${esc(c.name)}" loading="lazy" width="400" height="400">`
         : PLACEHOLDER_SVGS[i % PLACEHOLDER_SVGS.length]}
       <div class="char-info">
         <div class="char-name">${esc(c.name)}${c.shortName ? ` <span style="color:var(--text-muted);font-size:0.8rem;">/ ${esc(c.shortName)}</span>` : ''}</div>
@@ -106,6 +106,7 @@ export function openCharModal() {
   _resetCharModal();
   document.getElementById('charModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('cName').focus(), 50);
 }
 
 export function closeCharModal() {
@@ -237,11 +238,19 @@ export function confirmDeleteChar(charUuid, name) {
 }
 
 export async function deleteChar(charUuid) {
-  const char = CHARACTERS.find(x => x.uuid === charUuid);
-  if (char?.imageKey) await apiDeleteImage(char.imageKey).catch(() => {});
-  const updated = CHARACTERS.filter(x => x.uuid !== charUuid);
+  const char     = CHARACTERS.find(x => x.uuid === charUuid);
+  const snapshot = [...CHARACTERS];
+  const updated  = CHARACTERS.filter(x => x.uuid !== charUuid);
   setCharacters(updated);
-  await apiPutData('characters', updated);
+  try {
+    await apiPutData('characters', updated);
+  } catch {
+    setCharacters(snapshot);
+    showToast('Failed to delete — please try again', true);
+    notifyDataChanged();
+    return;
+  }
+  if (char?.imageKey) await apiDeleteImage(char.imageKey).catch(() => {});
   notifyDataChanged();
   showToast('Character deleted');
 }
@@ -264,6 +273,13 @@ export function initCharacters() {
     }
     const card = e.target.closest('.char-card[data-char-uuid]');
     if (card) openCharDetail(card.dataset.charUuid);
+  });
+
+  document.getElementById('chars-grid').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const card = e.target.closest('.char-card[data-char-uuid]');
+      if (card) { e.preventDefault(); openCharDetail(card.dataset.charUuid); }
+    }
   });
 
   document.getElementById('char-detail').addEventListener('click', e => {

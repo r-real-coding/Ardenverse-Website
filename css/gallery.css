@@ -56,7 +56,7 @@
 /* LIGHTBOX */
 .lightbox {
   display: none; position: fixed; inset: 0; z-index: 500;
-  background: rgba(1,8,7,0.97); backdrop-filter: blur(20px);
+  background: rgba(1,8,7,0.97); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
   align-items: center; justify-content: center;
 }
 .lightbox.open { display: flex; }
@@ -72,7 +72,7 @@
 .lightbox-title { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--text-primary); }
 .lightbox-desc { font-size: 0.78rem; color: var(--text-secondary); font-weight: 300; margin-top: 0.2rem; }
 .lightbox-close {
-  position: fixed; top: 1.5rem; right: 1.5rem;
+  position: absolute; top: 1.5rem; right: 1.5rem;
   background: var(--bg-elevated); border: 1px solid var(--border);
   color: var(--text-secondary); width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
@@ -80,11 +80,11 @@
 }
 .lightbox-close:hover { border-color: var(--teal-400); color: var(--teal-300); }
 .lightbox-nav {
-  position: fixed; top: 50%; transform: translateY(-50%);
+  position: absolute; top: 50%; transform: translateY(-50%);
   background: rgba(6,30,26,0.8); border: 1px solid var(--border);
   color: var(--text-secondary); width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 1.4rem; transition: all 0.2s; backdrop-filter: blur(8px);
+  cursor: pointer; font-size: 1.4rem; transition: all 0.2s; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 .lightbox-nav:hover { border-color: var(--teal-400); color: var(--teal-300); }
 .lightbox-prev { left: 1rem; }

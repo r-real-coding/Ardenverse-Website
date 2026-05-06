@@ -1,10 +1,48 @@
 'use strict';
 const { pbkdf2, timingSafeEqual } = require('crypto');
+const { getStore } = require('@netlify/blobs');
 const { signJwt } = require('./lib/_jwt');
 
 const HEADERS = { 'Content-Type': 'application/json' };
 
-exports.handler = async (event) => {
+// Brute-force protection: 5 failed attempts per IP per 15-minute window.
+const MAX_ATTEMPTS  = 5;
+const WINDOW_SECS   = 15 * 60;
+
+async function checkRateLimit(ip, context) {
+  try {
+    const store = getStore({ name: 'ratelimit', context });
+    const key   = `admin:${ip}`;
+    const now   = Math.floor(Date.now() / 1000);
+    let data    = { count: 0, windowStart: now };
+    const raw   = await store.get(key, { type: 'text' }).catch(() => null);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Reset window if expired
+      data = (now - parsed.windowStart) > WINDOW_SECS
+        ? { count: 0, windowStart: now }
+        : parsed;
+    }
+    if (data.count >= MAX_ATTEMPTS) {
+      return { limited: true, retryAfter: WINDOW_SECS - (now - data.windowStart) };
+    }
+    data.count++;
+    await store.set(key, JSON.stringify(data)).catch(() => {});
+    return { limited: false };
+  } catch {
+    // If Blobs is unavailable, fail open (don't block legitimate logins)
+    return { limited: false };
+  }
+}
+
+async function resetRateLimit(ip, context) {
+  try {
+    const store = getStore({ name: 'ratelimit', context });
+    await store.delete(`admin:${ip}`);
+  } catch { /* best-effort */ }
+}
+
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
@@ -14,6 +52,20 @@ exports.handler = async (event) => {
   if (!hashHex || !saltHex) {
     console.error('ADMIN_HASH or ADMIN_SALT env vars not configured');
     return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Server not configured' }) };
+  }
+
+  // Prefer Netlify's verified client IP header
+  const ip = event.headers['x-nf-client-connection-ip'] ||
+             (event.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+             'unknown';
+
+  const rl = await checkRateLimit(ip, context);
+  if (rl.limited) {
+    return {
+      statusCode: 429,
+      headers: { ...HEADERS, 'Retry-After': String(rl.retryAfter) },
+      body: JSON.stringify({ error: 'Too many attempts — try again later' }),
+    };
   }
 
   let password;
@@ -32,6 +84,9 @@ exports.handler = async (event) => {
     if (!valid) {
       return { statusCode: 401, headers: HEADERS, body: JSON.stringify({ error: 'Invalid password' }) };
     }
+
+    // Successful login — clear the rate-limit counter for this IP
+    await resetRateLimit(ip, context);
 
     const now = Math.floor(Date.now() / 1000);
     const token = signJwt({ sub: 'admin', iat: now, exp: now + 60 * 60 * 8 }); // 8-hour session

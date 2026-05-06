@@ -92,7 +92,17 @@ export async function apiDeleteImage(key) {
   if (!res.ok) throw new Error(`Image delete failed (${res.status})`);
 }
 
+// Returns the best available session token (admin takes priority over member).
+// img src= attributes cannot send Authorization headers, so the token is
+// appended as a query parameter instead.
+function _imageToken() {
+  return sessionStorage.getItem('arden_admin_token') ||
+         sessionStorage.getItem('arden_member_token') || '';
+}
+
 export function imageUrl(key) {
   if (!key) return null;
-  return `${BASE}/get-image?key=${encodeURIComponent(key)}`;
+  const url = `${BASE}/get-image?key=${encodeURIComponent(key)}`;
+  const tok = _imageToken();
+  return tok ? `${url}&t=${encodeURIComponent(tok)}` : url;
 }

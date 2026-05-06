@@ -6,7 +6,9 @@ export function md(text) {
   if (!text) return '';
 
   // Escape HTML (including " to prevent href attribute breakout)
+  // Strip NUL bytes first to prevent sentinel collisions
   let t = text
+    .replace(/\x00/g, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -46,7 +48,7 @@ export function md(text) {
   t = t.replace(/`([^`\n]+)`/g, '<code>$1</code>');
   t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, url) => {
     if (!/^https?:\/\//i.test(url) && !url.startsWith('/')) return `[${label}](${url})`;
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    return `<a href="${encodeURI(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
   });
 
   // Paragraphs: split on double newlines, wrap non-block-level content
