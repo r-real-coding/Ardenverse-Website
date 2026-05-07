@@ -1,45 +1,41 @@
 'use strict';
-const { put, del, list } = require('@vercel/blob');
+const fs   = require('fs');
+const path = require('path');
 
-const token = () => process.env.BLOB_READ_WRITE_TOKEN;
+const DATA_DIR = path.join(process.cwd(), 'data');
 
-// Read a blob by its exact pathname, returns null if not found.
+function _resolve(pathname) {
+  const resolved = path.resolve(DATA_DIR, pathname);
+  // Prevent path traversal
+  if (!resolved.startsWith(DATA_DIR + path.sep) && resolved !== DATA_DIR) {
+    throw new Error('Invalid pathname');
+  }
+  return resolved;
+}
+
 async function blobGet(pathname, options = {}) {
   try {
-    const { blobs } = await list({ prefix: pathname, token: token(), limit: 10 });
-    const match = blobs.find(b => b.pathname === pathname);
-    if (!match) return null;
-    const res = await fetch(match.url);
-    if (!res.ok) return null;
-    if (options.type === 'json') return res.json();
-    if (options.type === 'arrayBuffer') return res.arrayBuffer();
-    return res.text();
-  } catch {
-    return null;
+    const filePath = _resolve(pathname);
+    if (!fs.existsSync(filePath)) return null;
+    const content = fs.readFileSync(filePath, 'utf-8');
+    if (options.type === 'json') return JSON.parse(content);
+    return content;
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw err;
   }
 }
 
-// Write a blob at the given pathname (overwrites if already exists).
-async function blobPut(pathname, body, options = {}) {
-  return put(pathname, body, {
-    access: 'public',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    token: token(),
-    ...options,
-  });
+async function blobPut(pathname, body, _options = {}) {
+  const filePath = _resolve(pathname);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, body, 'utf-8');
 }
 
-// Delete a blob by its full URL or by pathname (best-effort).
-async function blobDel(urlOrPathname) {
+async function blobDel(pathname) {
   try {
-    if (urlOrPathname.startsWith('http')) {
-      await del(urlOrPathname, { token: token() });
-    } else {
-      const { blobs } = await list({ prefix: urlOrPathname, token: token(), limit: 10 });
-      const match = blobs.find(b => b.pathname === urlOrPathname);
-      if (match) await del(match.url, { token: token() });
-    }
+    const filePath = _resolve(pathname);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   } catch { /* best-effort */ }
 }
 

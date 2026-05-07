@@ -1,11 +1,15 @@
 'use strict';
+const fs   = require('fs');
+const path = require('path');
 const { verifyJwt } = require('./_jwt');
 const { verifyMemberJwt } = require('./_member-jwt');
 
-const BLOB_HOST_RE = /^https:\/\/[a-z0-9]+\.public\.blob\.vercel-storage\.com\//;
+const IMAGE_KEY_RE = /^images\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|jpeg|png|gif|webp|avif)$/i;
+const UPLOADS_DIR  = path.join(process.cwd(), 'uploads');
+const MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif' };
 
 function _extractToken(req) {
-  const auth = req.headers.authorization || req.headers.Authorization || '';
+  const auth = req.headers.authorization || '';
   if (auth.startsWith('Bearer ')) return auth.slice(7);
   return req.query.t || null;
 }
@@ -21,32 +25,17 @@ function _isAuthorised(req) {
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).end('Method Not Allowed');
-  }
-
-  if (!_isAuthorised(req)) {
-    return res.status(401).end('Unauthorised');
-  }
+  if (req.method !== 'GET') return res.status(405).end('Method Not Allowed');
+  if (!_isAuthorised(req)) return res.status(401).end('Unauthorised');
 
   const key = req.query.key;
-  // key is the full Vercel Blob URL — validate it belongs to our store
-  if (!key || !BLOB_HOST_RE.test(key)) {
-    return res.status(400).end('Invalid key');
-  }
+  if (!key || !IMAGE_KEY_RE.test(key)) return res.status(400).end('Invalid key');
 
-  try {
-    const blobRes = await fetch(key);
-    if (!blobRes.ok) return res.status(404).end('Not found');
+  const filePath = path.join(UPLOADS_DIR, key);
+  if (!fs.existsSync(filePath)) return res.status(404).end('Not found');
 
-    const contentType = blobRes.headers.get('content-type') || 'image/jpeg';
-    const buffer = Buffer.from(await blobRes.arrayBuffer());
-
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Cache-Control', 'private, max-age=86400');
-    return res.status(200).send(buffer);
-  } catch (err) {
-    console.error('get-image error:', err);
-    return res.status(500).end('Internal error');
-  }
+  const ext = path.extname(key).slice(1).toLowerCase();
+  res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
+  res.setHeader('Cache-Control', 'private, max-age=86400');
+  res.sendFile(filePath);
 };
