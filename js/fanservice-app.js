@@ -4,6 +4,9 @@ import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, rev
 import { adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
 
+// Expose early so the Ctrl+Shift+A shortcut in age-gate.js can fire immediately
+window.adminLogin = adminLogin;
+
 function _renderAll() {
   buildFilterBar();
   renderGallery();
@@ -81,7 +84,6 @@ function _renderAll() {
     }
   }, 60_000);
 
-  window.adminLogin = adminLogin;
   window.addEventListener('beforeunload', revokeAllUrls);
 
   _renderAll();

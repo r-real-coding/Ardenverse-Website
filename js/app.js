@@ -29,6 +29,8 @@ export function showSection(id) {
 }
 // Expose for non-module scripts (age-gate.js landing card fallback)
 window.showSection = showSection;
+// Expose early so the Ctrl+Shift+A shortcut in age-gate.js can fire immediately
+window.adminLogin  = adminLogin;
 
 // ── Home ──────────────────────────────────────────────────────────────────────
 export function renderHome() {
@@ -148,7 +150,6 @@ function _initKeyboard() {
   initTags();
   _initKeyboard();
 
-  window.adminLogin = adminLogin;
   document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
 
   document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
