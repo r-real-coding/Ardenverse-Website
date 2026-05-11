@@ -49,12 +49,26 @@
     window.location.href = window.location.protocol === 'file:' ? 'fanservice.html' : '/fanservice';
   }
 
-  // ── Admin shortcut (Ctrl+Shift+A on any page) ─────────────────────────────────
+  // ── Admin login (Ctrl+Shift+L) ────────────────────────────────────────────────
+  function _openAdminModal() {
+    // Open the modal directly — no dependency on the ES module being loaded
+    var modal = document.getElementById('adminLoginModal');
+    var input = document.getElementById('adminPwInput');
+    var err   = document.getElementById('adminLoginError');
+    if (!modal) return;
+    if (input) input.value = '';
+    if (err)   err.textContent = '';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (input) setTimeout(function () { input.focus(); }, 50);
+  }
+
   function _initAdminShortcut() {
     document.addEventListener('keydown', function (e) {
-      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+      // Ctrl+Shift+L — avoids Chrome's Ctrl+Shift+A (Search tabs) conflict
+      if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
         e.preventDefault();
-        if (typeof window.adminLogin === 'function') window.adminLogin();
+        _openAdminModal();
       }
     });
   }
