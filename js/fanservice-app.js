@@ -1,7 +1,7 @@
 import { loadFanservice } from './fanservice-state.js';
 import { renderGallery, buildFilterBar, closeLightbox, lightboxNav, closeUploadModal, initFsGallery } from './fanservice-gallery.js';
 import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, revokeAllUrls } from './utils.js';
-import { checkAgeGate, acceptAgeGate, declineAgeGate, adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
+import { adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
 
 function _renderAll() {
@@ -10,10 +10,6 @@ function _renderAll() {
 }
 
 (async () => {
-  document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
-  document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
-  checkAgeGate();
-
   const _hamburger = document.getElementById('nav-hamburger');
   const _navLinks  = document.getElementById('nav-links');
   function _closeNav() {

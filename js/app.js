@@ -1,7 +1,7 @@
 import { loadAll, GALLERY, CHARACTERS, PLANETS, LORE } from './state.js';
 import { imageUrl } from './api.js';
 import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, revokeAllUrls } from './utils.js';
-import { checkAgeGate, acceptAgeGate, declineAgeGate, adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
+import { adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { renderGallery, buildFilterBar, openLightbox, closeLightbox, lightboxNav, openUploadModal, closeUploadModal, initGallery } from './gallery.js';
 import { renderChars, openCharDetail, closeCharDetail, openCharModal, closeCharModal, initCharacters } from './characters.js';
 import { renderPlanets, openPlanetModal, closePlanetModal, initPlanets } from './planets.js';
@@ -87,10 +87,6 @@ function _initKeyboard() {
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 (async () => {
   // Age gate + hamburger must be wired before any async work so clicks are never missed
-  document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
-  document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
-  checkAgeGate();
-
   const _hamburger = document.getElementById('nav-hamburger');
   const _navLinks  = document.getElementById('nav-links');
   function _closeNav() {
