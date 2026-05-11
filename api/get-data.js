@@ -1,7 +1,7 @@
 'use strict';
 const { blobGet } = require('./_blob');
 
-const ALLOWED_STORES = new Set(['gallery', 'characters', 'planets', 'lore', 'loreCategories', 'tags']);
+const ALLOWED_STORES = new Set(['gallery', 'characters', 'planets', 'lore', 'loreCategories', 'tags', 'fanservice', 'fanserviceTags']);
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {

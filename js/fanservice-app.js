@@ -1,0 +1,92 @@
+import { loadFanservice } from './fanservice-state.js';
+import { renderGallery, buildFilterBar, closeLightbox, lightboxNav, closeUploadModal, initFsGallery } from './fanservice-gallery.js';
+import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, revokeAllUrls } from './utils.js';
+import { checkAgeGate, acceptAgeGate, declineAgeGate, adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
+import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
+
+function _renderAll() {
+  buildFilterBar();
+  renderGallery();
+}
+
+(async () => {
+  document.getElementById('age-btn-enter').addEventListener('click', acceptAgeGate);
+  document.getElementById('age-btn-exit').addEventListener('click',  declineAgeGate);
+  checkAgeGate();
+
+  const _hamburger = document.getElementById('nav-hamburger');
+  const _navLinks  = document.getElementById('nav-links');
+  function _closeNav() {
+    _navLinks.classList.remove('open');
+    _hamburger.classList.remove('open');
+    _hamburger.setAttribute('aria-expanded', 'false');
+  }
+  _hamburger.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = _navLinks.classList.toggle('open');
+    _hamburger.classList.toggle('open', isOpen);
+    _hamburger.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('nav')) _closeNav();
+  });
+
+  try {
+    await loadFanservice();
+  } catch (err) {
+    console.error('Failed to load fanservice data:', err);
+    showToast('Failed to load content — check your connection', true);
+  }
+
+  const isAdmin = checkAdminSession();
+  if (isAdmin) document.body.classList.add('admin-mode');
+
+  initConfirm();
+  initPrompt();
+  initAuth();
+  initMembership();
+  initFsGallery();
+
+  document.addEventListener('keydown', e => {
+    if (document.getElementById('fs-lightbox').classList.contains('open')) {
+      if (e.key === 'ArrowLeft')  { lightboxNav(-1); return; }
+      if (e.key === 'ArrowRight') { lightboxNav(1);  return; }
+    }
+    if (e.key !== 'Escape') return;
+    if (document.getElementById('promptModal').classList.contains('open'))      { closePrompt();          return; }
+    if (document.getElementById('fs-lightbox').classList.contains('open'))      { closeLightbox();        return; }
+    if (document.getElementById('confirmModal').classList.contains('open'))     { closeConfirm();         return; }
+    if (document.getElementById('adminLoginModal').classList.contains('open'))  { closeAdminLoginModal(); return; }
+    if (document.getElementById('fsUploadModal').classList.contains('open'))    { closeUploadModal();     return; }
+  });
+
+  document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
+  document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
+  document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);
+  document.getElementById('adminPwToggle').addEventListener('click',  toggleAdminPwVis);
+
+  document.addEventListener('arden:datachanged', () => {
+    try { _renderAll(); } catch (err) { console.error('Render error:', err); showToast('Render error — please reload', true); }
+  });
+
+  document.addEventListener('arden:memberchanged', () => {
+    renderMemberBadge();
+    _renderAll();
+  });
+
+  document.addEventListener('arden:adminexpired', () => {
+    adminLogout();
+    showToast('Admin session expired — please log in again', true);
+  });
+
+  setInterval(() => {
+    if (document.body.classList.contains('admin-mode') && !checkAdminSession()) {
+      document.dispatchEvent(new CustomEvent('arden:adminexpired'));
+    }
+  }, 60_000);
+
+  window.adminLogin = adminLogin;
+  window.addEventListener('beforeunload', revokeAllUrls);
+
+  _renderAll();
+})();

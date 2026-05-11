@@ -1,5 +1,14 @@
 const BASE = '/api';
 
+// ── UUID ──────────────────────────────────────────────────────────────────────
+export function newUuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 // ── Admin token ───────────────────────────────────────────────────────────────
 const TOKEN_KEY = 'arden_admin_token';
 

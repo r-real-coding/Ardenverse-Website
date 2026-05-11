@@ -53,7 +53,9 @@ app.use('/api/member-auth',                     require('./api/member-auth'));
 // ── Static files ──────────────────────────────────────────────────────────────
 app.use('/css', express.static(path.join(__dirname, 'css'), { maxAge: '1h' }));
 app.use('/js',  express.static(path.join(__dirname, 'js'),  { maxAge: '1h' }));
-app.get('/robots.txt', (_req, res) => res.sendFile(path.join(__dirname, 'robots.txt')));
+app.get('/robots.txt',      (_req, res) => res.sendFile(path.join(__dirname, 'robots.txt')));
+app.get('/fanservice',      (_req, res) => res.sendFile(path.join(__dirname, 'fanservice.html')));
+app.get('/fanservice.html', (_req, res) => res.sendFile(path.join(__dirname, 'fanservice.html')));
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.listen(PORT, () => console.log(`Ardenverse listening on :${PORT}`));

@@ -2,7 +2,7 @@
 const { blobPut } = require('./_blob');
 const { verifyJwt, getToken } = require('./_jwt');
 
-const ALLOWED_STORES = new Set(['gallery', 'characters', 'planets', 'lore', 'loreCategories', 'tags']);
+const ALLOWED_STORES = new Set(['gallery', 'characters', 'planets', 'lore', 'loreCategories', 'tags', 'fanservice', 'fanserviceTags']);
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {

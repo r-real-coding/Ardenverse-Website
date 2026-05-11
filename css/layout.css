@@ -95,6 +95,13 @@ body > nav {
 }
 .nav-links li button:hover,
 .nav-links li button.active { color: var(--teal-300); }
+.nav-link-plain {
+  color: var(--text-secondary);
+  font-family: 'Raleway', sans-serif; font-size: 0.8rem;
+  font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+  text-decoration: none; transition: color 0.2s;
+}
+.nav-link-plain:hover { color: var(--teal-300); }
 .admin-badge {
   font-family: 'Orbitron', sans-serif; font-size: 0.5rem;
   letter-spacing: 0.25em; color: var(--gold);

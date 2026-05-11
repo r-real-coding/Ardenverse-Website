@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{if(localStorage.getItem('arden_age_verified')==='true')document.documentElement.classList.add('age-verified')}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="RATING" content="RTA-5042-1996-1400-1577-RTA">
+<meta name="description" content="Demimond Fanservice — members-only fanservice art gallery by Demimond.">
+<meta property="og:title" content="Demimond — Fanservice">
+<meta property="og:description" content="Members-only fanservice gallery by Demimond.">
+<meta property="og:type" content="website">
+<title>Demimond — Fanservice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500;600&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="modulepreload" href="js/fanservice-app.js">
+<link rel="modulepreload" href="js/fanservice-state.js">
+<link rel="modulepreload" href="js/fanservice-gallery.js">
+<link rel="modulepreload" href="js/api.js">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/gallery.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/responsive.css">
+<style>html.age-verified .age-gate{display:none!important}</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     AGE GATE
+════════════════════════════════════════════════════════════ -->
+<div class="age-gate" id="ageGate">
+  <div class="age-gate-bg"></div>
+  <div class="age-gate-stars"></div>
+  <div class="age-gate-box">
+    <div class="age-gate-eyebrow">Adults Only — Restricted Content</div>
+    <div class="age-gate-title">FANSERVICE</div>
+    <div class="age-gate-subtitle">by Demimond</div>
+    <div class="age-gate-divider"></div>
+    <div class="age-gate-warning">
+      <div class="age-gate-warning-label"><span aria-hidden="true">⚠</span> 18+ Content Warning</div>
+      <p>This gallery contains original fanservice artwork intended for mature audiences only. Material includes explicit sensual themes and adult content.</p>
+    </div>
+    <p class="age-gate-statement">By entering, you confirm that you are <strong>at least 18 years of age</strong> (or the legal age of majority in your jurisdiction), and that you wish to view adult artistic content. All content is original IP &copy; Demimond — all rights reserved.</p>
+    <div class="age-gate-buttons">
+      <button type="button" class="age-btn age-btn-enter" id="age-btn-enter">I am 18+ — Enter</button>
+      <button type="button" class="age-btn age-btn-exit"  id="age-btn-exit">Exit</button>
+    </div>
+    <div class="age-gate-footer">Your choice is remembered on this browser.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════════════════════ -->
+<nav aria-label="Main navigation">
+  <a class="nav-logo" href="/index.html" style="text-decoration:none;">DEMIMOND <span>fanservice</span></a>
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="/index.html" class="nav-link-plain">← Ardenverse</a></li>
+    <li><button class="admin-badge" id="admin-logout-btn" title="Click to log out">Admin ×</button></li>
+    <li>
+      <span class="member-badge" id="memberBadge" style="display:none;" title="Active subscriber">Member</span>
+      <button class="member-logout-btn" id="memberLogoutBtn" style="display:none;" title="Disconnect subscription" aria-label="Disconnect member subscription">✕</button>
+    </li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════════════════════ -->
+<div class="hero" style="min-height:40vh;">
+  <div class="hero-bg"></div>
+  <div class="stars"></div>
+  <div class="hero-content" style="padding:4rem 2rem 3rem;">
+    <div class="hero-eyebrow">Members-Only Gallery</div>
+    <h1 class="hero-title">FANSERVICE</h1>
+    <div class="hero-subtitle">by Demimond</div>
+    <div class="hero-divider"></div>
+    <p class="hero-desc" style="max-width:520px;">Original fanservice artwork — not part of the Ardenverse canon. Active subscribers on Patreon or Subscribestar get full access.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     GALLERY
+════════════════════════════════════════════════════════════ -->
+<section id="section-gallery" style="padding:2rem 2rem 4rem;max-width:1400px;margin:0 auto;">
+
+  <!-- Paywall -->
+  <div class="gallery-paywall" id="fs-gallery-paywall">
+    <div class="paywall-stars"></div>
+    <div class="paywall-box">
+      <div class="paywall-eyebrow">Members Only</div>
+      <h2 class="paywall-title">Gallery Access Required</h2>
+      <div class="paywall-divider"></div>
+      <p class="paywall-desc">This gallery is available exclusively to active subscribers on Patreon or Subscribestar. Connect your account below to verify your membership and unlock instant access.</p>
+      <div class="paywall-actions">
+        <button class="paywall-btn paywall-btn-patreon" id="connectPatreonBtn">
+          <svg class="paywall-btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.82 2C18.78 2 22 5.22 22 9.18c0 3.95-3.22 7.16-7.18 7.16-3.95 0-7.16-3.21-7.16-7.16C7.66 5.22 10.87 2 14.82 2zM2 22h3.5V2H2v20z"/></svg>
+          Connect Patreon
+        </button>
+        <button class="paywall-btn paywall-btn-subscribestar" id="connectSubscribestarBtn">
+          <span class="paywall-btn-icon" aria-hidden="true">★</span>
+          Connect Subscribestar
+        </button>
+      </div>
+      <div class="paywall-connecting" id="paywallConnecting" style="display:none;">Verifying subscription…</div>
+      <div class="paywall-error" id="membershipError" style="display:none;"></div>
+      <p class="paywall-footer">Already subscribed? Click your platform above to verify. Your session is remembered until you close the browser.</p>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="gallery-controls" id="fs-gallery-controls" style="display:none;">
+    <input type="text" class="search-box" placeholder="Search by title or tag…" id="fs-gallery-search">
+    <div class="filter-group">
+      <span class="filter-label">Theme:</span>
+      <div id="fs-filter-themes" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <div class="gallery-count" id="fs-gallery-count" style="display:none;"></div>
+  <div class="gallery-grid"  id="fs-gallery-grid"  style="display:none;"></div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════════════════════════ -->
+<div class="lightbox" id="fs-lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button class="lightbox-close" id="fs-lightbox-close" aria-label="Close lightbox">✕</button>
+  <button class="lightbox-nav lightbox-prev" id="fs-lightbox-prev" aria-label="Previous image">‹</button>
+  <button class="lightbox-nav lightbox-next" id="fs-lightbox-next" aria-label="Next image">›</button>
+  <div class="lightbox-inner">
+    <img class="lightbox-img" id="fs-lightbox-img" alt="">
+    <div class="lightbox-info">
+      <div>
+        <div class="lightbox-title" id="fs-lightbox-title"></div>
+        <div class="lightbox-desc"  id="fs-lightbox-desc"></div>
+      </div>
+      <div class="tag-row" id="fs-lightbox-tags" style="flex-shrink:0;max-width:40%;justify-content:flex-end;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN LOGIN MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="admin-login-modal" id="adminLoginModal" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle">
+  <div class="admin-login-box">
+    <div class="admin-login-header">
+      <div class="admin-login-eyebrow">Demimond — Restricted</div>
+      <div class="admin-login-title" id="adminLoginTitle">Admin Access</div>
+    </div>
+    <div class="admin-login-body">
+      <label class="modal-label" for="adminPwInput" style="margin-bottom:0.4rem;display:block;">Password</label>
+      <div class="admin-pw-wrap">
+        <input class="admin-pw-input" type="password" id="adminPwInput" placeholder="Enter admin password…" autocomplete="current-password">
+        <button class="admin-pw-toggle" id="adminPwToggle" tabindex="-1" aria-label="Toggle password visibility">👁</button>
+      </div>
+      <div class="admin-login-error" id="adminLoginError" role="alert"></div>
+    </div>
+    <div class="admin-login-footer">
+      <button class="admin-cancel-btn" id="adminCancelBtn">Cancel</button>
+      <button class="admin-login-btn"  id="adminLoginBtn">
+        <div class="admin-login-spinner"></div>
+        <span id="adminLoginBtnLabel">Authenticate</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     IMAGE UPLOAD / EDIT MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="upload-modal" id="fsUploadModal" role="dialog" aria-modal="true" aria-labelledby="fsUploadModalTitle">
+  <div class="upload-modal-inner">
+    <div class="upload-modal-header">
+      <div>
+        <div class="upload-modal-eyebrow">Admin — Fanservice</div>
+        <div class="upload-modal-title" id="fsUploadModalTitle">New Image Entry</div>
+      </div>
+      <button class="close-btn" aria-label="Close">✕</button>
+    </div>
+    <div class="upload-modal-body">
+      <div>
+        <div class="modal-drop-zone" id="fsModalDropZone">
+          <input type="file" id="fsModalFileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" aria-label="Choose image file">
+          <div class="modal-drop-icon">↑</div>
+          <div class="modal-drop-label">Drop image or click to browse</div>
+          <div class="modal-drop-sub">JPG · PNG · WEBP · GIF · max 25 MB</div>
+        </div>
+        <img class="modal-preview-img" id="fsModalPreviewImg" alt="Preview">
+        <div class="modal-preview-name" id="fsModalPreviewName"></div>
+        <button class="modal-replace-btn" id="fsModalReplaceBtn">Replace Image</button>
+      </div>
+      <div>
+        <div class="modal-field">
+          <label class="modal-label" for="fsModalTitle">Title</label>
+          <input class="modal-input" type="text" id="fsModalTitle" placeholder="e.g. Summer Splash">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="fsModalDesc">Description</label>
+          <textarea class="modal-textarea" id="fsModalDesc" placeholder="Brief caption…"></textarea>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Themes</div>
+          <div class="modal-tag-options" id="fs-upload-theme-tags"></div>
+        </div>
+        <div class="modal-tag-section">
+          <div class="modal-tag-section-label">Custom Tags</div>
+          <div class="modal-tag-options" id="fs-upload-custom-tags"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-validation">
+        <div class="modal-v-item"><div class="modal-v-dot" id="fs-mv-file"></div><span id="fs-mv-file-lbl">No image</span></div>
+        <div class="modal-v-item"><div class="modal-v-dot" id="fs-mv-title"></div><span id="fs-mv-title-lbl">No title</span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-delete-btn" id="fsImgDeleteBtn" style="display:none;">Delete</button>
+        <button class="modal-submit-btn" id="fsModalSubmitBtn" disabled>
+          <div class="modal-spinner"></div>
+          <span id="fsModalSubmitLabel">Save to Gallery</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-success" id="fsModalSuccess">✓ Saved.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════════════════════ -->
+<div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Confirm Delete</div>
+    <div class="confirm-msg"   id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" id="confirmCancelBtn">Cancel</button>
+      <button class="confirm-ok"     id="confirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROMPT DIALOG
+════════════════════════════════════════════════════════════ -->
+<div class="prompt-modal" id="promptModal" role="dialog" aria-modal="true">
+  <div class="prompt-box">
+    <div class="prompt-title" id="promptTitle"></div>
+    <div class="prompt-desc"  id="promptDesc"></div>
+    <input class="prompt-input" id="promptInput" type="text">
+    <div class="prompt-btns">
+      <button class="confirm-cancel" id="promptCancelBtn">Cancel</button>
+      <button class="modal-submit-btn" id="promptOk" style="padding:0.55rem 1.2rem;">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="js/fanservice-app.js"></script>
+</body>
+</html>
