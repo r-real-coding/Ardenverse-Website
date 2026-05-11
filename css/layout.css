@@ -227,3 +227,40 @@ body > nav {
 }
 .card-admin-btn:hover { border-color: var(--teal-400); color: var(--teal-300); }
 .card-admin-btn.del:hover { border-color: rgba(220,60,60,0.5); color: #e87070; }
+
+/* LANDING — site chooser */
+.landing-choices {
+  display: flex; gap: 1.5rem; justify-content: center; align-items: stretch; flex-wrap: wrap;
+}
+.landing-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 2rem 2rem 1.6rem; cursor: pointer; text-align: left;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.landing-card:hover {
+  border-color: var(--teal-500);
+  box-shadow: 0 0 30px rgba(26,191,151,0.15);
+  transform: translateY(-2px);
+}
+.landing-card-primary  { flex: 2; min-width: 280px; max-width: 500px; border-color: var(--teal-700); }
+.landing-card-secondary{ flex: 1; min-width: 220px; max-width: 320px; }
+.landing-card-eyebrow {
+  font-family: 'Orbitron', sans-serif; font-size: 0.5rem;
+  letter-spacing: 0.3em; text-transform: uppercase; color: var(--teal-500);
+}
+.landing-card-title {
+  font-family: 'Cinzel', serif; font-size: 1.4rem;
+  color: var(--text-primary); letter-spacing: 0.1em;
+}
+.landing-card-primary .landing-card-title { font-size: 1.8rem; color: var(--teal-300); }
+.landing-card-desc {
+  font-size: 0.85rem; color: var(--text-secondary);
+  font-weight: 300; line-height: 1.7; margin-top: 0.2rem; flex: 1;
+}
+.landing-card-cta {
+  font-family: 'Orbitron', sans-serif; font-size: 0.6rem;
+  letter-spacing: 0.2em; color: var(--teal-500); margin-top: 0.8rem;
+  transition: color 0.2s;
+}
+.landing-card:hover .landing-card-cta { color: var(--teal-300); }

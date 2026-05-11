@@ -13,11 +13,11 @@ import { initMembership, renderMemberBadge, isSubscriber } from './membership.js
 export function showSection(id) {
   const section = document.getElementById('section-' + id);
   const navBtn  = document.getElementById('nav-' + id);
-  if (!section || !navBtn) { console.warn(`showSection: unknown section "${id}"`); return; }
+  if (!section) { console.warn(`showSection: unknown section "${id}"`); return; }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   section.classList.add('active');
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-  navBtn.classList.add('active');
+  if (navBtn) navBtn.classList.add('active');
   window.scrollTo(0, 0);
 }
 
@@ -130,7 +130,9 @@ function _initKeyboard() {
   _initKeyboard();
 
   // Nav — section links (close mobile menu after navigation)
-  document.querySelector('.nav-logo').addEventListener('click', () => { showSection('home'); _closeNav(); });
+  document.querySelector('.nav-logo').addEventListener('click', () => { showSection('landing'); _closeNav(); });
+  document.getElementById('enterArdenverse')?.addEventListener('click', () => showSection('home'));
+  document.getElementById('enterFanservice')?.addEventListener('click', () => { window.location.href = '/fanservice'; });
   document.getElementById('nav-home').addEventListener('click',       () => { showSection('home');       _closeNav(); });
   document.getElementById('nav-gallery').addEventListener('click',    () => { showSection('gallery');    _closeNav(); });
   document.getElementById('nav-characters').addEventListener('click', () => { showSection('characters'); _closeNav(); });
