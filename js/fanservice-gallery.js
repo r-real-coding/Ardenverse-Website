@@ -154,7 +154,7 @@ export function renderGallery() {
     else          { paywall.style.display = '';     paywall.classList.add('inline'); }
   }
 
-  const search = document.getElementById('fs-gallery-search').value.toLowerCase();
+  const search = (document.getElementById('fs-gallery-search')?.value || '').toLowerCase();
 
   const items = FS_GALLERY.filter(item => {
     const isLocked = !isMember && item.visibility !== 'public';
@@ -518,7 +518,11 @@ export function initFsGallery() {
     if (addBtn) _addTag(addBtn.dataset.context || 'custom');
   });
 
-  document.getElementById('fs-gallery-search').addEventListener('input', renderGallery);
+  let _searchTimer = null;
+  document.getElementById('fs-gallery-search').addEventListener('input', () => {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(renderGallery, 200);
+  });
 
   document.getElementById('fsVisibilityGroup')?.addEventListener('click', e => {
     const btn = e.target.closest('.visibility-radio-btn');

@@ -95,7 +95,7 @@ export function renderGallery() {
   if (count)    count.style.display    = '';
   if (grid)     grid.style.display     = '';
 
-  const search  = document.getElementById('gallery-search').value.toLowerCase();
+  const search  = (document.getElementById('gallery-search')?.value || '').toLowerCase();
 
   const items = GALLERY.filter(item => {
     if (_filters.char.size > 0      && !(item.chars      || []).some(v => _filters.char.has(v)))      return false;

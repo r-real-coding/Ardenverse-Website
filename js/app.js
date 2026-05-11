@@ -46,10 +46,11 @@ window.submitAdminLogin = submitAdminLogin;
 
 // ── Home ──────────────────────────────────────────────────────────────────────
 export function renderHome() {
-  document.getElementById('stat-civilizations').textContent = CHARACTERS.length;
-  document.getElementById('stat-worlds').textContent        = PLANETS.length;
-  document.getElementById('stat-lore').textContent          = LORE.length;
-  document.getElementById('stat-images').textContent        = GALLERY.length;
+  const _setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  _setStat('stat-civilizations', CHARACTERS.length);
+  _setStat('stat-worlds',        PLANETS.length);
+  _setStat('stat-lore',          LORE.length);
+  _setStat('stat-images',        GALLERY.length);
 
   const isAdmin   = document.body.classList.contains('admin-mode');
   const container = document.getElementById('home-recent');
@@ -89,21 +90,22 @@ export function renderAll() {
 
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 function _initKeyboard() {
+  const _elOpen = id => document.getElementById(id)?.classList.contains('open');
   document.addEventListener('keydown', e => {
-    if (document.getElementById('lightbox').classList.contains('open')) {
+    if (_elOpen('lightbox')) {
       if (e.key === 'ArrowLeft')  { lightboxNav(-1); return; }
       if (e.key === 'ArrowRight') { lightboxNav(1);  return; }
     }
     if (e.key !== 'Escape') return;
-    if (document.getElementById('promptModal').classList.contains('open'))      { closePrompt();           return; }
-    if (document.getElementById('lightbox').classList.contains('open'))         { closeLightbox();         return; }
-    if (document.getElementById('confirmModal').classList.contains('open'))     { closeConfirm();          return; }
-    if (document.getElementById('adminLoginModal').classList.contains('open'))  { closeAdminLoginModal();  return; }
-    if (document.getElementById('uploadModal').classList.contains('open'))      { closeUploadModal();      return; }
-    if (document.getElementById('charModal').classList.contains('open'))        { closeCharModal();        return; }
-    if (document.getElementById('planetModal').classList.contains('open'))      { closePlanetModal();      return; }
-    if (document.getElementById('loreModal').classList.contains('open'))        { closeLoreModal();        return; }
-    if (document.getElementById('char-detail').classList.contains('open'))      { closeCharDetail();       return; }
+    if (_elOpen('promptModal'))      { closePrompt();           return; }
+    if (_elOpen('lightbox'))         { closeLightbox();         return; }
+    if (_elOpen('confirmModal'))     { closeConfirm();          return; }
+    if (_elOpen('adminLoginModal'))  { closeAdminLoginModal();  return; }
+    if (_elOpen('uploadModal'))      { closeUploadModal();      return; }
+    if (_elOpen('charModal'))        { closeCharModal();        return; }
+    if (_elOpen('planetModal'))      { closePlanetModal();      return; }
+    if (_elOpen('loreModal'))        { closeLoreModal();        return; }
+    if (_elOpen('char-detail'))      { closeCharDetail();       return; }
   });
 }
 

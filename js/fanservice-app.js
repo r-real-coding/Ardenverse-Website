@@ -51,17 +51,18 @@ function _renderAll() {
   initMembership();
   initFsGallery();
 
+  const _elOpen = id => document.getElementById(id)?.classList.contains('open');
   document.addEventListener('keydown', e => {
-    if (document.getElementById('fs-lightbox').classList.contains('open')) {
+    if (_elOpen('fs-lightbox')) {
       if (e.key === 'ArrowLeft')  { lightboxNav(-1); return; }
       if (e.key === 'ArrowRight') { lightboxNav(1);  return; }
     }
     if (e.key !== 'Escape') return;
-    if (document.getElementById('promptModal').classList.contains('open'))      { closePrompt();          return; }
-    if (document.getElementById('fs-lightbox').classList.contains('open'))      { closeLightbox();        return; }
-    if (document.getElementById('confirmModal').classList.contains('open'))     { closeConfirm();         return; }
-    if (document.getElementById('adminLoginModal').classList.contains('open'))  { closeAdminLoginModal(); return; }
-    if (document.getElementById('fsUploadModal').classList.contains('open'))    { closeUploadModal();     return; }
+    if (_elOpen('promptModal'))      { closePrompt();          return; }
+    if (_elOpen('fs-lightbox'))      { closeLightbox();        return; }
+    if (_elOpen('confirmModal'))     { closeConfirm();         return; }
+    if (_elOpen('adminLoginModal'))  { closeAdminLoginModal(); return; }
+    if (_elOpen('fsUploadModal'))    { closeUploadModal();     return; }
   });
 
   document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);

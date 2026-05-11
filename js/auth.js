@@ -59,7 +59,7 @@ export async function submitAdminLogin() {
     } else if (result.status === 401) {
       _fail('Incorrect password.');
     } else if (result.status === 500) {
-      _fail('Server error — check Vercel env vars (JWT_SECRET, ADMIN_HASH, ADMIN_SALT).');
+      _fail('Server configuration error — contact the site owner.');
     } else {
       _fail(`Login failed (${result.status}). Try again.`);
     }
