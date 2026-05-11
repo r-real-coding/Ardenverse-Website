@@ -1,13 +1,13 @@
 import { loadAll, GALLERY, CHARACTERS, PLANETS, LORE } from './state.js';
 import { imageUrl } from './api.js';
 import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, revokeAllUrls } from './utils.js';
-import { adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
+import { checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { renderGallery, buildFilterBar, openLightbox, closeLightbox, lightboxNav, openUploadModal, closeUploadModal, initGallery } from './gallery.js';
 import { renderChars, openCharDetail, closeCharDetail, openCharModal, closeCharModal, initCharacters } from './characters.js';
 import { renderPlanets, openPlanetModal, closePlanetModal, initPlanets } from './planets.js';
-import { renderLoreSidebar, openLoreEntry, addLoreCategory, openLoreModal, closeLoreModal, initLore } from './lore.js';
+import { renderLoreSidebar, addLoreCategory, openLoreModal, closeLoreModal, initLore } from './lore.js';
 import { initTags } from './tags.js';
-import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
+import { initMembership, isSubscriber } from './membership.js';
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 const _ARDENVERSE_SECTIONS = new Set(['home', 'gallery', 'characters', 'planets', 'lore']);
@@ -39,7 +39,6 @@ export function showSection(id) {
 }
 // Expose for non-module scripts (age-gate.js)
 window.showSection      = showSection;
-window.adminLogin       = adminLogin;
 window.submitAdminLogin = submitAdminLogin;
 
 // ── Home ──────────────────────────────────────────────────────────────────────

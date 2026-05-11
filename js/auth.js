@@ -1,29 +1,6 @@
 import { showToast } from './utils.js';
 import { apiAdminAuth, saveAdminToken, clearAdminToken, checkAdminTokenExpiry } from './api.js';
 
-const AGE_GATE_KEY = 'arden_age_verified';
-
-// ── Age gate ──────────────────────────────────────────────────────────────────
-export function checkAgeGate() {
-  let verified = false;
-  try { verified = localStorage.getItem(AGE_GATE_KEY) === 'true'; } catch { /* Safari private mode */ }
-  if (verified) {
-    document.getElementById('ageGate').classList.add('hidden');
-  } else {
-    document.body.style.overflow = 'hidden';
-  }
-}
-
-export function acceptAgeGate() {
-  try { localStorage.setItem(AGE_GATE_KEY, 'true'); } catch { /* Safari private mode */ }
-  document.getElementById('ageGate').classList.add('hidden');
-  document.body.style.overflow = '';
-}
-
-export function declineAgeGate() {
-  window.location.href = 'https://www.google.com';
-}
-
 // ── Admin session ─────────────────────────────────────────────────────────────
 export function checkAdminSession() {
   return checkAdminTokenExpiry();

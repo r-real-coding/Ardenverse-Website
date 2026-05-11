@@ -1,11 +1,10 @@
 import { loadFanservice } from './fanservice-state.js';
 import { renderGallery, buildFilterBar, closeLightbox, lightboxNav, closeUploadModal, initFsGallery } from './fanservice-gallery.js';
 import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, revokeAllUrls } from './utils.js';
-import { adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
+import { checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
 
 // Expose for non-module scripts (age-gate.js)
-window.adminLogin       = adminLogin;
 window.submitAdminLogin = submitAdminLogin;
 
 function _renderAll() {
