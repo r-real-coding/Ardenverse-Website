@@ -113,6 +113,20 @@ function _initKeyboard() {
     if (!e.target.closest('nav')) _closeNav();
   });
 
+  // Wire nav links immediately (before data loads) so clicks are never missed.
+  // age-gate.js also wires these as a non-module fallback; duplicate listeners are fine.
+  document.querySelector('.nav-logo').addEventListener('click', () => { showSection('landing'); _closeNav(); });
+  ['home', 'gallery', 'characters', 'planets', 'lore'].forEach(id => {
+    const btn = document.getElementById('nav-' + id);
+    if (btn) btn.addEventListener('click', () => { showSection(id === 'home' ? 'landing' : id); _closeNav(); });
+  });
+  document.querySelectorAll('[data-section]').forEach(el => {
+    el.addEventListener('click', () => showSection(el.dataset.section));
+  });
+  document.getElementById('home-recent').addEventListener('click', e => {
+    if (e.target.closest('[data-goto-gallery]')) showSection('gallery');
+  });
+
   try {
     await loadAll();
   } catch (err) {
@@ -133,22 +147,6 @@ function _initKeyboard() {
   initLore();
   initTags();
   _initKeyboard();
-
-  // Nav — section links (close mobile menu after navigation)
-  document.querySelector('.nav-logo').addEventListener('click', () => { showSection('landing'); _closeNav(); });
-  document.getElementById('nav-home').addEventListener('click', () => { showSection('landing'); _closeNav(); });
-  document.getElementById('nav-gallery').addEventListener('click',    () => { showSection('gallery');    _closeNav(); });
-  document.getElementById('nav-characters').addEventListener('click', () => { showSection('characters'); _closeNav(); });
-  document.getElementById('nav-planets').addEventListener('click',    () => { showSection('planets');    _closeNav(); });
-  document.getElementById('nav-lore').addEventListener('click',       () => { showSection('lore');       _closeNav(); });
-
-  document.querySelectorAll('[data-section]').forEach(el => {
-    el.addEventListener('click', () => showSection(el.dataset.section));
-  });
-
-  document.getElementById('home-recent').addEventListener('click', e => {
-    if (e.target.closest('[data-goto-gallery]')) showSection('gallery');
-  });
 
   window.adminLogin = adminLogin;
   document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
