@@ -30,6 +30,12 @@ function _renderAll() {
     if (!e.target.closest('nav')) _closeNav();
   });
 
+  // Wire admin modal immediately — must work before loadFanservice completes
+  initAuth();
+  document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
+  document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);
+  document.getElementById('adminPwToggle').addEventListener('click',  toggleAdminPwVis);
+
   try {
     await loadFanservice();
   } catch (err) {
@@ -42,7 +48,6 @@ function _renderAll() {
 
   initConfirm();
   initPrompt();
-  initAuth();
   initMembership();
   initFsGallery();
 
@@ -60,9 +65,6 @@ function _renderAll() {
   });
 
   document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
-  document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
-  document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);
-  document.getElementById('adminPwToggle').addEventListener('click',  toggleAdminPwVis);
 
   document.addEventListener('arden:datachanged', () => {
     try { _renderAll(); } catch (err) { console.error('Render error:', err); showToast('Render error — please reload', true); }

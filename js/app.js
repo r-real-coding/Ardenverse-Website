@@ -129,6 +129,12 @@ function _initKeyboard() {
     if (e.target.closest('[data-goto-gallery]')) showSection('gallery');
   });
 
+  // Wire admin modal immediately — must work before loadAll completes
+  initAuth();
+  document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
+  document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);
+  document.getElementById('adminPwToggle').addEventListener('click',  toggleAdminPwVis);
+
   try {
     await loadAll();
   } catch (err) {
@@ -141,7 +147,6 @@ function _initKeyboard() {
 
   initConfirm();
   initPrompt();
-  initAuth();
   initMembership();
   initGallery();
   initCharacters();
@@ -151,10 +156,6 @@ function _initKeyboard() {
   _initKeyboard();
 
   document.getElementById('admin-logout-btn').addEventListener('click', adminLogout);
-
-  document.getElementById('adminLoginBtn').addEventListener('click',  submitAdminLogin);
-  document.getElementById('adminCancelBtn').addEventListener('click', closeAdminLoginModal);
-  document.getElementById('adminPwToggle').addEventListener('click',  toggleAdminPwVis);
 
   document.addEventListener('arden:datachanged', () => {
     try { renderAll(); } catch (err) { console.error('Render error:', err); showToast('Render error — please reload', true); }
