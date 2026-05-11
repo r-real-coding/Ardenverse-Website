@@ -86,6 +86,8 @@ body > nav {
   display: block; font-family: 'Orbitron', sans-serif; margin-top: -4px;
 }
 .nav-links { display: flex; gap: 2rem; list-style: none; align-items: center; }
+.nav-ardenverse { display: none; }
+body.ardenverse-mode .nav-ardenverse { display: list-item; }
 .nav-links li button {
   background: none; border: none;
   color: var(--text-secondary);

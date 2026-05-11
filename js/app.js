@@ -10,16 +10,25 @@ import { initTags } from './tags.js';
 import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
 
 // ── Navigation ────────────────────────────────────────────────────────────────
+const _ARDENVERSE_SECTIONS = new Set(['home', 'gallery', 'characters', 'planets', 'lore']);
+
 export function showSection(id) {
   const section = document.getElementById('section-' + id);
-  const navBtn  = document.getElementById('nav-' + id);
   if (!section) { console.warn(`showSection: unknown section "${id}"`); return; }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   section.classList.add('active');
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-  if (navBtn) navBtn.classList.add('active');
+  if (_ARDENVERSE_SECTIONS.has(id)) {
+    document.body.classList.add('ardenverse-mode');
+    const navBtn = document.getElementById('nav-' + id);
+    if (navBtn) navBtn.classList.add('active');
+  } else {
+    document.body.classList.remove('ardenverse-mode');
+  }
   window.scrollTo(0, 0);
 }
+// Expose for non-module scripts (age-gate.js landing card fallback)
+window.showSection = showSection;
 
 // ── Home ──────────────────────────────────────────────────────────────────────
 export function renderHome() {
@@ -127,9 +136,7 @@ function _initKeyboard() {
 
   // Nav — section links (close mobile menu after navigation)
   document.querySelector('.nav-logo').addEventListener('click', () => { showSection('landing'); _closeNav(); });
-  document.getElementById('enterArdenverse')?.addEventListener('click', () => showSection('home'));
-  document.getElementById('enterFanservice')?.addEventListener('click', () => { window.location.href = '/fanservice'; });
-  document.getElementById('nav-home').addEventListener('click',       () => { showSection('home');       _closeNav(); });
+  document.getElementById('nav-home').addEventListener('click', () => { showSection('landing'); _closeNav(); });
   document.getElementById('nav-gallery').addEventListener('click',    () => { showSection('gallery');    _closeNav(); });
   document.getElementById('nav-characters').addEventListener('click', () => { showSection('characters'); _closeNav(); });
   document.getElementById('nav-planets').addEventListener('click',    () => { showSection('planets');    _closeNav(); });
