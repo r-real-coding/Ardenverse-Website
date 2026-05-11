@@ -19,8 +19,13 @@ function _toggleFilter(type, val) {
     if (_filters[type].has(val)) _filters[type].delete(val);
     else _filters[type].add(val);
   }
-  renderGallery();
-  buildFilterBar();
+  try {
+    renderGallery();
+    buildFilterBar();
+  } catch (err) {
+    console.error('Gallery render error:', err);
+    showToast('Filter error — please reload', true);
+  }
 }
 
 // ── Filter bar ────────────────────────────────────────────────────────────────
@@ -128,7 +133,7 @@ export function renderGallery() {
         ${imgSrc ? `data-lb-idx="${lbIdx}" role="button" tabindex="0" aria-label="${esc(item.title)}"` : 'style="cursor:default;"'}>
       ${imgSrc
         ? `<img class="gallery-thumb" src="${esc(imgSrc)}" alt="${esc(item.title)}" loading="lazy" width="400" height="533">`
-        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+        : `<div role="img" aria-label="No image available" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
             background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;
             letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
       <div class="gallery-overlay">

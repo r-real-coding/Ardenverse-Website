@@ -230,6 +230,23 @@ export function initMembership() {
     document.dispatchEvent(new CustomEvent('arden:datachanged'));
   });
 
+  // Proactively clear expired member session every 60 s so UI updates without a page reload.
+  setInterval(() => {
+    const token = sessionStorage.getItem(MEMBER_TOKEN_KEY);
+    if (!token) return;
+    try {
+      const b64     = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(b64));
+      if (payload.exp <= Math.floor(Date.now() / 1000)) {
+        clearMemberToken();
+        document.dispatchEvent(new CustomEvent('arden:memberchanged'));
+      }
+    } catch {
+      clearMemberToken();
+      document.dispatchEvent(new CustomEvent('arden:memberchanged'));
+    }
+  }, 60_000);
+
   // Kick off URL fetch in background; hides unconfigured buttons once done.
   ensureOAuthUrls();
   renderMemberBadge();
