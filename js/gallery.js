@@ -83,7 +83,10 @@ export function renderGallery() {
     if (_filters.planet    !== 'all' && !(item.planets    || []).includes(_filters.planet))    return false;
     if (_filters.customTag !== 'all' && !(item.customTags || []).includes(_filters.customTag)) return false;
     if (search) {
-      const hay = ((item.title || '') + ' ' + (item.tags || []).join(' ') + ' ' + (item.customTags || []).join(' ')).toLowerCase();
+      const hay = [
+        item.title, item.desc,
+        ...(item.tags || []), ...(item.themes || []), ...(item.customTags || []),
+      ].join(' ').toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
