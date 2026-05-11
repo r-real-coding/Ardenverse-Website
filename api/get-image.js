@@ -54,7 +54,14 @@ module.exports = async function handler(req, res) {
   if (!authed && !(await _isPublicFanserviceImage(key))) return res.status(401).end('Unauthorised');
 
   const filePath = path.join(UPLOADS_DIR, key);
-  if (!fs.existsSync(filePath)) return res.status(404).end('Not found');
+  // Defense-in-depth: verify resolved path stays within uploads directory
+  if (!filePath.startsWith(UPLOADS_DIR + path.sep)) return res.status(400).end('Invalid key');
+
+  try {
+    await fs.promises.access(filePath);
+  } catch {
+    return res.status(404).end('Not found');
+  }
 
   const ext = path.extname(key).slice(1).toLowerCase();
   res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');

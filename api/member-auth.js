@@ -103,7 +103,7 @@ async function handlePatreon(req, res, code, siteUrl, state) {
     tokenData = await tokenRes.json();
   } catch (err) { console.error('Patreon token fetch error:', err); return paywallResponse(res, false, 'Network error contacting Patreon', state); }
 
-  const { access_token, refresh_token } = tokenData;
+  const { access_token } = tokenData;
   let identity;
   try {
     const identityRes = await fetch(
@@ -155,7 +155,7 @@ async function handleSubscribestar(req, res, code, siteUrl, state) {
     tokenData = await tokenRes.json();
   } catch (err) { console.error('Subscribestar token fetch error:', err); return paywallResponse(res, false, 'Network error contacting Subscribestar', state); }
 
-  const { access_token, refresh_token } = tokenData;
+  const { access_token } = tokenData;
   let userJson;
   try {
     const userRes = await fetch(`${ssHost}/api/user.json`, { headers: { Authorization: `Bearer ${access_token}` } });

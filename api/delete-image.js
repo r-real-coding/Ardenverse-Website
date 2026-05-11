@@ -16,7 +16,13 @@ module.exports = async function handler(req, res) {
 
   try {
     const filePath = path.join(UPLOADS_DIR, key);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    // Defense-in-depth: verify resolved path stays within uploads directory
+    if (!filePath.startsWith(UPLOADS_DIR + path.sep)) {
+      return res.status(400).json({ error: 'Invalid key' });
+    }
+    await fs.promises.unlink(filePath).catch(err => {
+      if (err.code !== 'ENOENT') throw err;
+    });
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('delete-image error:', err);

@@ -23,6 +23,14 @@ const CSP = [
   "upgrade-insecure-requests",
 ].join('; ');
 
+// Redirect HTTP → HTTPS when FORCE_HTTPS=true (set this in production behind a reverse proxy).
+if (process.env.FORCE_HTTPS === 'true') {
+  app.use((req, res, next) => {
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') return next();
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  });
+}
+
 // Block access to dotfiles and other sensitive paths before any routing.
 app.use((req, res, next) => {
   const p = req.path;
