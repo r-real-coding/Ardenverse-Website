@@ -116,7 +116,7 @@ export function buildFilterBar() {
 function _makeFilterBtn(type, val, label, active, deletable = false) {
   const isAdmin = document.body.classList.contains('admin-mode');
   const delSpan = (isAdmin && deletable)
-    ? `<span class="filter-tag-del" data-del-name="${esc(val)}" data-del-kind="${esc(type === 'customTag' ? 'custom' : type)}" title="Delete tag">×</span>`
+    ? `<span class="filter-tag-del" role="button" tabindex="0" data-del-name="${esc(val)}" data-del-kind="${esc(type === 'customTag' ? 'custom' : type)}" aria-label="Delete tag ${esc(val)}">×</span>`
     : '';
   return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}${delSpan}</button>`;
 }
@@ -447,7 +447,9 @@ export function deleteCurrentImage() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 export function initFsGallery() {
   ['fs-filter-themes', 'fs-filter-custom-tags'].forEach(id => {
-    document.getElementById(id)?.addEventListener('click', e => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', e => {
       const delBtn = e.target.closest('.filter-tag-del');
       if (delBtn) {
         e.stopPropagation();
@@ -458,6 +460,16 @@ export function initFsGallery() {
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
       _toggleFilter(btn.dataset.filterType, btn.dataset.filterVal);
+    });
+    // Keyboard activation for filter-tag-del spans (role=button, tabindex=0)
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const delSpan = e.target.closest('.filter-tag-del');
+      if (!delSpan) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const { delName, delKind } = delSpan.dataset;
+      showConfirm('Delete Tag', `Delete "${delName}"? It will be removed from all fanservice items.`, () => deleteFsTag(delName, delKind));
     });
   });
 

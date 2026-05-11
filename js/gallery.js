@@ -76,7 +76,7 @@ export function buildFilterBar() {
 function makeFilterBtn(type, val, label, active, deletable = false) {
   const isAdmin = document.body.classList.contains('admin-mode');
   const delSpan = (isAdmin && deletable)
-    ? `<span class="filter-tag-del" data-del-name="${esc(val)}" data-del-kind="${esc(type === 'customTag' ? 'custom' : type)}" title="Delete tag">×</span>`
+    ? `<span class="filter-tag-del" role="button" tabindex="0" data-del-name="${esc(val)}" data-del-kind="${esc(type === 'customTag' ? 'custom' : type)}" aria-label="Delete tag ${esc(val)}">×</span>`
     : '';
   return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}${delSpan}</button>`;
 }
@@ -387,6 +387,18 @@ export function deleteCurrentImage() {
 export function initGallery() {
   document.getElementById('filter-chars').addEventListener('click',        _filterClick);
   document.getElementById('filter-themes').addEventListener('click',       _filterClick);
+  // Keyboard activation for filter-tag-del spans (role=button, tabindex=0)
+  ['filter-themes', 'filter-planets', 'filter-custom-tags'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const delSpan = e.target.closest('.filter-tag-del');
+      if (!delSpan) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const { delName, delKind } = delSpan.dataset;
+      showConfirm('Delete Tag', `Delete "${delName}"? It will be removed from all gallery and lore entries.`, () => deleteTag(delName, delKind));
+    });
+  });
   document.getElementById('filter-planets').addEventListener('click',      _filterClick);
   document.getElementById('filter-custom-tags').addEventListener('click',  _filterClick);
 
