@@ -11,6 +11,7 @@ let _lightboxIndex  = 0;
 export const mState = {
   file: null, imageKey: null, editUuid: null,
   themes: [], customTags: [], displayTags: [],
+  visibility: 'private',
 };
 
 // ── Tag population ────────────────────────────────────────────────────────────
@@ -96,6 +97,12 @@ function _makeFilterBtn(type, val, label, active) {
   return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}</button>`;
 }
 
+function _setVisibilityBtn(val) {
+  document.querySelectorAll('#fsVisibilityGroup .visibility-radio-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === val);
+  });
+}
+
 function _toggleFilter(type, val) {
   if (val === 'all') {
     _filters[type].clear();
@@ -110,27 +117,27 @@ function _toggleFilter(type, val) {
 // ── Gallery render ────────────────────────────────────────────────────────────
 export function renderGallery() {
   const isAdmin  = document.body.classList.contains('admin-mode');
+  const isMember = isAdmin || isSubscriber();
   const paywall  = document.getElementById('fs-gallery-paywall');
   const controls = document.getElementById('fs-gallery-controls');
   const count    = document.getElementById('fs-gallery-count');
   const grid     = document.getElementById('fs-gallery-grid');
 
-  if (!isAdmin && !isSubscriber()) {
-    if (paywall)  paywall.style.display  = '';
-    if (controls) controls.style.display = 'none';
-    if (count)    count.style.display    = 'none';
-    if (grid)     grid.style.display     = 'none';
-    return;
-  }
-
-  if (paywall)  paywall.style.display  = 'none';
+  // Gallery always visible; paywall becomes a compact "subscribe" banner for non-members
   if (controls) controls.style.display = '';
   if (count)    count.style.display    = '';
   if (grid)     grid.style.display     = '';
+  if (paywall) {
+    if (isMember) { paywall.style.display = 'none'; paywall.classList.remove('inline'); }
+    else          { paywall.style.display = '';     paywall.classList.add('inline'); }
+  }
 
   const search = document.getElementById('fs-gallery-search').value.toLowerCase();
 
   const items = FS_GALLERY.filter(item => {
+    const isLocked = !isMember && item.visibility !== 'public';
+    // Locked items always shown (blurred) — skip filtering for them
+    if (isLocked) return true;
     if (_filters.theme.size > 0     && !(item.themes     || []).some(v => _filters.theme.has(v)))     return false;
     if (_filters.customTag.size > 0 && !(item.customTags || []).some(v => _filters.customTag.has(v))) return false;
     if (search) {
@@ -143,7 +150,8 @@ export function renderGallery() {
     return true;
   });
 
-  _lightboxItems = items.filter(i => i.imageKey);
+  // Lightbox only for items the current user can actually open
+  _lightboxItems = items.filter(i => i.imageKey && (isMember || i.visibility === 'public'));
   count.textContent = `Showing ${items.length} of ${FS_GALLERY.length} image${FS_GALLERY.length !== 1 ? 's' : ''}`;
 
   if (items.length === 0 && !isAdmin) {
@@ -153,15 +161,24 @@ export function renderGallery() {
   }
 
   const html = items.map(item => {
-    const lbIdx  = _lightboxItems.findIndex(x => x.uuid === item.uuid);
-    const imgSrc = item.imageKey ? imageUrl(item.imageKey) : null;
-    return `<div class="gallery-item" data-uuid="${esc(item.uuid)}"
-        ${imgSrc ? `data-lb-idx="${lbIdx}" role="button" tabindex="0" aria-label="${esc(item.title)}"` : 'style="cursor:default;"'}>
+    const isLocked = !isMember && item.visibility !== 'public';
+    const lbIdx    = isLocked ? -1 : _lightboxItems.findIndex(x => x.uuid === item.uuid);
+    const imgSrc   = item.imageKey ? imageUrl(item.imageKey) : null;
+    const visLabel = item.visibility === 'public' ? 'public' : 'private';
+    const itemAttrs = isLocked ? '' : (imgSrc
+      ? `data-lb-idx="${lbIdx}" role="button" tabindex="0" aria-label="${esc(item.title)}"`
+      : 'style="cursor:default;"');
+    return `<div class="gallery-item${isLocked ? ' gallery-item--locked' : ''}" data-uuid="${esc(item.uuid)}" ${itemAttrs}>
       ${imgSrc
         ? `<img class="gallery-thumb" src="${esc(imgSrc)}" alt="${esc(item.title)}" loading="lazy" width="400" height="533">`
         : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
             background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;
             letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
+      ${isLocked ? `<div class="gallery-item__lock">
+        <div class="gallery-item__lock-icon">🔒</div>
+        <div class="gallery-item__lock-label">Members Only</div>
+      </div>` : ''}
+      ${isAdmin ? `<div class="visibility-badge visibility-badge--${esc(visLabel)}">${esc(visLabel)}</div>` : ''}
       <div class="gallery-overlay">
         <div class="gallery-item-title">${esc(item.title)}</div>
         <div class="gallery-item-desc">${esc(item.desc || '')}</div>
@@ -228,6 +245,8 @@ function _modalValidate() {
 function _resetModal() {
   mState.file = null; mState.imageKey = null; mState.editUuid = null;
   mState.themes = []; mState.customTags = []; mState.displayTags = [];
+  mState.visibility = 'private';
+  _setVisibilityBtn('private');
   document.getElementById('fsModalTitle').value = '';
   document.getElementById('fsModalDesc').value  = '';
   document.getElementById('fsModalPreviewImg').style.display  = 'none';
@@ -269,6 +288,8 @@ export function openEditImage(itemUuid) {
   mState.themes     = [...(item.themes     || [])];
   mState.customTags = [...(item.customTags || [])];
   mState.displayTags= [...(item.tags       || [])];
+  mState.visibility = item.visibility || 'private';
+  _setVisibilityBtn(mState.visibility);
   if (item.imageKey) {
     const img = document.getElementById('fsModalPreviewImg');
     img.src = imageUrl(item.imageKey); img.style.display = 'block';
@@ -331,6 +352,7 @@ export async function saveImage() {
   const entry = {
     uuid:       mState.editUuid || newUuid(),
     title, desc, imageKey,
+    visibility: mState.visibility || 'private',
     themes:     [...mState.themes],
     customTags: [...mState.customTags],
     tags:       [...mState.displayTags],
@@ -468,4 +490,11 @@ export function initFsGallery() {
   });
 
   document.getElementById('fs-gallery-search').addEventListener('input', renderGallery);
+
+  document.getElementById('fsVisibilityGroup')?.addEventListener('click', e => {
+    const btn = e.target.closest('.visibility-radio-btn');
+    if (!btn) return;
+    mState.visibility = btn.dataset.val;
+    _setVisibilityBtn(btn.dataset.val);
+  });
 }

@@ -117,6 +117,45 @@ details.filter-group[open] > summary .filter-group-chevron { transform: rotate(9
 .lightbox-prev { left: 1rem; }
 .lightbox-next { right: 1rem; }
 
+/* LOCKED GALLERY ITEMS (private, non-member view) */
+.gallery-item--locked { cursor: not-allowed; }
+.gallery-item--locked .gallery-thumb { filter: blur(14px); transform: scale(1.12); }
+.gallery-item--locked:hover { border-color: var(--border) !important; transform: none !important; box-shadow: none !important; }
+.gallery-item--locked .gallery-overlay { display: none; }
+.gallery-item__lock {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.gallery-item__lock-icon { font-size: 1.6rem; line-height: 1; }
+.gallery-item__lock-label {
+  font-family: 'Orbitron', sans-serif; font-size: 0.52rem;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-secondary);
+}
+
+/* VISIBILITY BADGE (admin view) */
+.visibility-badge {
+  position: absolute; top: 0.4rem; left: 0.4rem; z-index: 2;
+  font-family: 'Orbitron', sans-serif; font-size: 0.48rem;
+  letter-spacing: 0.15em; text-transform: uppercase; padding: 0.18rem 0.45rem;
+}
+.visibility-badge--public  { background: rgba(26,191,151,0.18); color: var(--teal-300); border: 1px solid var(--teal-600); }
+.visibility-badge--private { background: rgba(255,102,0,0.10); color: #ff9966;         border: 1px solid rgba(255,102,0,0.3); }
+
+/* VISIBILITY RADIO TOGGLE (upload modal) */
+.visibility-radio-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem; }
+.visibility-radio-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem; letter-spacing: 0.08em;
+  padding: 0.4rem 1rem; cursor: pointer; transition: all 0.2s;
+}
+.visibility-radio-btn.active {
+  border-color: var(--teal-500); color: var(--teal-300); background: rgba(26,191,151,0.1);
+}
+.visibility-radio-btn[data-val="public"].active {
+  border-color: rgba(100,220,190,0.6); color: var(--teal-200); background: rgba(26,191,151,0.14);
+}
+
 /* GALLERY PAYWALL */
 .gallery-paywall {
   position: relative; overflow: hidden;
@@ -210,3 +249,21 @@ details.filter-group[open] > summary .filter-group-chevron { transform: rotate(9
   font-size: 0.7rem; color: var(--text-muted); font-weight: 300; line-height: 1.6;
   margin-top: 1.4rem;
 }
+
+/* Compact inline paywall strip (non-member banner above gallery) */
+.gallery-paywall.inline {
+  min-height: unset; padding: 0.8rem 3rem; background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+.gallery-paywall.inline .paywall-stars { display: none; }
+.gallery-paywall.inline .paywall-box {
+  max-width: unset; padding: 0.8rem 1.2rem; border: none; background: transparent;
+  display: flex; align-items: center; gap: 2rem; text-align: left; flex-wrap: wrap;
+}
+.gallery-paywall.inline .paywall-eyebrow,
+.gallery-paywall.inline .paywall-divider,
+.gallery-paywall.inline .paywall-desc,
+.gallery-paywall.inline .paywall-footer { display: none; }
+.gallery-paywall.inline .paywall-title { font-size: 0.8rem; margin-bottom: 0; }
+.gallery-paywall.inline .paywall-actions { margin-bottom: 0; flex-direction: row; flex-wrap: wrap; gap: 0.6rem; }
+.gallery-paywall.inline .paywall-btn { padding: 0.5rem 1rem; font-size: 0.7rem; }
