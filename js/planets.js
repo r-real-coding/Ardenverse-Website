@@ -163,7 +163,14 @@ function _handlePlanetFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('planetDropZone').style.display = 'none';
   };
-  reader.onerror = () => { _pState.file = null; showToast('Failed to read image file', true); };
+  reader.onerror = () => {
+    _pState.file = null;
+    const img = document.getElementById('planetPreviewImgUploaded');
+    img.src = ''; img.style.display = 'none';
+    document.getElementById('planetDropZone').style.display = '';
+    document.getElementById('planetReplaceBtn').classList.remove('visible');
+    showToast('Failed to read image file', true);
+  };
   reader.readAsDataURL(file);
   document.getElementById('planetReplaceBtn').classList.add('visible');
 }
@@ -214,7 +221,7 @@ export async function savePlanet() {
 
   if (_editingPlanetUuid) {
     const idx = PLANETS.findIndex(x => x.uuid === _editingPlanetUuid);
-    if (idx >= 0) PLANETS[idx] = planet; else PLANETS.push(planet);
+    if (idx >= 0) PLANETS[idx] = planet; else { PLANETS.push(planet); PLANETS.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); }
   } else {
     PLANETS.push(planet);
     PLANETS.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));

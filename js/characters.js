@@ -161,7 +161,14 @@ function _handleCharFile(file) {
     img.src = e.target.result; img.style.display = 'block';
     document.getElementById('charDropZone').style.display = 'none';
   };
-  reader.onerror = () => { _cState.file = null; showToast('Failed to read image file', true); };
+  reader.onerror = () => {
+    _cState.file = null;
+    const img = document.getElementById('charPreviewImg');
+    img.src = ''; img.style.display = 'none';
+    document.getElementById('charDropZone').style.display = '';
+    document.getElementById('charReplaceBtn').classList.remove('visible');
+    showToast('Failed to read image file', true);
+  };
   reader.readAsDataURL(file);
   document.getElementById('charReplaceBtn').classList.add('visible');
 }
@@ -212,7 +219,7 @@ export async function saveCharacter() {
 
   if (_editingCharUuid) {
     const idx = CHARACTERS.findIndex(x => x.uuid === _editingCharUuid);
-    if (idx >= 0) CHARACTERS[idx] = char; else CHARACTERS.push(char);
+    if (idx >= 0) CHARACTERS[idx] = char; else { CHARACTERS.push(char); CHARACTERS.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); }
   } else {
     CHARACTERS.push(char);
     CHARACTERS.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
