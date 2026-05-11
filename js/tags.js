@@ -88,10 +88,8 @@ export async function deleteTag(name, kind) {
 
   const field = kind === 'theme' ? 'themes' : 'customTags';
   for (const item of GALLERY) {
-    if ((item[field] || []).includes(name)) {
-      item[field] = item[field].filter(v => v !== name);
-      item.tags   = (item.tags || []).filter(v => v !== name);
-    }
+    item[field] = (item[field] || []).filter(v => v !== name);
+    item.tags   = (item.tags   || []).filter(v => v !== name);
   }
   if (kind === 'custom') {
     for (const entry of LORE) {

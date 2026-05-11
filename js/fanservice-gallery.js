@@ -70,10 +70,8 @@ async function deleteFsTag(name, kind) {
   setFsTags(updatedTags);
   const field = kind === 'theme' ? 'themes' : 'customTags';
   for (const item of FS_GALLERY) {
-    if ((item[field] || []).includes(name)) {
-      item[field] = item[field].filter(v => v !== name);
-      item.tags   = (item.tags || []).filter(v => v !== name);
-    }
+    item[field] = (item[field] || []).filter(v => v !== name);
+    item.tags   = (item.tags   || []).filter(v => v !== name);
   }
   try {
     await apiPutData('fanserviceTags', updatedTags);
