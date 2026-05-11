@@ -232,7 +232,7 @@ body.ardenverse-mode .nav-ardenverse { display: list-item; }
 
 /* LANDING — site chooser */
 .landing-choices {
-  display: flex; gap: 1.5rem; justify-content: center; align-items: stretch; flex-wrap: wrap;
+  display: flex; flex-direction: column; gap: 1.5rem; align-items: center;
 }
 .landing-card {
   -webkit-appearance: none; appearance: none;

@@ -3,7 +3,7 @@ import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from '.
 import { esc, showToast, showConfirm, showPrompt, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 import { isSubscriber } from './membership.js';
 
-let _filters        = { theme: 'all' };
+let _filters        = { theme: 'all', customTag: 'all' };
 let _lightboxItems  = [];
 let _lightboxIndex  = 0;
 
@@ -73,6 +73,14 @@ export function buildFilterBar() {
   document.getElementById('fs-filter-themes').innerHTML =
     _makeFilterBtn('theme', 'all', 'All', _filters.theme === 'all')
     + themeNames.map(t => _makeFilterBtn('theme', t, t, _filters.theme === t)).join('');
+
+  const customTagNames = [...new Set(FS_GALLERY.flatMap(g => g.customTags || []))].sort();
+  const ctEl = document.getElementById('fs-filter-custom-tags');
+  if (ctEl) {
+    ctEl.parentElement.style.display = customTagNames.length ? '' : 'none';
+    ctEl.innerHTML = _makeFilterBtn('customTag', 'all', 'All', _filters.customTag === 'all')
+      + customTagNames.map(t => _makeFilterBtn('customTag', t, t, _filters.customTag === t)).join('');
+  }
 }
 
 function _makeFilterBtn(type, val, label, active) {
@@ -109,9 +117,10 @@ export function renderGallery() {
   const search = document.getElementById('fs-gallery-search').value.toLowerCase();
 
   const items = FS_GALLERY.filter(item => {
-    if (_filters.theme !== 'all' && !(item.themes || []).includes(_filters.theme)) return false;
+    if (_filters.theme     !== 'all' && !(item.themes     || []).includes(_filters.theme))     return false;
+    if (_filters.customTag !== 'all' && !(item.customTags || []).includes(_filters.customTag)) return false;
     if (search) {
-      const hay = ((item.title || '') + ' ' + (item.tags || []).join(' ')).toLowerCase();
+      const hay = ((item.title || '') + ' ' + (item.tags || []).join(' ') + ' ' + (item.customTags || []).join(' ')).toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
@@ -367,10 +376,12 @@ export function deleteCurrentImage() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 export function initFsGallery() {
-  document.getElementById('fs-filter-themes').addEventListener('click', e => {
-    const btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-    setFilter(btn.dataset.filterType, btn.dataset.filterVal);
+  ['fs-filter-themes', 'fs-filter-custom-tags'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      setFilter(btn.dataset.filterType, btn.dataset.filterVal);
+    });
   });
 
   document.getElementById('fs-gallery-grid').addEventListener('click', e => {

@@ -4,7 +4,7 @@ import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataCha
 import { mState, populateUploadTags } from './tags.js';
 import { isSubscriber } from './membership.js';
 
-let _filters = { char: 'all', theme: 'all', planet: 'all' };
+let _filters = { char: 'all', theme: 'all', planet: 'all', customTag: 'all' };
 let _lightboxItems  = [];
 let _lightboxIndex  = 0;
 
@@ -32,6 +32,14 @@ export function buildFilterBar() {
   document.getElementById('filter-planets').innerHTML =
     makeFilterBtn('planet', 'all', 'All', _filters.planet === 'all')
     + planetSlugs.map(s => makeFilterBtn('planet', s, planetLabels[s] || s, _filters.planet === s)).join('');
+
+  const customTagNames = [...new Set(GALLERY.flatMap(g => g.customTags || []))].sort();
+  const ctEl = document.getElementById('filter-custom-tags');
+  if (ctEl) {
+    ctEl.parentElement.style.display = customTagNames.length ? '' : 'none';
+    ctEl.innerHTML = makeFilterBtn('customTag', 'all', 'All', _filters.customTag === 'all')
+      + customTagNames.map(t => makeFilterBtn('customTag', t, t, _filters.customTag === t)).join('');
+  }
 }
 
 function makeFilterBtn(type, val, label, active) {
@@ -70,9 +78,10 @@ export function renderGallery() {
   const search  = document.getElementById('gallery-search').value.toLowerCase();
 
   const items = GALLERY.filter(item => {
-    if (_filters.char   !== 'all' && !(item.chars   || []).includes(_filters.char))   return false;
-    if (_filters.theme  !== 'all' && !(item.themes  || []).includes(_filters.theme))  return false;
-    if (_filters.planet !== 'all' && !(item.planets || []).includes(_filters.planet)) return false;
+    if (_filters.char      !== 'all' && !(item.chars      || []).includes(_filters.char))      return false;
+    if (_filters.theme     !== 'all' && !(item.themes     || []).includes(_filters.theme))     return false;
+    if (_filters.planet    !== 'all' && !(item.planets    || []).includes(_filters.planet))    return false;
+    if (_filters.customTag !== 'all' && !(item.customTags || []).includes(_filters.customTag)) return false;
     if (search) {
       const hay = ((item.title || '') + ' ' + (item.tags || []).join(' ') + ' ' + (item.customTags || []).join(' ')).toLowerCase();
       if (!hay.includes(search)) return false;
@@ -344,9 +353,10 @@ export function deleteCurrentImage() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 export function initGallery() {
-  document.getElementById('filter-chars').addEventListener('click',   _filterClick);
-  document.getElementById('filter-themes').addEventListener('click',  _filterClick);
-  document.getElementById('filter-planets').addEventListener('click', _filterClick);
+  document.getElementById('filter-chars').addEventListener('click',        _filterClick);
+  document.getElementById('filter-themes').addEventListener('click',       _filterClick);
+  document.getElementById('filter-planets').addEventListener('click',      _filterClick);
+  document.getElementById('filter-custom-tags').addEventListener('click',  _filterClick);
 
   document.getElementById('gallery-grid').addEventListener('click', e => {
     const adminBtn = e.target.closest('[data-action]');
