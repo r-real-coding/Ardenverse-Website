@@ -290,7 +290,7 @@ export async function saveImage() {
 
   if (mState.editUuid) {
     const idx = GALLERY.findIndex(x => x.uuid === mState.editUuid);
-    if (idx >= 0) GALLERY[idx] = entry; else GALLERY.unshift(entry);
+    if (idx >= 0) GALLERY[idx] = entry; else { GALLERY.unshift(entry); GALLERY.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); }
   } else {
     GALLERY.unshift(entry);
     GALLERY.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));

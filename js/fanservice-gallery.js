@@ -313,7 +313,7 @@ export async function saveImage() {
 
   if (mState.editUuid) {
     const idx = FS_GALLERY.findIndex(x => x.uuid === mState.editUuid);
-    if (idx >= 0) FS_GALLERY[idx] = entry; else FS_GALLERY.unshift(entry);
+    if (idx >= 0) FS_GALLERY[idx] = entry; else { FS_GALLERY.unshift(entry); FS_GALLERY.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); }
   } else {
     FS_GALLERY.unshift(entry);
     FS_GALLERY.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
