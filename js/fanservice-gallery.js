@@ -100,7 +100,7 @@ export function buildFilterBar() {
 
   document.getElementById('fs-filter-themes').innerHTML =
     _makeFilterBtn('theme', 'all', 'All', _filters.theme.size === 0)
-    + themeNames.map(t => _makeFilterBtn('theme', t, t, _filters.theme.has(t))).join('');
+    + themeNames.map(t => _makeFilterBtn('theme', t, t, _filters.theme.has(t), true)).join('');
   _setCount('fg-fs-themes-count', _filters.theme.size);
 
   const customTagNames = [...new Set(FS_GALLERY.flatMap(g => g.customTags || []))].sort();
@@ -108,13 +108,17 @@ export function buildFilterBar() {
   if (ctEl) {
     document.getElementById('fg-fs-custom-tags').style.display = customTagNames.length ? '' : 'none';
     ctEl.innerHTML = _makeFilterBtn('customTag', 'all', 'All', _filters.customTag.size === 0)
-      + customTagNames.map(t => _makeFilterBtn('customTag', t, t, _filters.customTag.has(t))).join('');
+      + customTagNames.map(t => _makeFilterBtn('customTag', t, t, _filters.customTag.has(t), true)).join('');
     _setCount('fg-fs-custom-tags-count', _filters.customTag.size);
   }
 }
 
-function _makeFilterBtn(type, val, label, active) {
-  return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}</button>`;
+function _makeFilterBtn(type, val, label, active, deletable = false) {
+  const isAdmin = document.body.classList.contains('admin-mode');
+  const delSpan = (isAdmin && deletable)
+    ? `<span class="filter-tag-del" data-del-name="${esc(val)}" data-del-kind="${esc(type === 'customTag' ? 'custom' : type)}" title="Delete tag">×</span>`
+    : '';
+  return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}${delSpan}</button>`;
 }
 
 function _setVisibilityBtn(val) {
@@ -444,6 +448,13 @@ export function deleteCurrentImage() {
 export function initFsGallery() {
   ['fs-filter-themes', 'fs-filter-custom-tags'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', e => {
+      const delBtn = e.target.closest('.filter-tag-del');
+      if (delBtn) {
+        e.stopPropagation();
+        const { delName, delKind } = delBtn.dataset;
+        showConfirm('Delete Tag', `Delete "${delName}"? It will be removed from all fanservice items.`, () => deleteFsTag(delName, delKind));
+        return;
+      }
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
       _toggleFilter(btn.dataset.filterType, btn.dataset.filterVal);

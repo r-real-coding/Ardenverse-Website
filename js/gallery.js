@@ -1,7 +1,7 @@
 import { GALLERY, CHARACTERS, PLANETS, TAGS, setGallery } from './state.js';
 import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from './api.js';
 import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
-import { mState, populateUploadTags } from './tags.js';
+import { mState, populateUploadTags, deleteTag } from './tags.js';
 import { isSubscriber } from './membership.js';
 
 let _filters = { char: new Set(), theme: new Set(), planet: new Set(), customTag: new Set() };
@@ -52,7 +52,7 @@ export function buildFilterBar() {
   ])].sort();
   document.getElementById('filter-themes').innerHTML =
     makeFilterBtn('theme', 'all', 'All', _isActive('theme', 'all'))
-    + themeNames.map(t => makeFilterBtn('theme', t, t, _isActive('theme', t))).join('');
+    + themeNames.map(t => makeFilterBtn('theme', t, t, _isActive('theme', t), true)).join('');
   _setCount('fg-themes-count', _filters.theme.size);
 
   const planetSlugs  = [...new Set(GALLERY.flatMap(g => g.planets || []))];
@@ -68,13 +68,17 @@ export function buildFilterBar() {
   if (ctEl) {
     document.getElementById('fg-custom-tags').style.display = customTagNames.length ? '' : 'none';
     ctEl.innerHTML = makeFilterBtn('customTag', 'all', 'All', _isActive('customTag', 'all'))
-      + customTagNames.map(t => makeFilterBtn('customTag', t, t, _isActive('customTag', t))).join('');
+      + customTagNames.map(t => makeFilterBtn('customTag', t, t, _isActive('customTag', t), true)).join('');
     _setCount('fg-custom-tags-count', _filters.customTag.size);
   }
 }
 
-function makeFilterBtn(type, val, label, active) {
-  return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}</button>`;
+function makeFilterBtn(type, val, label, active, deletable = false) {
+  const isAdmin = document.body.classList.contains('admin-mode');
+  const delSpan = (isAdmin && deletable)
+    ? `<span class="filter-tag-del" data-del-name="${esc(val)}" data-del-kind="${esc(type === 'customTag' ? 'custom' : type)}" title="Delete tag">×</span>`
+    : '';
+  return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}${delSpan}</button>`;
 }
 
 // ── Gallery render ────────────────────────────────────────────────────────────
@@ -455,6 +459,13 @@ export function initGallery() {
 }
 
 function _filterClick(e) {
+  const delBtn = e.target.closest('.filter-tag-del');
+  if (delBtn) {
+    e.stopPropagation();
+    const { delName, delKind } = delBtn.dataset;
+    showConfirm('Delete Tag', `Delete "${delName}"? It will be removed from all gallery and lore entries.`, () => deleteTag(delName, delKind));
+    return;
+  }
   const btn = e.target.closest('.filter-btn');
   if (!btn) return;
   _toggleFilter(btn.dataset.filterType, btn.dataset.filterVal);

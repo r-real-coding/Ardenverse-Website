@@ -54,6 +54,14 @@ details.filter-group[open] > summary .filter-group-chevron { transform: rotate(9
   background: rgba(26,191,151,0.12);
   border-color: var(--teal-500); color: var(--teal-300);
 }
+.filter-tag-del {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 0.3em; font-size: 0.8em; line-height: 1;
+  color: #e87070; opacity: 0; transition: opacity 0.15s; pointer-events: auto;
+}
+.filter-btn:hover .filter-tag-del { opacity: 0.65; }
+.filter-tag-del:hover { opacity: 1 !important; }
+
 .gallery-count { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.1em; padding: 1rem 3rem 0; }
 .gallery-grid {
   padding: 1.5rem 3rem 3rem;
