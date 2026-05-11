@@ -45,6 +45,9 @@
     // Update nav logo subtitle
     var logoSpan = document.querySelector('.nav-logo span');
     if (logoSpan) logoSpan.textContent = isArden ? 'Ardenverse' : 'Home';
+    // Home button shows arrow only when NOT in the Ardenverse home section
+    var navHomeBtn = document.getElementById('nav-home');
+    if (navHomeBtn) navHomeBtn.textContent = (id === 'home') ? 'Home' : '← Home';
     window.scrollTo(0, 0);
   }
 
@@ -119,7 +122,12 @@
       body: JSON.stringify({ password: pw })
     })
     .then(function (res) {
-      return res.json().then(function (data) { return { status: res.status, data: data }; });
+      var status = res.status;
+      return res.text().then(function (text) {
+        var data = {};
+        try { data = JSON.parse(text); } catch (e) {}
+        return { status: status, data: data };
+      });
     })
     .then(function (result) {
       if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
