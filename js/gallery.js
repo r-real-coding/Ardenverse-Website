@@ -24,6 +24,13 @@ function _toggleFilter(type, val) {
 }
 
 // ── Filter bar ────────────────────────────────────────────────────────────────
+function _setCount(id, size) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = size > 0 ? size : '';
+  el.classList.toggle('visible', size > 0);
+}
+
 export function buildFilterBar() {
   const charSlugs  = [...new Set(GALLERY.flatMap(g => g.chars   || []))];
   const charLabels = {};
@@ -32,6 +39,7 @@ export function buildFilterBar() {
   document.getElementById('filter-chars').innerHTML =
     makeFilterBtn('char', 'all', 'All', _isActive('char', 'all'))
     + charSlugs.map(s => makeFilterBtn('char', s, charLabels[s] || s, _isActive('char', s))).join('');
+  _setCount('fg-chars-count', _filters.char.size);
 
   const themeNames = [...new Set([
     ...TAGS.filter(t => t.kind === 'theme').map(t => t.name),
@@ -40,6 +48,7 @@ export function buildFilterBar() {
   document.getElementById('filter-themes').innerHTML =
     makeFilterBtn('theme', 'all', 'All', _isActive('theme', 'all'))
     + themeNames.map(t => makeFilterBtn('theme', t, t, _isActive('theme', t))).join('');
+  _setCount('fg-themes-count', _filters.theme.size);
 
   const planetSlugs  = [...new Set(GALLERY.flatMap(g => g.planets || []))];
   const planetLabels = {};
@@ -47,13 +56,15 @@ export function buildFilterBar() {
   document.getElementById('filter-planets').innerHTML =
     makeFilterBtn('planet', 'all', 'All', _isActive('planet', 'all'))
     + planetSlugs.map(s => makeFilterBtn('planet', s, planetLabels[s] || s, _isActive('planet', s))).join('');
+  _setCount('fg-planets-count', _filters.planet.size);
 
   const customTagNames = [...new Set(GALLERY.flatMap(g => g.customTags || []))].sort();
   const ctEl = document.getElementById('filter-custom-tags');
   if (ctEl) {
-    ctEl.parentElement.style.display = customTagNames.length ? '' : 'none';
+    document.getElementById('fg-custom-tags').style.display = customTagNames.length ? '' : 'none';
     ctEl.innerHTML = makeFilterBtn('customTag', 'all', 'All', _isActive('customTag', 'all'))
       + customTagNames.map(t => makeFilterBtn('customTag', t, t, _isActive('customTag', t))).join('');
+    _setCount('fg-custom-tags-count', _filters.customTag.size);
   }
 }
 

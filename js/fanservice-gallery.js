@@ -64,6 +64,13 @@ async function _addTag(context) {
 }
 
 // ── Filter bar ────────────────────────────────────────────────────────────────
+function _setCount(id, size) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = size > 0 ? size : '';
+  el.classList.toggle('visible', size > 0);
+}
+
 export function buildFilterBar() {
   const themeNames = [...new Set([
     ...FS_TAGS.filter(t => t.kind === 'theme').map(t => t.name),
@@ -73,13 +80,15 @@ export function buildFilterBar() {
   document.getElementById('fs-filter-themes').innerHTML =
     _makeFilterBtn('theme', 'all', 'All', _filters.theme.size === 0)
     + themeNames.map(t => _makeFilterBtn('theme', t, t, _filters.theme.has(t))).join('');
+  _setCount('fg-fs-themes-count', _filters.theme.size);
 
   const customTagNames = [...new Set(FS_GALLERY.flatMap(g => g.customTags || []))].sort();
   const ctEl = document.getElementById('fs-filter-custom-tags');
   if (ctEl) {
-    ctEl.parentElement.style.display = customTagNames.length ? '' : 'none';
+    document.getElementById('fg-fs-custom-tags').style.display = customTagNames.length ? '' : 'none';
     ctEl.innerHTML = _makeFilterBtn('customTag', 'all', 'All', _filters.customTag.size === 0)
       + customTagNames.map(t => _makeFilterBtn('customTag', t, t, _filters.customTag.has(t))).join('');
+    _setCount('fg-fs-custom-tags-count', _filters.customTag.size);
   }
 }
 

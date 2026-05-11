@@ -118,13 +118,23 @@
   <!-- Controls -->
   <div class="gallery-controls" id="fs-gallery-controls" style="display:none;">
     <input type="text" class="search-box" placeholder="Search by title or tag…" id="fs-gallery-search">
-    <div class="filter-group">
-      <span class="filter-label">Theme:</span>
-      <div id="fs-filter-themes" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Tag:</span>
-      <div id="fs-filter-custom-tags" style="display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+    <div class="filter-groups">
+      <details class="filter-group" id="fg-fs-themes" open>
+        <summary class="filter-group-header">
+          <span class="filter-label">Themes</span>
+          <span class="filter-group-count" id="fg-fs-themes-count"></span>
+          <span class="filter-group-chevron">▶</span>
+        </summary>
+        <div class="filter-btn-row" id="fs-filter-themes"></div>
+      </details>
+      <details class="filter-group" id="fg-fs-custom-tags" style="display:none;">
+        <summary class="filter-group-header">
+          <span class="filter-label">Tags</span>
+          <span class="filter-group-count" id="fg-fs-custom-tags-count"></span>
+          <span class="filter-group-chevron">▶</span>
+        </summary>
+        <div class="filter-btn-row" id="fs-filter-custom-tags"></div>
+      </details>
     </div>
   </div>
 

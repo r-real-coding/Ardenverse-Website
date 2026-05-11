@@ -1,11 +1,11 @@
 /* GALLERY */
 .gallery-controls {
-  padding: 1.5rem 3rem;
+  padding: 1rem 3rem 0;
   background: var(--bg-surface); border-bottom: 1px solid var(--border);
-  display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+  display: flex; flex-direction: column; gap: 0;
 }
 .search-box {
-  flex: 1; min-width: 200px;
+  width: 100%; box-sizing: border-box; margin-bottom: 0.75rem;
   background: var(--bg-elevated); border: 1px solid var(--border);
   color: var(--text-primary);
   font-family: 'Raleway', sans-serif; font-size: 0.85rem;
@@ -13,8 +13,35 @@
 }
 .search-box::placeholder { color: var(--text-muted); }
 .search-box:focus { border-color: var(--teal-500); }
-.filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-.filter-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+
+/* Collapsible filter groups */
+.filter-groups { border-top: 1px solid var(--border); }
+.filter-group {
+  border-bottom: 1px solid var(--border);
+}
+.filter-group-header {
+  display: flex; align-items: center; gap: 0.6rem;
+  width: 100%; padding: 0.6rem 0; cursor: pointer; list-style: none;
+  -webkit-appearance: none; /* Safari */
+}
+.filter-group-header::-webkit-details-marker { display: none; }
+.filter-group-header:hover .filter-label { color: var(--text-secondary); }
+.filter-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); transition: color 0.2s; }
+.filter-group-count {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em;
+  background: rgba(26,191,151,0.18); color: var(--teal-300);
+  padding: 0.1rem 0.45rem; display: none;
+}
+.filter-group-count.visible { display: inline; }
+.filter-group-chevron {
+  margin-left: auto; font-size: 0.5rem; color: var(--text-muted);
+  transition: transform 0.2s; display: inline-block;
+}
+details.filter-group[open] > summary .filter-group-chevron { transform: rotate(90deg); }
+.filter-btn-row {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; padding-bottom: 0.75rem;
+}
+
 .filter-btn {
   background: transparent; border: 1px solid var(--border);
   color: var(--text-secondary);
