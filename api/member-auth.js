@@ -6,6 +6,31 @@ const PATREON_TOKEN_URL    = 'https://www.patreon.com/api/oauth2/token';
 const PATREON_IDENTITY_URL = 'https://www.patreon.com/api/oauth2/v2/identity';
 const MEMBER_TTL_SECONDS   = 24 * 60 * 60;
 
+const RL_MAX_ATTEMPTS = 20;
+const RL_WINDOW_SECS  = 60 * 60;
+
+async function checkRateLimit(ip) {
+  try {
+    const key = `ratelimit/member-${ip.replace(/[^a-zA-Z0-9._-]/g, '_')}.json`;
+    const now  = Math.floor(Date.now() / 1000);
+    let data   = { count: 0, windowStart: now };
+    const raw  = await blobGet(key, { type: 'json' });
+    if (raw) {
+      data = (now - raw.windowStart) > RL_WINDOW_SECS
+        ? { count: 0, windowStart: now }
+        : raw;
+    }
+    if (data.count >= RL_MAX_ATTEMPTS) {
+      return { limited: true, retryAfter: RL_WINDOW_SECS - (now - data.windowStart) };
+    }
+    data.count++;
+    await blobPut(key, JSON.stringify(data), { contentType: 'application/json' });
+    return { limited: false };
+  } catch {
+    return { limited: false };
+  }
+}
+
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -161,12 +186,20 @@ async function handleSubscribestar(req, res, code, siteUrl, state) {
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end('Method Not Allowed');
 
+  const ip = req.headers['x-real-ip'] ||
+             (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+             req.socket?.remoteAddress || 'unknown';
+  const rl = await checkRateLimit(ip);
+  if (rl.limited) {
+    res.setHeader('Retry-After', String(rl.retryAfter));
+    return paywallResponse(res, false, 'Too many attempts — try again later', '');
+  }
+
   const { platform, code, error: oauthErr, state = '' } = req.query;
   if (oauthErr) return paywallResponse(res, false, `OAuth denied: ${oauthErr}`, state);
   if (!code)    return paywallResponse(res, false, 'Missing authorization code', state);
 
-  const siteUrl = process.env.SITE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `https://${req.headers.host}`);
+  const siteUrl = process.env.SITE_URL || `https://${req.headers.host}`;
 
   try {
     if (platform === 'patreon')       return await handlePatreon(req, res, code, siteUrl, state);

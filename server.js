@@ -1,6 +1,7 @@
 'use strict';
 require('dotenv').config();
 const express = require('express');
+const morgan  = require('morgan');
 const path    = require('path');
 
 const app  = express();
@@ -32,9 +33,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(morgan('combined'));
+
 const jsonBody = express.json({ limit: '1mb' });
 
 // ── API routes ────────────────────────────────────────────────────────────────
+app.get('/api/health', (_req, res) => res.status(200).json({ ok: true }));
 app.use('/api/admin-auth',            jsonBody, require('./api/admin-auth'));
 app.use('/api/put-data',              jsonBody, require('./api/put-data'));
 app.use('/api/delete-image',          jsonBody, require('./api/delete-image'));
