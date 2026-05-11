@@ -18,13 +18,20 @@ export function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   section.classList.add('active');
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-  if (_ARDENVERSE_SECTIONS.has(id)) {
+  const isArden = _ARDENVERSE_SECTIONS.has(id);
+  if (isArden) {
     document.body.classList.add('ardenverse-mode');
-    const navBtn = document.getElementById('nav-' + id);
-    if (navBtn) navBtn.classList.add('active');
+    // nav-home is a "return to landing" button — never mark it active
+    if (id !== 'home') {
+      const navBtn = document.getElementById('nav-' + id);
+      if (navBtn) navBtn.classList.add('active');
+    }
   } else {
     document.body.classList.remove('ardenverse-mode');
   }
+  // Update nav logo subtitle: Ardenverse sections → "Ardenverse", landing → "Home"
+  const logoSpan = document.querySelector('.nav-logo span');
+  if (logoSpan) logoSpan.textContent = isArden ? 'Ardenverse' : 'Home';
   window.scrollTo(0, 0);
 }
 // Expose for non-module scripts (age-gate.js)
