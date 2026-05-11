@@ -84,21 +84,31 @@
     if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
   }
 
+  function _toast(msg, isError) {
+    var el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'toast show' + (isError ? ' error' : '');
+    clearTimeout(el._t);
+    el._t = setTimeout(function () { el.classList.remove('show'); }, 3000);
+  }
+
   function _submitAdminLogin() {
     var input = document.getElementById('adminPwInput');
-    var pw    = input ? input.value.trim() : '';
+    var pw    = input ? input.value : '';
     if (!pw) return;
 
-    // Prefer the module function when available
-    if (typeof window.submitAdminLogin === 'function') {
-      window.submitAdminLogin();
-      return;
-    }
-
-    // Full fallback: call the API directly without the module
     var btn = document.getElementById('adminLoginBtn');
     var lbl = document.getElementById('adminLoginBtnLabel');
     var err = document.getElementById('adminLoginError');
+
+    function _fail(msg) {
+      if (err) { err.textContent = msg; err.style.display = 'block'; }
+      if (input) { input.value = ''; input.focus(); }
+      if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+      if (lbl) lbl.textContent = 'Authenticate';
+    }
+
     if (btn) { btn.disabled = true; btn.classList.add('loading'); }
     if (lbl) lbl.textContent = 'Verifying…';
     if (err) { err.textContent = ''; err.style.display = 'none'; }
@@ -114,22 +124,26 @@
     .then(function (result) {
       if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
       if (lbl) lbl.textContent = 'Authenticate';
-      if (result.status === 200 && result.data.token) {
+      if (result.status === 200 && result.data && result.data.token) {
         try { sessionStorage.setItem('arden_admin_token', result.data.token); } catch (e) {}
         document.body.classList.add('admin-mode');
         _closeAdminModal();
+        _toast('Admin mode active');
         document.dispatchEvent(new CustomEvent('arden:datachanged'));
       } else if (result.status === 401) {
-        if (err) { err.textContent = 'Incorrect password.'; err.style.display = 'block'; }
-        if (input) { input.value = ''; input.focus(); }
+        _fail('Incorrect password.');
+      } else if (result.status === 429) {
+        _fail('Too many attempts — try again later.');
+      } else if (result.status === 500) {
+        _fail('Server error — check ADMIN_HASH / ADMIN_SALT env vars.');
       } else {
-        if (err) { err.textContent = 'Login failed (' + result.status + '). Try again.'; err.style.display = 'block'; }
+        _fail('Login failed (' + result.status + '). Try again.');
       }
     })
     .catch(function () {
       if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
       if (lbl) lbl.textContent = 'Authenticate';
-      if (err) { err.textContent = 'Connection error — is the server running?'; err.style.display = 'block'; }
+      if (err) { err.textContent = 'Could not reach the server — make sure it is running.'; err.style.display = 'block'; }
     });
   }
 
