@@ -91,6 +91,13 @@
 .modal-tag-opt.selected { background: rgba(26,191,151,0.12); border-color: var(--teal-400); color: var(--teal-300); }
 .modal-tag-opt.char.selected { background: rgba(0,100,120,0.25); border-color: rgba(0,229,255,0.5); color: var(--cyan); }
 .modal-tag-opt.planet.selected { background: rgba(80,55,15,0.3); border-color: rgba(201,168,76,0.4); color: var(--gold); }
+.modal-tag-del {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 0.35em; font-size: 0.8em; line-height: 1;
+  color: #e87070; opacity: 0; transition: opacity 0.15s;
+}
+.modal-tag-opt:hover .modal-tag-del { opacity: 0.65; }
+.modal-tag-del:hover { opacity: 1 !important; }
 .modal-tag-add {
   background: transparent; border: 1px dashed var(--teal-700);
   color: var(--text-muted); font-family: 'Raleway', sans-serif;

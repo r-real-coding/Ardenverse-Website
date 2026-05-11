@@ -21,12 +21,12 @@ export function populateTags() {
 
   document.getElementById('fs-upload-theme-tags').innerHTML =
     themeTags.map(t =>
-      `<button class="modal-tag-opt" data-type="theme" data-id="${esc(t.name)}" data-label="${esc(t.name)}">${esc(t.name)}</button>`
+      `<button class="modal-tag-opt" data-type="theme" data-id="${esc(t.name)}" data-label="${esc(t.name)}">${esc(t.name)}<span class="modal-tag-del" data-del-name="${esc(t.name)}" data-del-kind="theme" title="Delete tag">×</span></button>`
     ).join('') + `<button class="modal-tag-add" data-context="theme">+ New Theme</button>`;
 
   document.getElementById('fs-upload-custom-tags').innerHTML =
     customTags.map(t =>
-      `<button class="modal-tag-opt" data-type="custom" data-id="${esc(t.name)}" data-label="${esc(t.name)}">${esc(t.name)}</button>`
+      `<button class="modal-tag-opt" data-type="custom" data-id="${esc(t.name)}" data-label="${esc(t.name)}">${esc(t.name)}<span class="modal-tag-del" data-del-name="${esc(t.name)}" data-del-kind="custom" title="Delete tag">×</span></button>`
     ).join('') + `<button class="modal-tag-add" data-context="custom">+ New Tag</button>`;
 
   document.querySelectorAll('#fsUploadModal .modal-tag-opt').forEach(btn => {
@@ -62,6 +62,28 @@ async function _addTag(context) {
     populateTags();
     showToast('Tag added');
   });
+}
+
+// ── Tag deletion ──────────────────────────────────────────────────────────────
+async function deleteFsTag(name, kind) {
+  const updatedTags = FS_TAGS.filter(t => t.name !== name);
+  setFsTags(updatedTags);
+  const field = kind === 'theme' ? 'themes' : 'customTags';
+  for (const item of FS_GALLERY) {
+    if ((item[field] || []).includes(name)) {
+      item[field] = item[field].filter(v => v !== name);
+      item.tags   = (item.tags || []).filter(v => v !== name);
+    }
+  }
+  try {
+    await apiPutData('fanserviceTags', updatedTags);
+    await apiPutData('fanservice', FS_GALLERY);
+    showToast('Tag deleted');
+    notifyDataChanged();
+    populateTags();
+  } catch {
+    showToast('Failed to delete tag — please reload', true);
+  }
 }
 
 // ── Filter bar ────────────────────────────────────────────────────────────────
@@ -483,6 +505,13 @@ export function initFsGallery() {
   });
 
   document.getElementById('fsUploadModal').addEventListener('click', e => {
+    const delBtn = e.target.closest('.modal-tag-del');
+    if (delBtn) {
+      e.stopPropagation();
+      const { delName, delKind } = delBtn.dataset;
+      showConfirm('Delete Tag', `Delete "${delName}"? It will be removed from all fanservice items.`, () => deleteFsTag(delName, delKind));
+      return;
+    }
     const opt    = e.target.closest('.modal-tag-opt');
     if (opt) _toggleTag(opt);
     const addBtn = e.target.closest('.modal-tag-add');
