@@ -51,8 +51,8 @@ app.use('/api/get-oauth-url',                   require('./api/get-oauth-url'));
 app.use('/api/member-auth',                     require('./api/member-auth'));
 
 // ── Static files ──────────────────────────────────────────────────────────────
-app.use('/css', express.static(path.join(__dirname, 'css'), { maxAge: '1h' }));
-app.use('/js',  express.static(path.join(__dirname, 'js'),  { maxAge: '1h' }));
+app.use('/css', express.static(path.join(__dirname, 'css'), { maxAge: 0 }));
+app.use('/js',  express.static(path.join(__dirname, 'js'),  { maxAge: 0 }));
 app.get('/robots.txt',      (_req, res) => res.sendFile(path.join(__dirname, 'robots.txt')));
 app.get('/fanservice',      (_req, res) => res.sendFile(path.join(__dirname, 'fanservice.html')));
 app.get('/fanservice.html', (_req, res) => res.sendFile(path.join(__dirname, 'fanservice.html')));
