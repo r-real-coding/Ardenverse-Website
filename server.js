@@ -7,6 +7,9 @@ const path    = require('path');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust the first proxy hop (nginx / Coolify load balancer) so req.ip is correct.
+app.set('trust proxy', 1);
+
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
@@ -20,6 +23,15 @@ const CSP = [
   "upgrade-insecure-requests",
 ].join('; ');
 
+// Block access to dotfiles and other sensitive paths before any routing.
+app.use((req, res, next) => {
+  const p = req.path;
+  if (/\/\./.test(p) || /\/(node_modules|data|uploads)\b/.test(p)) {
+    return res.status(403).end('Forbidden');
+  }
+  next();
+});
+
 // Security headers on every HTML response
 app.use((req, res, next) => {
   const p = req.path;
@@ -29,6 +41,7 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     res.setHeader('Content-Security-Policy', CSP);
+    res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   }
   next();
 });

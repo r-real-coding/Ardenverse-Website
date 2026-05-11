@@ -2,11 +2,14 @@ const BASE = '/api';
 
 // ── UUID ──────────────────────────────────────────────────────────────────────
 export function newUuid() {
-  if (crypto.randomUUID) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-  });
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  // Fallback using getRandomValues (no Math.random)
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 }
 
 // ── Admin token ───────────────────────────────────────────────────────────────
@@ -29,6 +32,12 @@ export function checkAdminTokenExpiry() {
 
 function _token() { return sessionStorage.getItem(TOKEN_KEY) || ''; }
 
+// Returns the best available session token (admin takes priority over member).
+function _anyToken() {
+  return sessionStorage.getItem('arden_admin_token') ||
+         sessionStorage.getItem('arden_member_token') || '';
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export async function apiAdminAuth(password) {
   const res = await fetch(`${BASE}/admin-auth`, {
@@ -43,7 +52,9 @@ export async function apiAdminAuth(password) {
 
 // ── Data operations ───────────────────────────────────────────────────────────
 export async function apiGetData(store) {
-  const res = await fetch(`${BASE}/get-data?store=${encodeURIComponent(store)}`);
+  const tok = _anyToken();
+  const headers = tok ? { 'Authorization': `Bearer ${tok}` } : {};
+  const res = await fetch(`${BASE}/get-data?store=${encodeURIComponent(store)}`, { headers });
   if (!res.ok) throw new Error(`Failed to load ${store} (${res.status})`);
   return res.json();
 }
@@ -91,17 +102,11 @@ export async function apiDeleteImage(key) {
   if (!res.ok) throw new Error(`Image delete failed (${res.status})`);
 }
 
-// Returns the best available session token (admin takes priority over member).
 // img src= attributes cannot send Authorization headers, so the token is
 // appended as a query parameter instead.
-function _imageToken() {
-  return sessionStorage.getItem('arden_admin_token') ||
-         sessionStorage.getItem('arden_member_token') || '';
-}
-
 export function imageUrl(key) {
   if (!key) return null;
   const url = `${BASE}/get-image?key=${encodeURIComponent(key)}`;
-  const tok = _imageToken();
+  const tok = _anyToken();
   return tok ? `${url}&t=${encodeURIComponent(tok)}` : url;
 }

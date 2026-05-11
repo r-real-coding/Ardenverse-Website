@@ -442,7 +442,11 @@ export function initGallery() {
     if (e.target === this) closeUploadModal();
   });
 
-  document.getElementById('gallery-search').addEventListener('input', renderGallery);
+  let _searchTimer = null;
+  document.getElementById('gallery-search').addEventListener('input', () => {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(renderGallery, 200);
+  });
 }
 
 function _filterClick(e) {

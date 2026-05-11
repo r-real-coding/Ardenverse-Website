@@ -27,7 +27,8 @@ async function checkRateLimit(ip) {
     await blobPut(key, JSON.stringify(data), { contentType: 'application/json' });
     return { limited: false };
   } catch {
-    return { limited: false };
+    // Fail closed: if we can't check the rate limit, deny the request.
+    return { limited: true, retryAfter: RL_WINDOW_SECS };
   }
 }
 
@@ -129,7 +130,7 @@ async function handlePatreon(req, res, code, siteUrl, state) {
     break;
   }
 
-  await upsertSubscriber('patreon', userId, { email, active: isActive, tier: isActive ? tier : 'none', accessToken: access_token, refreshToken: refresh_token || null });
+  await upsertSubscriber('patreon', userId, { email, active: isActive, tier: isActive ? tier : 'none' });
   if (!isActive) { console.log(`Patreon auth: user ${userId} not active patron`); return paywallResponse(res, false, 'An active Patreon membership is required to access the Gallery', state); }
   console.log(`Patreon auth: user ${userId} granted (tier: ${tier})`);
   return paywallResponse(res, true, issueMemberJwt('patreon', userId, tier), state);
@@ -177,7 +178,7 @@ async function handleSubscribestar(req, res, code, siteUrl, state) {
     break;
   }
 
-  await upsertSubscriber('subscribestar', userId, { email, active: isActive, tier: isActive ? tier : 'none', accessToken: access_token, refreshToken: refresh_token || null });
+  await upsertSubscriber('subscribestar', userId, { email, active: isActive, tier: isActive ? tier : 'none' });
   if (!isActive) { console.log(`Subscribestar auth: user ${userId} no active subscription`); return paywallResponse(res, false, 'An active Subscribestar subscription is required to access the Gallery', state); }
   console.log(`Subscribestar auth: user ${userId} granted (tier: ${tier})`);
   return paywallResponse(res, true, issueMemberJwt('subscribestar', userId, tier), state);
@@ -186,9 +187,8 @@ async function handleSubscribestar(req, res, code, siteUrl, state) {
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end('Method Not Allowed');
 
-  const ip = req.headers['x-real-ip'] ||
-             (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-             req.socket?.remoteAddress || 'unknown';
+  // req.ip is set correctly by Express when trust proxy is configured in server.js.
+  const ip = req.ip || 'unknown';
   const rl = await checkRateLimit(ip);
   if (rl.limited) {
     res.setHeader('Retry-After', String(rl.retryAfter));

@@ -28,7 +28,8 @@ async function checkRateLimit(ip) {
     await blobPut(_rlKey(ip), JSON.stringify(data), { contentType: 'application/json' });
     return { limited: false };
   } catch {
-    return { limited: false }; // fail open
+    // Fail closed: if we can't check the rate limit, deny the request.
+    return { limited: true, retryAfter: WINDOW_SECS };
   }
 }
 
@@ -60,9 +61,8 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Server not configured' });
   }
 
-  const ip = req.headers['x-real-ip'] ||
-             (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-             'unknown';
+  // req.ip is set correctly by Express when trust proxy is configured in server.js.
+  const ip = req.ip || 'unknown';
 
   const rl = await checkRateLimit(ip);
   if (rl.limited) {

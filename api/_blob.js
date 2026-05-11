@@ -16,8 +16,7 @@ function _resolve(pathname) {
 async function blobGet(pathname, options = {}) {
   try {
     const filePath = _resolve(pathname);
-    if (!fs.existsSync(filePath)) return null;
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content  = await fs.promises.readFile(filePath, 'utf-8');
     if (options.type === 'json') return JSON.parse(content);
     return content;
   } catch (err) {
@@ -28,14 +27,14 @@ async function blobGet(pathname, options = {}) {
 
 async function blobPut(pathname, body, _options = {}) {
   const filePath = _resolve(pathname);
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, body, 'utf-8');
+  await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.promises.writeFile(filePath, body, 'utf-8');
 }
 
 async function blobDel(pathname) {
   try {
     const filePath = _resolve(pathname);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    await fs.promises.unlink(filePath);
   } catch { /* best-effort */ }
 }
 

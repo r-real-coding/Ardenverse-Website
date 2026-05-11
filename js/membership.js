@@ -51,8 +51,14 @@ function _generateState() {
 
 // ── OAuth popup ───────────────────────────────────────────────────────────────
 let _popupResolve = null;
+let _isConnecting = false;
 
 function openOAuthPopup(url) {
+  // Reject any outstanding popup promise before starting a new one.
+  if (_popupResolve) {
+    _popupResolve({ error: 'A new connection attempt was started' });
+    _popupResolve = null;
+  }
   return new Promise((resolve) => {
     _popupResolve = resolve;
     const w = 520, h = 680;
@@ -137,6 +143,7 @@ function _applyButtonVisibility() {
 
 // ── Connect flows ─────────────────────────────────────────────────────────────
 async function _connect(platform) {
+  if (_isConnecting) return;
   // Generate a fresh CSRF state token for this flow and persist it.
   const state = _generateState();
   sessionStorage.setItem(OAUTH_STATE_KEY, state);
@@ -146,6 +153,7 @@ async function _connect(platform) {
     urls = await _fetchOAuthUrls(state);
   } catch (err) {
     sessionStorage.removeItem(OAUTH_STATE_KEY);
+    _isConnecting = false;
     _showError('Could not reach the server — please try again');
     return;
   }
@@ -153,12 +161,15 @@ async function _connect(platform) {
   const url = urls[platform];
   if (!url) {
     sessionStorage.removeItem(OAUTH_STATE_KEY);
+    _isConnecting = false;
     _showError(`${platform} is not configured on this site — contact the owner`);
     return;
   }
   _clearError();
+  _isConnecting = true;
   _setConnecting(true);
   const result = await openOAuthPopup(url);
+  _isConnecting = false;
   _setConnecting(false);
 
   if (result?.token) {
