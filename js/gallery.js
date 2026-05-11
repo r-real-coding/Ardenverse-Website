@@ -4,9 +4,24 @@ import { esc, showToast, showConfirm, revokeUrl, validateFileSize, notifyDataCha
 import { mState, populateUploadTags } from './tags.js';
 import { isSubscriber } from './membership.js';
 
-let _filters = { char: 'all', theme: 'all', planet: 'all', customTag: 'all' };
+let _filters = { char: new Set(), theme: new Set(), planet: new Set(), customTag: new Set() };
 let _lightboxItems  = [];
 let _lightboxIndex  = 0;
+
+function _isActive(type, val) {
+  return val === 'all' ? _filters[type].size === 0 : _filters[type].has(val);
+}
+
+function _toggleFilter(type, val) {
+  if (val === 'all') {
+    _filters[type].clear();
+  } else {
+    if (_filters[type].has(val)) _filters[type].delete(val);
+    else _filters[type].add(val);
+  }
+  renderGallery();
+  buildFilterBar();
+}
 
 // ── Filter bar ────────────────────────────────────────────────────────────────
 export function buildFilterBar() {
@@ -15,41 +30,35 @@ export function buildFilterBar() {
   CHARACTERS.forEach(c => { charLabels[c.slug] = c.name; });
 
   document.getElementById('filter-chars').innerHTML =
-    makeFilterBtn('char', 'all', 'All', _filters.char === 'all')
-    + charSlugs.map(s => makeFilterBtn('char', s, charLabels[s] || s, _filters.char === s)).join('');
+    makeFilterBtn('char', 'all', 'All', _isActive('char', 'all'))
+    + charSlugs.map(s => makeFilterBtn('char', s, charLabels[s] || s, _isActive('char', s))).join('');
 
   const themeNames = [...new Set([
     ...TAGS.filter(t => t.kind === 'theme').map(t => t.name),
     ...GALLERY.flatMap(g => g.themes || []),
   ])].sort();
   document.getElementById('filter-themes').innerHTML =
-    makeFilterBtn('theme', 'all', 'All', _filters.theme === 'all')
-    + themeNames.map(t => makeFilterBtn('theme', t, t, _filters.theme === t)).join('');
+    makeFilterBtn('theme', 'all', 'All', _isActive('theme', 'all'))
+    + themeNames.map(t => makeFilterBtn('theme', t, t, _isActive('theme', t))).join('');
 
   const planetSlugs  = [...new Set(GALLERY.flatMap(g => g.planets || []))];
   const planetLabels = {};
   PLANETS.forEach(p => { planetLabels[p.slug] = p.name; });
   document.getElementById('filter-planets').innerHTML =
-    makeFilterBtn('planet', 'all', 'All', _filters.planet === 'all')
-    + planetSlugs.map(s => makeFilterBtn('planet', s, planetLabels[s] || s, _filters.planet === s)).join('');
+    makeFilterBtn('planet', 'all', 'All', _isActive('planet', 'all'))
+    + planetSlugs.map(s => makeFilterBtn('planet', s, planetLabels[s] || s, _isActive('planet', s))).join('');
 
   const customTagNames = [...new Set(GALLERY.flatMap(g => g.customTags || []))].sort();
   const ctEl = document.getElementById('filter-custom-tags');
   if (ctEl) {
     ctEl.parentElement.style.display = customTagNames.length ? '' : 'none';
-    ctEl.innerHTML = makeFilterBtn('customTag', 'all', 'All', _filters.customTag === 'all')
-      + customTagNames.map(t => makeFilterBtn('customTag', t, t, _filters.customTag === t)).join('');
+    ctEl.innerHTML = makeFilterBtn('customTag', 'all', 'All', _isActive('customTag', 'all'))
+      + customTagNames.map(t => makeFilterBtn('customTag', t, t, _isActive('customTag', t))).join('');
   }
 }
 
 function makeFilterBtn(type, val, label, active) {
   return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}</button>`;
-}
-
-export function setFilter(type, val) {
-  _filters[type] = val;
-  renderGallery();
-  buildFilterBar();
 }
 
 // ── Gallery render ────────────────────────────────────────────────────────────
@@ -78,10 +87,10 @@ export function renderGallery() {
   const search  = document.getElementById('gallery-search').value.toLowerCase();
 
   const items = GALLERY.filter(item => {
-    if (_filters.char      !== 'all' && !(item.chars      || []).includes(_filters.char))      return false;
-    if (_filters.theme     !== 'all' && !(item.themes     || []).includes(_filters.theme))     return false;
-    if (_filters.planet    !== 'all' && !(item.planets    || []).includes(_filters.planet))    return false;
-    if (_filters.customTag !== 'all' && !(item.customTags || []).includes(_filters.customTag)) return false;
+    if (_filters.char.size > 0      && !(item.chars      || []).some(v => _filters.char.has(v)))      return false;
+    if (_filters.theme.size > 0     && !(item.themes     || []).some(v => _filters.theme.has(v)))     return false;
+    if (_filters.planet.size > 0    && !(item.planets    || []).some(v => _filters.planet.has(v)))    return false;
+    if (_filters.customTag.size > 0 && !(item.customTags || []).some(v => _filters.customTag.has(v))) return false;
     if (search) {
       const hay = [
         item.title, item.desc,
@@ -428,6 +437,5 @@ export function initGallery() {
 function _filterClick(e) {
   const btn = e.target.closest('.filter-btn');
   if (!btn) return;
-  const { filterType, filterVal } = btn.dataset;
-  setFilter(filterType, filterVal);
+  _toggleFilter(btn.dataset.filterType, btn.dataset.filterVal);
 }

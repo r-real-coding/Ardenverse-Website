@@ -3,7 +3,7 @@ import { apiPutData, apiUploadImage, apiDeleteImage, imageUrl, newUuid } from '.
 import { esc, showToast, showConfirm, showPrompt, revokeUrl, validateFileSize, notifyDataChanged } from './utils.js';
 import { isSubscriber } from './membership.js';
 
-let _filters        = { theme: 'all', customTag: 'all' };
+let _filters        = { theme: new Set(), customTag: new Set() };
 let _lightboxItems  = [];
 let _lightboxIndex  = 0;
 
@@ -71,15 +71,15 @@ export function buildFilterBar() {
   ])].sort();
 
   document.getElementById('fs-filter-themes').innerHTML =
-    _makeFilterBtn('theme', 'all', 'All', _filters.theme === 'all')
-    + themeNames.map(t => _makeFilterBtn('theme', t, t, _filters.theme === t)).join('');
+    _makeFilterBtn('theme', 'all', 'All', _filters.theme.size === 0)
+    + themeNames.map(t => _makeFilterBtn('theme', t, t, _filters.theme.has(t))).join('');
 
   const customTagNames = [...new Set(FS_GALLERY.flatMap(g => g.customTags || []))].sort();
   const ctEl = document.getElementById('fs-filter-custom-tags');
   if (ctEl) {
     ctEl.parentElement.style.display = customTagNames.length ? '' : 'none';
-    ctEl.innerHTML = _makeFilterBtn('customTag', 'all', 'All', _filters.customTag === 'all')
-      + customTagNames.map(t => _makeFilterBtn('customTag', t, t, _filters.customTag === t)).join('');
+    ctEl.innerHTML = _makeFilterBtn('customTag', 'all', 'All', _filters.customTag.size === 0)
+      + customTagNames.map(t => _makeFilterBtn('customTag', t, t, _filters.customTag.has(t))).join('');
   }
 }
 
@@ -87,8 +87,13 @@ function _makeFilterBtn(type, val, label, active) {
   return `<button class="filter-btn${active ? ' active' : ''}" data-filter-type="${esc(type)}" data-filter-val="${esc(val)}">${esc(label)}</button>`;
 }
 
-export function setFilter(type, val) {
-  _filters[type] = val;
+function _toggleFilter(type, val) {
+  if (val === 'all') {
+    _filters[type].clear();
+  } else {
+    if (_filters[type].has(val)) _filters[type].delete(val);
+    else _filters[type].add(val);
+  }
   renderGallery();
   buildFilterBar();
 }
@@ -117,8 +122,8 @@ export function renderGallery() {
   const search = document.getElementById('fs-gallery-search').value.toLowerCase();
 
   const items = FS_GALLERY.filter(item => {
-    if (_filters.theme     !== 'all' && !(item.themes     || []).includes(_filters.theme))     return false;
-    if (_filters.customTag !== 'all' && !(item.customTags || []).includes(_filters.customTag)) return false;
+    if (_filters.theme.size > 0     && !(item.themes     || []).some(v => _filters.theme.has(v)))     return false;
+    if (_filters.customTag.size > 0 && !(item.customTags || []).some(v => _filters.customTag.has(v))) return false;
     if (search) {
       const hay = [
         item.title, item.desc,
@@ -383,7 +388,7 @@ export function initFsGallery() {
     document.getElementById(id)?.addEventListener('click', e => {
       const btn = e.target.closest('.filter-btn');
       if (!btn) return;
-      setFilter(btn.dataset.filterType, btn.dataset.filterVal);
+      _toggleFilter(btn.dataset.filterType, btn.dataset.filterVal);
     });
   });
 
