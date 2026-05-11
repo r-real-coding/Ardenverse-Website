@@ -45,9 +45,12 @@
     // Update nav logo subtitle
     var logoSpan = document.querySelector('.nav-logo span');
     if (logoSpan) logoSpan.textContent = isArden ? 'Ardenverse' : 'Home';
-    // Home button shows arrow only when NOT in the Ardenverse home section
+    // Hide Home button on landing page; show with arrow in all other sections
     var navHomeBtn = document.getElementById('nav-home');
-    if (navHomeBtn) navHomeBtn.textContent = (id === 'home') ? 'Home' : '← Home';
+    if (navHomeBtn) {
+      navHomeBtn.style.display = (id === 'landing') ? 'none' : '';
+      navHomeBtn.textContent = '← Home';
+    }
     window.scrollTo(0, 0);
   }
 
