@@ -49,9 +49,8 @@
     window.location.href = window.location.protocol === 'file:' ? 'fanservice.html' : '/fanservice';
   }
 
-  // ── Admin login (Ctrl+Shift+L) ────────────────────────────────────────────────
+  // ── Admin modal — all interactions wired here, no module dependency ──────────
   function _openAdminModal() {
-    // Open the modal directly — no dependency on the ES module being loaded
     var modal = document.getElementById('adminLoginModal');
     var input = document.getElementById('adminPwInput');
     var err   = document.getElementById('adminLoginError');
@@ -63,20 +62,65 @@
     if (input) setTimeout(function () { input.focus(); }, 50);
   }
 
+  function _closeAdminModal() {
+    var modal = document.getElementById('adminLoginModal');
+    var input = document.getElementById('adminPwInput');
+    var err   = document.getElementById('adminLoginError');
+    var btn   = document.getElementById('adminLoginBtn');
+    var lbl   = document.getElementById('adminLoginBtnLabel');
+    if (modal) { modal.classList.remove('open'); document.body.style.overflow = ''; }
+    if (input) input.value = '';
+    if (err)   err.textContent = '';
+    if (btn)   { btn.classList.remove('loading'); btn.disabled = false; }
+    if (lbl)   lbl.textContent = 'Authenticate';
+  }
+
+  function _togglePwVis() {
+    var inp = document.getElementById('adminPwInput');
+    if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  function _submitAdminLogin() {
+    var input = document.getElementById('adminPwInput');
+    if (!input || !input.value.trim()) return;
+    // Delegate to module function once loaded; it handles the API call and UI state
+    if (typeof window.submitAdminLogin === 'function') {
+      window.submitAdminLogin();
+    } else {
+      var err = document.getElementById('adminLoginError');
+      if (err) { err.textContent = 'Page still loading — please wait a moment and try again.'; err.style.display = 'block'; }
+    }
+  }
+
   function _initAdminShortcut() {
     document.addEventListener('keydown', function (e) {
       // Ctrl+Shift+L — avoids Chrome's Ctrl+Shift+A (Search tabs) conflict
       if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
         e.preventDefault();
         _openAdminModal();
+        return;
       }
+      var modal = document.getElementById('adminLoginModal');
+      if (!modal || !modal.classList.contains('open')) return;
+      if (e.key === 'Enter')  { e.preventDefault(); _submitAdminLogin(); }
+      if (e.key === 'Escape') { e.preventDefault(); _closeAdminModal(); }
     });
+  }
+
+  function _initAdminModal() {
+    var loginBtn  = document.getElementById('adminLoginBtn');
+    var cancelBtn = document.getElementById('adminCancelBtn');
+    var toggleBtn = document.getElementById('adminPwToggle');
+    if (loginBtn)  loginBtn.addEventListener('click',  _submitAdminLogin);
+    if (cancelBtn) cancelBtn.addEventListener('click', _closeAdminModal);
+    if (toggleBtn) toggleBtn.addEventListener('click', _togglePwVis);
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
   function _init() {
     _check();
     _initAdminShortcut();
+    _initAdminModal();
 
     var enter = document.getElementById('age-btn-enter');
     var exit  = document.getElementById('age-btn-exit');

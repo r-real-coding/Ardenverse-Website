@@ -27,10 +27,10 @@ export function showSection(id) {
   }
   window.scrollTo(0, 0);
 }
-// Expose for non-module scripts (age-gate.js landing card fallback)
-window.showSection = showSection;
-// Expose early so the Ctrl+Shift+A shortcut in age-gate.js can fire immediately
-window.adminLogin  = adminLogin;
+// Expose for non-module scripts (age-gate.js)
+window.showSection      = showSection;
+window.adminLogin       = adminLogin;
+window.submitAdminLogin = submitAdminLogin;
 
 // ── Home ──────────────────────────────────────────────────────────────────────
 export function renderHome() {

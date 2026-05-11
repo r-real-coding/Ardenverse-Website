@@ -4,8 +4,9 @@ import { esc, initConfirm, initPrompt, closeConfirm, closePrompt, showToast, rev
 import { adminLogin, checkAdminSession, initAuth, closeAdminLoginModal, toggleAdminPwVis, submitAdminLogin, adminLogout } from './auth.js';
 import { initMembership, renderMemberBadge, isSubscriber } from './membership.js';
 
-// Expose early so the Ctrl+Shift+A shortcut in age-gate.js can fire immediately
-window.adminLogin = adminLogin;
+// Expose for non-module scripts (age-gate.js)
+window.adminLogin       = adminLogin;
+window.submitAdminLogin = submitAdminLogin;
 
 function _renderAll() {
   buildFilterBar();
