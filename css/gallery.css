@@ -125,6 +125,60 @@ details.filter-group[open] > summary .filter-group-chevron { transform: rotate(9
 .lightbox-prev { left: 1rem; }
 .lightbox-next { right: 1rem; }
 
+/* SET BADGE on thumbnail (top-left corner) */
+.set-badge {
+  position: absolute; top: 0.4rem; left: 0.4rem; z-index: 2;
+  background: rgba(6,30,26,0.85); border: 1px solid var(--teal-600);
+  color: var(--teal-300); font-family: 'Orbitron', sans-serif;
+  font-size: 0.5rem; letter-spacing: 0.12em; padding: 0.15rem 0.45rem;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+/* LIGHTBOX SET COUNTER */
+.lightbox-set-counter {
+  font-family: 'Orbitron', sans-serif; font-size: 0.58rem;
+  letter-spacing: 0.18em; color: var(--text-muted);
+  padding: 0.35rem 0; text-align: center; align-self: stretch;
+}
+
+/* MODAL SET SECTION */
+.modal-set-section {
+  margin-top: 0.75rem; padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.modal-set-label {
+  font-family: 'Orbitron', sans-serif; font-size: 0.55rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.modal-set-count { color: var(--teal-400); }
+.modal-set-strip {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; min-height: 0;
+}
+.modal-set-item {
+  position: relative; width: 58px; height: 78px;
+  border: 1px solid var(--border); overflow: hidden; flex-shrink: 0;
+  background: var(--bg-elevated);
+}
+.modal-set-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-set-remove {
+  position: absolute; top: 0; right: 0;
+  background: rgba(150,20,20,0.88); border: none; color: #fff;
+  width: 18px; height: 18px; font-size: 0.75rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0; opacity: 0; transition: opacity 0.15s;
+}
+.modal-set-item:hover .modal-set-remove { opacity: 1; }
+.modal-add-set-btn {
+  width: 100%; background: transparent; border: 1px dashed var(--border);
+  color: var(--text-muted); font-family: 'Raleway', sans-serif;
+  font-size: 0.72rem; letter-spacing: 0.08em;
+  padding: 0.35rem 0.8rem; cursor: pointer; transition: all 0.2s;
+}
+.modal-add-set-btn:hover { border-color: var(--teal-500); color: var(--teal-300); }
+
 /* LOCKED GALLERY ITEMS (private, non-member view) */
 .gallery-item--locked { cursor: not-allowed; }
 .gallery-item--locked .gallery-thumb { filter: blur(14px); transform: scale(1.12); }

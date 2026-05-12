@@ -152,6 +152,7 @@
   <button class="lightbox-nav lightbox-next" id="fs-lightbox-next" aria-label="Next image">›</button>
   <div class="lightbox-inner">
     <img class="lightbox-img" id="fs-lightbox-img" alt="">
+    <div class="lightbox-set-counter" id="fs-lightbox-set-counter" style="display:none;"></div>
     <div class="lightbox-info">
       <div>
         <div class="lightbox-title" id="fs-lightbox-title"></div>
@@ -212,6 +213,12 @@
         <img class="modal-preview-img" id="fsModalPreviewImg" alt="Preview">
         <div class="modal-preview-name" id="fsModalPreviewName"></div>
         <button class="modal-replace-btn" id="fsModalReplaceBtn">Replace Image</button>
+        <div class="modal-set-section" id="fsModalSetSection" style="display:none;">
+          <div class="modal-set-label">Set <span class="modal-set-count" id="fsModalSetCount"></span></div>
+          <div class="modal-set-strip" id="fsModalSetStrip"></div>
+          <button type="button" class="modal-add-set-btn" id="fsModalAddSetBtn">+ Add Images to Set</button>
+          <input type="file" id="fsModalSetFileInput" accept="image/jpeg,image/png,image/gif,image/webp,image/avif" multiple aria-label="Add images to set" style="display:none;">
+        </div>
       </div>
       <div>
         <div class="modal-field">

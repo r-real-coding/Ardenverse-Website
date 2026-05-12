@@ -6,12 +6,15 @@ import { isSubscriber } from './membership.js';
 let _filters        = { theme: new Set(), customTag: new Set() };
 let _lightboxItems  = [];
 let _lightboxIndex  = 0;
+let _lightboxSetIdx = 0;
+let _setStripBlobUrls = [];
 
 // ── Upload modal state ────────────────────────────────────────────────────────
 export const mState = {
   file: null, imageKey: null, editUuid: null,
   themes: [], customTags: [], displayTags: [],
   visibility: 'private',
+  setFiles: [], setImageKeys: [],
 };
 
 // ── Tag population ────────────────────────────────────────────────────────────
@@ -152,7 +155,6 @@ export function renderGallery() {
   const count    = document.getElementById('fs-gallery-count');
   const grid     = document.getElementById('fs-gallery-grid');
 
-  // Gallery always visible; paywall becomes a compact "subscribe" banner for non-members
   if (controls) controls.style.display = '';
   if (count)    count.style.display    = '';
   if (grid)     grid.style.display     = '';
@@ -165,7 +167,6 @@ export function renderGallery() {
 
   const items = FS_GALLERY.filter(item => {
     const isLocked = !isMember && item.visibility !== 'public';
-    // Locked items always shown (blurred) — skip filtering for them
     if (isLocked) return true;
     if (_filters.theme.size > 0     && !(item.themes     || []).some(v => _filters.theme.has(v)))     return false;
     if (_filters.customTag.size > 0 && !(item.customTags || []).some(v => _filters.customTag.has(v))) return false;
@@ -179,7 +180,6 @@ export function renderGallery() {
     return true;
   });
 
-  // Lightbox only for items the current user can actually open
   _lightboxItems = items.filter(i => i.imageKey && (isMember || i.visibility === 'public'));
   count.textContent = `Showing ${items.length} of ${FS_GALLERY.length} image${FS_GALLERY.length !== 1 ? 's' : ''}`;
 
@@ -194,6 +194,7 @@ export function renderGallery() {
     const lbIdx    = isLocked ? -1 : _lightboxItems.findIndex(x => x.uuid === item.uuid);
     const imgSrc   = item.imageKey ? imageUrl(item.imageKey) : null;
     const visLabel = item.visibility === 'public' ? 'public' : 'private';
+    const setCount = (item.setImages?.length || 0) + (item.imageKey ? 1 : 0);
     const itemAttrs = isLocked
       ? `aria-label="${esc(item.title)} — members only"`
       : (imgSrc
@@ -205,6 +206,7 @@ export function renderGallery() {
         : `<div role="img" aria-label="No image available" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
             background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;
             letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
+      ${setCount > 1 && !isLocked ? `<div class="set-badge" aria-label="${setCount} images in set">${setCount}</div>` : ''}
       ${isLocked ? `<div class="gallery-item__lock">
         <div class="gallery-item__lock-icon">🔒</div>
         <div class="gallery-item__lock-label">Members Only</div>
@@ -235,16 +237,34 @@ export function renderGallery() {
 }
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
-export function openLightbox(idx) {
+function _getSetImages(item) {
+  return [item.imageKey, ...(item.setImages || [])].filter(Boolean);
+}
+
+function _updateLightboxSetCounter(setImages) {
+  const counter = document.getElementById('fs-lightbox-set-counter');
+  if (!counter) return;
+  if (setImages.length > 1) {
+    counter.textContent = `${_lightboxSetIdx + 1} / ${setImages.length}`;
+    counter.style.display = '';
+  } else {
+    counter.style.display = 'none';
+  }
+}
+
+export function openLightbox(idx, setIdx = 0) {
   if (idx < 0 || idx >= _lightboxItems.length) return;
-  _lightboxIndex = idx;
-  const item = _lightboxItems[idx];
+  _lightboxIndex  = idx;
+  const item      = _lightboxItems[idx];
+  const setImages = _getSetImages(item);
+  _lightboxSetIdx = Math.max(0, Math.min(setIdx, setImages.length - 1));
   const img  = document.getElementById('fs-lightbox-img');
-  img.src    = imageUrl(item.imageKey);
+  img.src    = imageUrl(setImages[_lightboxSetIdx]);
   img.alt    = item.title;
   document.getElementById('fs-lightbox-title').textContent = item.title;
   document.getElementById('fs-lightbox-desc').textContent  = item.desc || '';
   document.getElementById('fs-lightbox-tags').innerHTML    = (item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+  _updateLightboxSetCounter(setImages);
   document.getElementById('fs-lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
   document.getElementById('fs-lightbox-close').focus();
@@ -257,7 +277,16 @@ export function closeLightbox() {
 
 export function lightboxNav(d) {
   if (!_lightboxItems.length) return;
-  openLightbox((_lightboxIndex + d + _lightboxItems.length) % _lightboxItems.length);
+  const item      = _lightboxItems[_lightboxIndex];
+  const setImages = _getSetImages(item);
+  const newSetIdx = _lightboxSetIdx + d;
+  if (newSetIdx >= 0 && newSetIdx < setImages.length) {
+    openLightbox(_lightboxIndex, newSetIdx);
+  } else {
+    const newIdx = (_lightboxIndex + d + _lightboxItems.length) % _lightboxItems.length;
+    const newSet = _getSetImages(_lightboxItems[newIdx]);
+    openLightbox(newIdx, d > 0 ? 0 : newSet.length - 1);
+  }
 }
 
 // ── Upload modal ──────────────────────────────────────────────────────────────
@@ -273,10 +302,49 @@ function _modalValidate() {
   document.getElementById('fsModalSubmitBtn').disabled = !(hasFil && hasTitle);
 }
 
+function _revokeSetBlobUrls() {
+  _setStripBlobUrls.forEach(u => URL.revokeObjectURL(u));
+  _setStripBlobUrls = [];
+}
+
+function _renderSetStrip() {
+  const strip   = document.getElementById('fsModalSetStrip');
+  const countEl = document.getElementById('fsModalSetCount');
+  if (!strip) return;
+  const total = mState.setImageKeys.length + mState.setFiles.length;
+  if (countEl) countEl.textContent = total > 0 ? `(${total})` : '';
+  const keysHtml = mState.setImageKeys.map((key, i) =>
+    `<div class="modal-set-item">
+      <img src="${esc(imageUrl(key))}" alt="Set image ${i + 1}">
+      <button class="modal-set-remove" type="button" data-set-type="key" data-set-idx="${i}" aria-label="Remove set image ${i + 1}">×</button>
+    </div>`
+  ).join('');
+  const filesHtml = mState.setFiles.map((_, i) =>
+    `<div class="modal-set-item">
+      <img src="${esc(_setStripBlobUrls[i] || '')}" alt="New set image ${i + 1}">
+      <button class="modal-set-remove" type="button" data-set-type="file" data-set-idx="${i}" aria-label="Remove new set image ${i + 1}">×</button>
+    </div>`
+  ).join('');
+  strip.innerHTML = keysHtml + filesHtml;
+}
+
+function _removeSetImage(type, idx) {
+  if (type === 'key') {
+    mState.setImageKeys.splice(idx, 1);
+  } else {
+    const url = _setStripBlobUrls.splice(idx, 1)[0];
+    if (url) URL.revokeObjectURL(url);
+    mState.setFiles.splice(idx, 1);
+  }
+  _renderSetStrip();
+}
+
 function _resetModal() {
   mState.file = null; mState.imageKey = null; mState.editUuid = null;
   mState.themes = []; mState.customTags = []; mState.displayTags = [];
   mState.visibility = 'private';
+  mState.setFiles = []; mState.setImageKeys = [];
+  _revokeSetBlobUrls();
   _setVisibilityBtn('private');
   document.getElementById('fsModalTitle').value = '';
   document.getElementById('fsModalDesc').value  = '';
@@ -291,6 +359,9 @@ function _resetModal() {
   document.getElementById('fsImgDeleteBtn').style.display     = 'none';
   document.getElementById('fsUploadModalTitle').textContent   = 'New Image Entry';
   document.getElementById('fsModalSubmitLabel').textContent   = 'Save to Gallery';
+  const setSection = document.getElementById('fsModalSetSection');
+  if (setSection) setSection.style.display = 'none';
+  _renderSetStrip();
   populateTags();
   _modalValidate();
 }
@@ -306,6 +377,8 @@ export function closeUploadModal() {
   const img = document.getElementById('fsModalPreviewImg');
   if (img.src.startsWith('blob:')) revokeUrl(img.src);
   img.src = '';
+  _revokeSetBlobUrls();
+  mState.setFiles = []; mState.setImageKeys = [];
   document.getElementById('fsUploadModal').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -314,12 +387,13 @@ export function openEditImage(itemUuid) {
   const item = FS_GALLERY.find(x => x.uuid === itemUuid);
   if (!item) return;
   _resetModal();
-  mState.editUuid   = itemUuid;
-  mState.imageKey   = item.imageKey  || null;
-  mState.themes     = [...(item.themes     || [])];
-  mState.customTags = [...(item.customTags || [])];
-  mState.displayTags= [...(item.tags       || [])];
-  mState.visibility = item.visibility || 'private';
+  mState.editUuid     = itemUuid;
+  mState.imageKey     = item.imageKey  || null;
+  mState.themes       = [...(item.themes     || [])];
+  mState.customTags   = [...(item.customTags || [])];
+  mState.displayTags  = [...(item.tags       || [])];
+  mState.visibility   = item.visibility || 'private';
+  mState.setImageKeys = [...(item.setImages  || [])];
   _setVisibilityBtn(mState.visibility);
   if (item.imageKey) {
     const img = document.getElementById('fsModalPreviewImg');
@@ -328,6 +402,9 @@ export function openEditImage(itemUuid) {
     document.getElementById('fsModalPreviewName').textContent   = 'Existing image';
     document.getElementById('fsModalPreviewName').style.display = 'block';
     document.getElementById('fsModalReplaceBtn').classList.add('visible');
+    const setSection = document.getElementById('fsModalSetSection');
+    if (setSection) setSection.style.display = '';
+    _renderSetStrip();
   }
   document.getElementById('fsModalTitle').value            = item.title || '';
   document.getElementById('fsModalDesc').value             = item.desc  || '';
@@ -354,6 +431,8 @@ function _handleImageFile(file) {
   document.getElementById('fsModalPreviewName').textContent   = file.name;
   document.getElementById('fsModalPreviewName').style.display = 'block';
   document.getElementById('fsModalReplaceBtn').classList.add('visible');
+  const setSection = document.getElementById('fsModalSetSection');
+  if (setSection) setSection.style.display = '';
   _modalValidate();
 }
 
@@ -380,6 +459,25 @@ export async function saveImage() {
     }
   }
 
+  // Delete set images that were removed during editing
+  if (existing?.setImages) {
+    const removed = (existing.setImages || []).filter(k => !mState.setImageKeys.includes(k));
+    await Promise.all(removed.map(k => apiDeleteImage(k).catch(() => {})));
+  }
+
+  // Upload new set files
+  const newSetKeys = [];
+  for (const f of mState.setFiles) {
+    try {
+      const key = await apiUploadImage(f);
+      newSetKeys.push(key);
+    } catch (err) {
+      showToast(err.message || 'Set image upload failed', true);
+      btn.classList.remove('saving'); btn.disabled = false;
+      return;
+    }
+  }
+
   const entry = {
     uuid:       mState.editUuid || newUuid(),
     title, desc, imageKey,
@@ -387,6 +485,7 @@ export async function saveImage() {
     themes:     [...mState.themes],
     customTags: [...mState.customTags],
     tags:       [...mState.displayTags],
+    setImages:  [...mState.setImageKeys, ...newSetKeys],
     createdAt:  existing ? existing.createdAt : Date.now(),
   };
 
@@ -431,6 +530,7 @@ export async function deleteImage(itemUuid) {
     return;
   }
   if (item?.imageKey) await apiDeleteImage(item.imageKey).catch(() => {});
+  for (const key of item?.setImages || []) await apiDeleteImage(key).catch(() => {});
   notifyDataChanged();
   showToast('Image deleted');
 }
@@ -461,7 +561,6 @@ export function initFsGallery() {
       if (!btn) return;
       _toggleFilter(btn.dataset.filterType, btn.dataset.filterVal);
     });
-    // Keyboard activation for filter-tag-del spans (role=button, tabindex=0)
     el.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       const delSpan = e.target.closest('.filter-tag-del');
@@ -522,6 +621,27 @@ export function initFsGallery() {
   });
   document.getElementById('fsModalReplaceBtn').addEventListener('click', () => {
     document.getElementById('fsModalFileInput').click();
+  });
+
+  // Set image controls
+  document.getElementById('fsModalAddSetBtn')?.addEventListener('click', () => {
+    document.getElementById('fsModalSetFileInput').click();
+  });
+  document.getElementById('fsModalSetFileInput')?.addEventListener('change', e => {
+    const files = Array.from(e.target.files || []);
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) continue;
+      if (!validateFileSize(f)) continue;
+      mState.setFiles.push(f);
+      _setStripBlobUrls.push(URL.createObjectURL(f));
+    }
+    _renderSetStrip();
+    e.target.value = '';
+  });
+  document.getElementById('fsModalSetStrip')?.addEventListener('click', e => {
+    const btn = e.target.closest('.modal-set-remove');
+    if (!btn) return;
+    _removeSetImage(btn.dataset.setType, parseInt(btn.dataset.setIdx, 10));
   });
 
   document.getElementById('fsModalTitle').addEventListener('input', _modalValidate);

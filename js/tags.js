@@ -6,6 +6,7 @@ import { esc, showToast, showPrompt, showConfirm, notifyDataChanged } from './ut
 export const mState = {
   file: null, imageKey: null, editUuid: null,
   chars: [], themes: [], planets: [], customTags: [], displayTags: [],
+  setFiles: [], setImageKeys: [],
 };
 
 export function populateUploadTags() {

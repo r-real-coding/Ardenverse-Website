@@ -7,6 +7,8 @@ import { isSubscriber } from './membership.js';
 let _filters = { char: new Set(), theme: new Set(), planet: new Set(), customTag: new Set() };
 let _lightboxItems  = [];
 let _lightboxIndex  = 0;
+let _lightboxSetIdx = 0;
+let _setStripBlobUrls = [];
 
 function _isActive(type, val) {
   return val === 'all' ? _filters[type].size === 0 : _filters[type].has(val);
@@ -89,7 +91,6 @@ export function renderGallery() {
   const count    = document.getElementById('gallery-count');
   const grid     = document.getElementById('gallery-grid');
 
-  // Non-subscribers see the paywall; admins always bypass it.
   if (!isAdmin && !isSubscriber()) {
     if (paywall)  paywall.style.display  = '';
     if (controls) controls.style.display = 'none';
@@ -98,7 +99,6 @@ export function renderGallery() {
     return;
   }
 
-  // Subscriber or admin — hide paywall and show content.
   if (paywall)  paywall.style.display  = 'none';
   if (controls) controls.style.display = '';
   if (count)    count.style.display    = '';
@@ -131,8 +131,9 @@ export function renderGallery() {
   }
 
   const html = items.map(item => {
-    const lbIdx  = _lightboxItems.findIndex(x => x.uuid === item.uuid);
-    const imgSrc = item.imageKey ? imageUrl(item.imageKey) : null;
+    const lbIdx    = _lightboxItems.findIndex(x => x.uuid === item.uuid);
+    const imgSrc   = item.imageKey ? imageUrl(item.imageKey) : null;
+    const setCount = (item.setImages?.length || 0) + (item.imageKey ? 1 : 0);
     return `<div class="gallery-item" data-uuid="${esc(item.uuid)}"
         ${imgSrc ? `data-lb-idx="${lbIdx}" role="button" tabindex="0" aria-label="${esc(item.title)}"` : 'style="cursor:default;"'}>
       ${imgSrc
@@ -140,6 +141,7 @@ export function renderGallery() {
         : `<div role="img" aria-label="No image available" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
             background:var(--bg-elevated);color:var(--text-muted);font-size:0.7rem;
             letter-spacing:0.1em;font-family:'Orbitron',sans-serif;">NO IMAGE</div>`}
+      ${setCount > 1 ? `<div class="set-badge" aria-label="${setCount} images in set">${setCount}</div>` : ''}
       <div class="gallery-overlay">
         <div class="gallery-item-title">${esc(item.title)}</div>
         <div class="gallery-item-desc">${esc(item.desc || '')}</div>
@@ -173,16 +175,34 @@ export function renderGallery() {
 }
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
-export function openLightbox(idx) {
+function _getSetImages(item) {
+  return [item.imageKey, ...(item.setImages || [])].filter(Boolean);
+}
+
+function _updateLightboxSetCounter(setImages) {
+  const counter = document.getElementById('lightbox-set-counter');
+  if (!counter) return;
+  if (setImages.length > 1) {
+    counter.textContent = `${_lightboxSetIdx + 1} / ${setImages.length}`;
+    counter.style.display = '';
+  } else {
+    counter.style.display = 'none';
+  }
+}
+
+export function openLightbox(idx, setIdx = 0) {
   if (idx < 0 || idx >= _lightboxItems.length) return;
-  _lightboxIndex = idx;
-  const item = _lightboxItems[idx];
+  _lightboxIndex  = idx;
+  const item      = _lightboxItems[idx];
+  const setImages = _getSetImages(item);
+  _lightboxSetIdx = Math.max(0, Math.min(setIdx, setImages.length - 1));
   const img = document.getElementById('lightbox-img');
-  img.src = imageUrl(item.imageKey);
+  img.src = imageUrl(setImages[_lightboxSetIdx]);
   img.alt = item.title;
   document.getElementById('lightbox-title').textContent = item.title;
   document.getElementById('lightbox-desc').textContent  = item.desc || '';
   document.getElementById('lightbox-tags').innerHTML = (item.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+  _updateLightboxSetCounter(setImages);
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
   document.getElementById('lightbox-close').focus();
@@ -195,7 +215,16 @@ export function closeLightbox() {
 
 export function lightboxNav(d) {
   if (_lightboxItems.length === 0) return;
-  openLightbox((_lightboxIndex + d + _lightboxItems.length) % _lightboxItems.length);
+  const item      = _lightboxItems[_lightboxIndex];
+  const setImages = _getSetImages(item);
+  const newSetIdx = _lightboxSetIdx + d;
+  if (newSetIdx >= 0 && newSetIdx < setImages.length) {
+    openLightbox(_lightboxIndex, newSetIdx);
+  } else {
+    const newIdx = (_lightboxIndex + d + _lightboxItems.length) % _lightboxItems.length;
+    const newSet = _getSetImages(_lightboxItems[newIdx]);
+    openLightbox(newIdx, d > 0 ? 0 : newSet.length - 1);
+  }
 }
 
 // ── Upload modal ──────────────────────────────────────────────────────────────
@@ -211,9 +240,48 @@ function _modalValidate() {
   document.getElementById('modalSubmitBtn').disabled = !(hasFil && hasTitle);
 }
 
+function _revokeSetBlobUrls() {
+  _setStripBlobUrls.forEach(u => URL.revokeObjectURL(u));
+  _setStripBlobUrls = [];
+}
+
+function _renderSetStrip() {
+  const strip   = document.getElementById('modalSetStrip');
+  const countEl = document.getElementById('modalSetCount');
+  if (!strip) return;
+  const total = mState.setImageKeys.length + mState.setFiles.length;
+  if (countEl) countEl.textContent = total > 0 ? `(${total})` : '';
+  const keysHtml = mState.setImageKeys.map((key, i) =>
+    `<div class="modal-set-item">
+      <img src="${esc(imageUrl(key))}" alt="Set image ${i + 1}">
+      <button class="modal-set-remove" type="button" data-set-type="key" data-set-idx="${i}" aria-label="Remove set image ${i + 1}">×</button>
+    </div>`
+  ).join('');
+  const filesHtml = mState.setFiles.map((_, i) =>
+    `<div class="modal-set-item">
+      <img src="${esc(_setStripBlobUrls[i] || '')}" alt="New set image ${i + 1}">
+      <button class="modal-set-remove" type="button" data-set-type="file" data-set-idx="${i}" aria-label="Remove new set image ${i + 1}">×</button>
+    </div>`
+  ).join('');
+  strip.innerHTML = keysHtml + filesHtml;
+}
+
+function _removeSetImage(type, idx) {
+  if (type === 'key') {
+    mState.setImageKeys.splice(idx, 1);
+  } else {
+    const url = _setStripBlobUrls.splice(idx, 1)[0];
+    if (url) URL.revokeObjectURL(url);
+    mState.setFiles.splice(idx, 1);
+  }
+  _renderSetStrip();
+}
+
 function _resetUploadModal() {
   mState.file = null; mState.imageKey = null; mState.editUuid = null;
   mState.chars = []; mState.themes = []; mState.planets = []; mState.customTags = []; mState.displayTags = [];
+  mState.setFiles = []; mState.setImageKeys = [];
+  _revokeSetBlobUrls();
   document.getElementById('modalTitle').value = '';
   document.getElementById('modalDesc').value  = '';
   document.getElementById('modalPreviewImg').style.display  = 'none';
@@ -227,6 +295,9 @@ function _resetUploadModal() {
   document.getElementById('imgDeleteBtn').style.display     = 'none';
   document.getElementById('uploadModalTitle').textContent   = 'New Image Entry';
   document.getElementById('modalSubmitLabel').textContent   = 'Save to Gallery';
+  const setSection = document.getElementById('modalSetSection');
+  if (setSection) setSection.style.display = 'none';
+  _renderSetStrip();
   populateUploadTags();
   _modalValidate();
 }
@@ -242,6 +313,8 @@ export function closeUploadModal() {
   const img = document.getElementById('modalPreviewImg');
   if (img.src.startsWith('blob:')) { revokeUrl(img.src); }
   img.src = '';
+  _revokeSetBlobUrls();
+  mState.setFiles = []; mState.setImageKeys = [];
   document.getElementById('uploadModal').classList.remove('open');
   document.body.style.overflow = '';
 }
@@ -250,13 +323,14 @@ export function openEditImage(itemUuid) {
   const item = GALLERY.find(x => x.uuid === itemUuid);
   if (!item) return;
   _resetUploadModal();
-  mState.editUuid  = itemUuid;
-  mState.imageKey  = item.imageKey  || null;
-  mState.chars     = [...(item.chars      || [])];
-  mState.themes    = [...(item.themes     || [])];
-  mState.planets   = [...(item.planets    || [])];
-  mState.customTags= [...(item.customTags || [])];
-  mState.displayTags=  [...(item.tags     || [])];
+  mState.editUuid   = itemUuid;
+  mState.imageKey   = item.imageKey  || null;
+  mState.chars      = [...(item.chars      || [])];
+  mState.themes     = [...(item.themes     || [])];
+  mState.planets    = [...(item.planets    || [])];
+  mState.customTags = [...(item.customTags || [])];
+  mState.displayTags= [...(item.tags       || [])];
+  mState.setImageKeys = [...(item.setImages || [])];
   if (item.imageKey) {
     const img = document.getElementById('modalPreviewImg');
     img.src = imageUrl(item.imageKey); img.style.display = 'block';
@@ -264,6 +338,9 @@ export function openEditImage(itemUuid) {
     document.getElementById('modalPreviewName').textContent   = 'Existing image';
     document.getElementById('modalPreviewName').style.display = 'block';
     document.getElementById('modalReplaceBtn').classList.add('visible');
+    const setSection = document.getElementById('modalSetSection');
+    if (setSection) setSection.style.display = '';
+    _renderSetStrip();
   }
   document.getElementById('modalTitle').value           = item.title || '';
   document.getElementById('modalDesc').value            = item.desc  || '';
@@ -290,6 +367,8 @@ function _handleImageFile(file) {
   document.getElementById('modalPreviewName').textContent   = file.name;
   document.getElementById('modalPreviewName').style.display = 'block';
   document.getElementById('modalReplaceBtn').classList.add('visible');
+  const setSection = document.getElementById('modalSetSection');
+  if (setSection) setSection.style.display = '';
   _modalValidate();
 }
 
@@ -302,17 +381,34 @@ export async function saveImage() {
   const existing = mState.editUuid ? GALLERY.find(x => x.uuid === mState.editUuid) : null;
   let imageKey   = mState.imageKey;
 
-  // Upload new file if one was selected
   if (mState.file instanceof File) {
     try {
       const newKey = await apiUploadImage(mState.file);
-      // Delete old image blob when replacing
       if (existing?.imageKey && existing.imageKey !== newKey) {
         await apiDeleteImage(existing.imageKey).catch(() => {});
       }
       imageKey = newKey;
     } catch (err) {
       showToast(err.message || 'Image upload failed', true);
+      btn.classList.remove('saving'); btn.disabled = false;
+      return;
+    }
+  }
+
+  // Delete set images that were removed during editing
+  if (existing?.setImages) {
+    const removed = (existing.setImages || []).filter(k => !mState.setImageKeys.includes(k));
+    await Promise.all(removed.map(k => apiDeleteImage(k).catch(() => {})));
+  }
+
+  // Upload new set files
+  const newSetKeys = [];
+  for (const f of mState.setFiles) {
+    try {
+      const key = await apiUploadImage(f);
+      newSetKeys.push(key);
+    } catch (err) {
+      showToast(err.message || 'Set image upload failed', true);
       btn.classList.remove('saving'); btn.disabled = false;
       return;
     }
@@ -326,6 +422,7 @@ export async function saveImage() {
     planets:    [...mState.planets],
     customTags: [...mState.customTags],
     tags:       [...mState.displayTags],
+    setImages:  [...mState.setImageKeys, ...newSetKeys],
     createdAt:  existing ? existing.createdAt : Date.now(),
   };
 
@@ -370,6 +467,7 @@ export async function deleteImage(itemUuid) {
     return;
   }
   if (item?.imageKey) await apiDeleteImage(item.imageKey).catch(() => {});
+  for (const key of item?.setImages || []) await apiDeleteImage(key).catch(() => {});
   notifyDataChanged();
   showToast('Image deleted');
 }
@@ -387,7 +485,6 @@ export function deleteCurrentImage() {
 export function initGallery() {
   document.getElementById('filter-chars').addEventListener('click',        _filterClick);
   document.getElementById('filter-themes').addEventListener('click',       _filterClick);
-  // Keyboard activation for filter-tag-del spans (role=button, tabindex=0)
   ['filter-themes', 'filter-planets', 'filter-custom-tags'].forEach(id => {
     document.getElementById(id)?.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -422,7 +519,6 @@ export function initGallery() {
   document.getElementById('lightbox-prev').addEventListener('click', () => lightboxNav(-1));
   document.getElementById('lightbox-next').addEventListener('click', () => lightboxNav(1));
 
-  // Swipe support for mobile
   let _touchStartX = 0;
   document.getElementById('lightbox').addEventListener('touchstart', e => {
     _touchStartX = e.changedTouches[0].screenX;
@@ -432,7 +528,6 @@ export function initGallery() {
     if (Math.abs(delta) > 50) lightboxNav(delta < 0 ? 1 : -1);
   }, { passive: true });
 
-  // Keyboard access for gallery items
   document.getElementById('gallery-grid').addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') {
       const card = e.target.closest('.gallery-item[data-lb-idx]');
@@ -453,6 +548,27 @@ export function initGallery() {
   });
   document.getElementById('modalReplaceBtn').addEventListener('click', () => {
     document.getElementById('modalFileInput').click();
+  });
+
+  // Set image controls
+  document.getElementById('modalAddSetBtn')?.addEventListener('click', () => {
+    document.getElementById('modalSetFileInput').click();
+  });
+  document.getElementById('modalSetFileInput')?.addEventListener('change', e => {
+    const files = Array.from(e.target.files || []);
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) continue;
+      if (!validateFileSize(f)) continue;
+      mState.setFiles.push(f);
+      _setStripBlobUrls.push(URL.createObjectURL(f));
+    }
+    _renderSetStrip();
+    e.target.value = '';
+  });
+  document.getElementById('modalSetStrip')?.addEventListener('click', e => {
+    const btn = e.target.closest('.modal-set-remove');
+    if (!btn) return;
+    _removeSetImage(btn.dataset.setType, parseInt(btn.dataset.setIdx, 10));
   });
 
   document.getElementById('modalTitle').addEventListener('input', _modalValidate);
